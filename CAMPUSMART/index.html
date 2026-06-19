@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+  <meta http-equiv="X-Frame-Options" content="DENY"/>
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
+  <meta name="description" content="CampusMart — The premium campus marketplace. Buy and sell textbooks, electronics, clothes and more with fellow students."/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <title>CampusMart — Campus Marketplace</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ══ LOADER ══ -->
+<div id="app-loader">
+  <div class="loader-inner">
+    <div class="loader-logo">🎓</div>
+    <div class="loader-brand">CampusMart</div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- ══ TOASTS ══ -->
+<div id="toast-container"></div>
+
+<!-- ══ COOKIE BANNER ══ -->
+<div class="cookie-banner" id="cookie-banner">
+  <div class="cookie-inner">
+    <span>🍪 We use cookies to improve your experience. <a href="#" onclick="showLegal('cookies')">Learn more</a></span>
+    <div class="cookie-btns">
+      <button onclick="dismissCookie()">Decline</button>
+      <button class="accept" onclick="acceptCookie()">Accept</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div class="overlay-backdrop hidden" id="onboarding-overlay">
+  <div class="onboarding-card glass-card">
+    <div class="onboarding-emoji">🎓</div>
+    <h2>Welcome to CampusMart!</h2>
+    <p>Your campus marketplace — buy, sell &amp; connect with fellow students safely.</p>
+    <div class="onboarding-steps">
+      <div class="ob-step"><span class="ob-icon">🛒</span><div><strong>Browse &amp; Buy</strong><span>Find great deals from students near you</span></div></div>
+      <div class="ob-step"><span class="ob-icon">💰</span><div><strong>Sell Anything</strong><span>Post a listing in under 60 seconds</span></div></div>
+      <div class="ob-step"><span class="ob-icon">🛡️</span><div><strong>Stay Safe</strong><span>Always meet at Campus Safe Zones</span></div></div>
+    </div>
+    <button class="btn-primary" onclick="dismissOnboarding()">Get Started 🚀</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     AUTH PAGE
+══════════════════════════════════ -->
+<div id="login-page" class="page active">
+  <div class="auth-layout">
+    <!-- Left panel (desktop only) -->
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="auth-brand-logo">🎓</div>
+        <h1>CampusMart</h1>
+        <p>The most trusted campus marketplace. Buy, sell and connect with thousands of students.</p>
+        <div class="auth-features">
+          <div class="af-item"><i class="fa fa-shield-alt"></i><span>Verified campus sellers</span></div>
+          <div class="af-item"><i class="fa fa-bolt"></i><span>Instant listings — go live in 60s</span></div>
+          <div class="af-item"><i class="fa fa-comment"></i><span>Real-time chat with scam detection</span></div>
+          <div class="af-item"><i class="fa fa-tag"></i><span>Zero fees — always free</span></div>
+        </div>
+        <div class="auth-stats">
+          <div class="as-item"><strong id="auth-stat-listings">500+</strong><span>Listings</span></div>
+          <div class="as-divider"></div>
+          <div class="as-item"><strong>100%</strong><span>Free</span></div>
+          <div class="as-divider"></div>
+          <div class="as-item"><strong>🛡️</strong><span>Safe</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Right panel — forms -->
+    <div class="auth-right">
+      <div class="auth-card glass-card">
+        <!-- Sign In -->
+        <div class="auth-panel" id="signin-panel">
+          <div class="auth-header">
+            <div class="auth-header-logo">🎓</div>
+            <h2>Welcome back</h2>
+            <p>Sign in to your CampusMart account</p>
+          </div>
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-email-otp" onclick="switchAuthTab('email-otp')"><i class="fa fa-envelope"></i> Email Code</button>
+            <button class="auth-tab" id="tab-password" onclick="switchAuthTab('password')"><i class="fa fa-lock"></i> Password</button>
+          </div>
+          <!-- Email OTP tab -->
+          <div id="auth-tab-email-otp">
+            <div class="field-group">
+              <label>Email Address</label>
+              <div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="otp-login-email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doSendLoginOTP()"/></div>
+            </div>
+            <button class="btn-primary" id="send-otp-btn" onclick="doSendLoginOTP()"><i class="fa fa-paper-plane"></i> Send Sign-In Code</button>
+            <div id="otp-verify-step" style="display:none">
+              <div class="otp-sent-notice"><i class="fa fa-envelope-open-text"></i> Code sent! Check your inbox.</div>
+              <div id="otp-name-field" style="display:none">
+                <div class="field-group">
+                  <label>Full Name</label>
+                  <div class="input-wrap"><i class="fa fa-user"></i><input type="text" id="otp-name" placeholder="Your full name"/></div>
+                </div>
+              </div>
+              <div class="field-group">
+                <label>6-Digit Code</label>
+                <div class="input-wrap otp-wrap"><input type="text" id="otp-code-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" oninput="formatOTPInput(this)" onkeydown="if(event.key==='Enter')doVerifyLoginOTP()"/></div>
+              </div>
+              <label class="checkbox-label" id="otp-newsletter-label">
+                <input type="checkbox" id="otp-subscribe" checked/><span>Subscribe to campus deals &amp; updates 📬</span>
+              </label>
+              <button class="btn-primary" id="verify-otp-btn" onclick="doVerifyLoginOTP()"><i class="fa fa-check-circle"></i> Verify &amp; Sign In</button>
+              <p class="auth-link"><span onclick="resetOTPFlow()">← Different email</span> · <span onclick="doSendLoginOTP()">Resend code</span></p>
+            </div>
+          </div>
+          <!-- Password tab -->
+          <div id="auth-tab-password" style="display:none">
+            <div class="field-group">
+              <label>Email</label>
+              <div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"/></div>
+            </div>
+            <div class="field-group">
+              <label>Password</label>
+              <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="login-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/><button type="button" class="eye-btn" onclick="togglePass('login-pass',this)"><i class="fa fa-eye"></i></button></div>
+            </div>
+            <button class="btn-primary" id="login-btn" onclick="doLogin()"><i class="fa fa-sign-in-alt"></i> Sign In</button>
+            <p class="auth-link center"><span onclick="switchAuth('forgot')">Forgot password?</span></p>
+          </div>
+          <div class="divider"><span>or continue with</span></div>
+          <button class="btn-google" onclick="doGoogleAuth()">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+          </button>
+          <p class="auth-link center">No account? <span onclick="switchAuth('signup')">Create one free</span></p>
+        </div>
+
+        <!-- Sign Up -->
+        <div class="auth-panel hidden" id="signup-panel">
+          <div class="auth-header">
+            <div class="auth-header-logo">🚀</div>
+            <h2>Join CampusMart</h2>
+            <p>Create your free account in seconds</p>
+          </div>
+          <div class="field-group">
+            <label>Full Name</label>
+            <div class="input-wrap"><i class="fa fa-user"></i><input type="text" id="reg-name" placeholder="Your full name"/></div>
+          </div>
+          <div class="field-group">
+            <label>Email</label>
+            <div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email"/></div>
+          </div>
+          <div class="field-group">
+            <label>WhatsApp Number</label>
+            <div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="reg-phone" placeholder="+254 7xx xxx xxx"/></div>
+          </div>
+          <div class="field-group">
+            <label>Password</label>
+            <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="reg-pass" placeholder="Min 8 chars, 1 uppercase, 1 number" oninput="updatePasswordStrength(this.value)"/><button type="button" class="eye-btn" onclick="togglePass('reg-pass',this)"><i class="fa fa-eye"></i></button></div>
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
+            <div class="pw-strength-label" id="pw-strength-label"></div>
+          </div>
+          <button class="btn-primary" id="register-btn" onclick="doRegister()"><i class="fa fa-user-plus"></i> Create Account</button>
+          <div class="divider"><span>or</span></div>
+          <button class="btn-google" onclick="doGoogleAuth()">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Sign up with Google
+          </button>
+          <p class="auth-link center">Already have an account? <span onclick="switchAuth('signin')">Sign in</span></p>
+        </div>
+
+        <!-- Forgot Password -->
+        <div class="auth-panel hidden" id="forgot-panel">
+          <div class="auth-header">
+            <div class="auth-header-logo">🔑</div>
+            <h2>Reset Password</h2>
+            <p>Enter your email — we'll send a 6-digit code</p>
+          </div>
+          <div class="field-group">
+            <label>Email Address</label>
+            <div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="forgot-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doForgotPassword()"/></div>
+          </div>
+          <button class="btn-primary" id="forgot-btn" onclick="doForgotPassword()"><i class="fa fa-paper-plane"></i> Send Reset Code</button>
+          <p class="auth-link center"><span onclick="switchAuth('signin')">← Back to Sign In</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MARKET PAGE
+══════════════════════════════════ -->
+<div id="market-page" class="page">
+
+  <!-- ── TOP NAV ── -->
+  <nav class="topnav" id="topnav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <button class="nav-hamburger" onclick="openSidebar()" aria-label="Menu"><i class="fa fa-bars"></i></button>
+        <div class="nav-brand" onclick="goHome()">
+          <span class="nb-logo">🎓</span>
+          <span class="nb-text">CampusMart</span>
+        </div>
+      </div>
+      <div class="nav-search" id="search-wrap">
+        <i class="fa fa-search"></i>
+        <input type="text" id="search-input" placeholder="Search listings, categories…" oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none"><i class="fa fa-times"></i></button>
+        <div class="search-suggestions" id="search-suggestions" style="display:none"></div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-sell-nav" onclick="openModal()"><i class="fa fa-plus"></i><span>Sell</span></button>
+        <button class="nav-icon-btn" onclick="showPageAnimated('notifications')" title="Notifications"><i class="fa fa-bell"></i><span class="nav-badge" id="topbar-notif-count" style="display:none"></span></button>
+        <button class="nav-icon-btn" onclick="showPageAnimated('messages')" title="Messages"><i class="fa fa-comment-dots"></i><span class="nav-badge" id="topbar-msg-count" style="display:none"></span></button>
+        <div class="nav-avatar" id="user-avatar" onclick="showPageAnimated('profile')" title="Profile">S</div>
+        <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn"><i class="fa fa-moon"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── SIDEBAR OVERLAY ── -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- ── MARKET INNER (sidebar + main side by side on desktop) ── -->
+  <div class="market-inner">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-brand" onclick="goHome();closeSidebar()"><span>🎓</span> CampusMart</div>
+      <button class="sidebar-close" onclick="closeSidebar()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="su-avatar" id="sidebar-avatar">S</div>
+      <div class="su-info"><div class="su-name" id="sidebar-name">Student</div><div class="su-email" id="sidebar-email"></div></div>
+    </div>
+    <div class="sidebar-section-label">Browse</div>
+    <nav class="sidebar-nav">
+      <a class="snav-item active" id="snav-all"         onclick="filterCategory('all');closeSidebar()"><i class="fa fa-th-large"></i><span>All Listings</span></a>
+      <a class="snav-item" id="snav-books"              onclick="filterCategory('books');closeSidebar()"><i class="fa fa-book"></i><span>Textbooks</span></a>
+      <a class="snav-item" id="snav-electronics"        onclick="filterCategory('electronics');closeSidebar()"><i class="fa fa-laptop"></i><span>Electronics</span></a>
+      <a class="snav-item" id="snav-clothes"            onclick="filterCategory('clothes');closeSidebar()"><i class="fa fa-tshirt"></i><span>Clothes</span></a>
+      <a class="snav-item" id="snav-food"               onclick="filterCategory('food');closeSidebar()"><i class="fa fa-utensils"></i><span>Food &amp; Snacks</span></a>
+      <a class="snav-item" id="snav-services"           onclick="filterCategory('services');closeSidebar()"><i class="fa fa-tools"></i><span>Services</span></a>
+      <a class="snav-item" id="snav-other"              onclick="filterCategory('other');closeSidebar()"><i class="fa fa-box"></i><span>Other</span></a>
+    </nav>
+    <div class="sidebar-section-label">Quick Links</div>
+    <nav class="sidebar-nav">
+      <a class="snav-item" onclick="showPageAnimated('offers');closeSidebar()"><i class="fa fa-fire"></i><span>Hot Offers</span><span class="snav-badge hot">🔥</span></a>
+      <a class="snav-item" onclick="showPageAnimated('stores');closeSidebar()"><i class="fa fa-store"></i><span>Stores</span></a>
+      <a class="snav-item" onclick="showPageAnimated('watchlist');closeSidebar()"><i class="fa fa-heart"></i><span>Watchlist</span><span class="snav-badge" id="snav-watch-count"></span></a>
+      <a class="snav-item" onclick="showPageAnimated('recent');closeSidebar()"><i class="fa fa-clock"></i><span>Recently Viewed</span></a>
+    </nav>
+    <div class="sidebar-section-label">Account</div>
+    <nav class="sidebar-nav">
+      <a class="snav-item" onclick="showPageAnimated('profile');closeSidebar()"><i class="fa fa-user-circle"></i><span>Profile</span></a>
+      <a class="snav-item" onclick="showPageAnimated('messages');closeSidebar()"><i class="fa fa-comment-dots"></i><span>Messages</span><span class="snav-badge" id="snav-msg-count"></span></a>
+      <a class="snav-item" onclick="showPageAnimated('notifications');closeSidebar()"><i class="fa fa-bell"></i><span>Notifications</span><span class="snav-badge" id="snav-notif-count"></span></a>
+      <a class="snav-item" onclick="showPageAnimated('help');closeSidebar()"><i class="fa fa-question-circle"></i><span>Help &amp; Contact</span></a>
+      <a class="snav-item" onclick="showPageAnimated('about');closeSidebar()"><i class="fa fa-info-circle"></i><span>About Us</span></a>
+      <a class="snav-item" onclick="showLegal('terms');closeSidebar()"><i class="fa fa-file-contract"></i><span>Legal</span></a>
+      <a class="snav-item" onclick="showPageAnimated('settings');closeSidebar()"><i class="fa fa-cog"></i><span>Settings</span></a>
+      <a class="snav-item logout" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i><span>Logout</span></a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-wrap" id="main-wrap">
+
+    <!-- Pull to refresh -->
+    <div class="pull-refresh-indicator" id="pull-refresh-indicator"><div class="pull-spinner"></div> Refreshing…</div>
+    <!-- Live feed pill -->
+    <div class="live-feed-pill" id="live-feed-pill" onclick="refreshAndDismissLivePill()"><div class="live-dot"></div><span id="live-feed-text">New listings added</span><i class="fa fa-arrow-up"></i></div>
+
+    <!-- ═══ VIEW: LISTINGS (Home) ═══ -->
+    <div id="view-listings">
+
+      <!-- Hero -->
+      <section class="hero-section">
+        <div class="hero-content">
+          <div class="hero-badge"><i class="fa fa-shield-alt"></i> Kenya's #1 Campus Marketplace</div>
+          <h1 class="hero-title">Find Amazing Deals<br/><span class="hero-gradient">On Campus</span></h1>
+          <p class="hero-sub">Buy &amp; sell textbooks, electronics, clothes and more — safely and instantly.</p>
+          <div class="hero-cta">
+            <button class="btn-hero-primary" onclick="document.getElementById('search-input').focus()"><i class="fa fa-search"></i> Search Listings</button>
+            <button class="btn-hero-secondary" onclick="openModal()"><i class="fa fa-plus"></i> Start Selling</button>
+          </div>
+          <div class="hero-stats">
+            <div class="hs-item"><span class="hs-num" id="stat-count">0</span><span class="hs-label">Listings</span></div>
+            <div class="hs-divider"></div>
+            <div class="hs-item"><span class="hs-num" id="stat-sellers">0</span><span class="hs-label">Sellers</span></div>
+            <div class="hs-divider"></div>
+            <div class="hs-item"><span class="hs-num">100%</span><span class="hs-label">Free</span></div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-float-cards">
+            <div class="hfc hfc-1" style="background-image:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=200&h=200&fit=crop')"><span class="hfc-label">Books</span></div>
+            <div class="hfc hfc-2" style="background-image:url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop')"><span class="hfc-label">Electronics</span></div>
+            <div class="hfc hfc-3" style="background-image:url('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=200&fit=crop')"><span class="hfc-label">Clothes</span></div>
+            <div class="hfc hfc-4" style="background-image:url('https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=200&h=200&fit=crop')"><span class="hfc-label">Food</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Animated ticker -->
+      <div class="ticker-wrap">
+        <div class="ticker-inner">
+          <span class="ticker-content">📚 Textbooks &nbsp;&nbsp;•&nbsp;&nbsp; 📱 Electronics &nbsp;&nbsp;•&nbsp;&nbsp; 👕 Clothes &nbsp;&nbsp;•&nbsp;&nbsp; 🍔 Food &amp; Snacks &nbsp;&nbsp;•&nbsp;&nbsp; 💻 Laptops &nbsp;&nbsp;•&nbsp;&nbsp; 🎧 Headphones &nbsp;&nbsp;•&nbsp;&nbsp; 📖 Notes &nbsp;&nbsp;•&nbsp;&nbsp; 👟 Sneakers &nbsp;&nbsp;•&nbsp;&nbsp; 🍕 Meals &nbsp;&nbsp;•&nbsp;&nbsp; 🎮 Games &nbsp;&nbsp;•&nbsp;&nbsp; 📚 Textbooks &nbsp;&nbsp;•&nbsp;&nbsp; 📱 Electronics &nbsp;&nbsp;•&nbsp;&nbsp; 👕 Clothes &nbsp;&nbsp;•&nbsp;&nbsp; 🍔 Food &amp; Snacks &nbsp;&nbsp;•&nbsp;&nbsp; 💻 Laptops &nbsp;&nbsp;•&nbsp;&nbsp; 🎧 Headphones</span>
+        </div>
+      </div>
+
+      <!-- Stories -->
+      <section class="stories-section">
+        <div class="stories-row" id="stories-row">
+          <div class="story-item" onclick="openAddStory()">
+            <div class="story-add"><i class="fa fa-plus"></i></div>
+            <div class="story-name">Your Story</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category pills -->
+      <section class="cats-section">
+        <div class="cats-row" id="cats-row">
+          <button class="cat-pill active" data-cat="all" onclick="filterCategory('all')"><span>🏠</span> All</button>
+          <button class="cat-pill" data-cat="books" onclick="filterCategory('books')"><span>📚</span> Books</button>
+          <button class="cat-pill" data-cat="electronics" onclick="filterCategory('electronics')"><span>💻</span> Electronics</button>
+          <button class="cat-pill" data-cat="clothes" onclick="filterCategory('clothes')"><span>👕</span> Clothes</button>
+          <button class="cat-pill" data-cat="food" onclick="filterCategory('food')"><span>🍔</span> Food</button>
+          <button class="cat-pill" data-cat="services" onclick="filterCategory('services')"><span>🛠</span> Services</button>
+          <button class="cat-pill" data-cat="other" onclick="filterCategory('other')"><span>📦</span> Other</button>
+        </div>
+      </section>
+
+      <!-- Campus filter -->
+      <div class="campus-filter-bar" id="campus-filter-bar" style="display:none">
+        <button class="campus-chip active" data-campus="all" onclick="filterByCampus('all',this)">📍 All Campuses</button>
+      </div>
+
+      <!-- AI Picks -->
+      <section class="ai-section" id="ai-picks-section" style="display:none">
+        <div class="section-header">
+          <div class="sh-left"><h2>✨ AI Picks</h2><span class="sh-badge">Smart</span></div>
+          <button class="sh-action" onclick="refreshAiPicks()">Refresh <i class="fa fa-sync-alt"></i></button>
+        </div>
+        <div class="ai-carousel" id="ai-carousel"></div>
+      </section>
+
+      <!-- Promo strip -->
+      <div class="promo-strip" onclick="showPageAnimated('offers')">
+        <div class="ps-left"><i class="fa fa-fire"></i><strong>Hot Offers</strong><span>Tap to see all deals</span></div>
+        <i class="fa fa-chevron-right"></i>
+      </div>
+
+      <!-- Listings header -->
+      <div class="listings-header">
+        <div class="lh-left">
+          <h2 id="section-label">All Listings</h2>
+          <span class="lh-count" id="listing-count-label"></span>
+        </div>
+        <div class="lh-right">
+          <button class="lh-btn" id="grid-toggle" onclick="toggleGridView()" title="Toggle view"><i class="fa fa-th-large"></i></button>
+          <select class="lh-select" onchange="sortListings(this.value)">
+            <option value="newest">Newest</option>
+            <option value="price-low">Price ↑</option>
+            <option value="price-high">Price ↓</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="listings-grid" id="listings-grid"></div>
+      <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+        <button class="btn-load-more" id="load-more-btn" onclick="loadMore()">Load More <i class="fa fa-chevron-down"></i></button>
+      </div>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div class="es-icon">📭</div>
+        <h3>No listings found</h3>
+        <p>Be the first to post in this category!</p>
+        <button class="btn-primary" onclick="openModal()"><i class="fa fa-plus"></i> Post a Listing</button>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: OFFERS ═══ -->
+    <div id="view-offers" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🔥 Hot Offers</h2></div>
+      <div class="listings-grid" id="offers-grid"></div>
+      <div class="empty-state" id="offers-empty" style="display:none"><div class="es-icon">🏷️</div><h3>No offers yet</h3><p>Sellers can mark listings as promotions.</p></div>
+    </div>
+
+    <!-- ═══ VIEW: STORES ═══ -->
+    <div id="view-stores" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🏪 Campus Stores</h2></div>
+      <div class="store-grid" id="store-grid"></div>
+      <div class="empty-state" id="stores-empty" style="display:none"><div class="es-icon">🏪</div><h3>No stores yet</h3></div>
+      <div id="store-detail" style="display:none">
+        <div class="store-detail-header">
+          <div class="sdh-avatar" id="store-detail-avatar">S</div>
+          <div class="sdh-info"><div class="sdh-name" id="store-detail-name"></div><div class="sdh-meta" id="store-detail-meta"></div></div>
+          <button class="btn-follow" id="store-follow-btn" onclick="toggleFollowStore()">+ Follow</button>
+        </div>
+        <div class="listings-grid" id="store-listings-grid"></div>
+        <div class="empty-state" id="store-listings-empty" style="display:none"><p>No active listings.</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: RECENTLY VIEWED ═══ -->
+    <div id="view-recent" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🕐 Recently Viewed</h2></div>
+      <div class="listings-grid" id="recent-grid"></div>
+      <div class="empty-state" id="recent-empty" style="display:none"><div class="es-icon">👀</div><h3>Nothing viewed yet</h3></div>
+    </div>
+
+    <!-- ═══ VIEW: WATCHLIST ═══ -->
+    <div id="view-watchlist" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>❤️ Watchlist</h2></div>
+      <div class="listings-grid" id="watchlist-grid"></div>
+      <div class="empty-state" id="watchlist-empty" style="display:none"><div class="es-icon">🤍</div><h3>Watchlist is empty</h3><p>Tap ❤️ on any listing to save it.</p></div>
+    </div>
+
+    <!-- ═══ VIEW: PROFILE ═══ -->
+    <div id="view-profile" style="display:none">
+      <div class="profile-hero">
+        <div class="profile-cover-bg"></div>
+        <div class="profile-hero-inner">
+          <div class="ph-avatar" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()">S
+            <div class="ph-avatar-edit"><i class="fa fa-camera"></i></div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)"/>
+          </div>
+          <div class="ph-info">
+            <h2 id="profile-name">Student</h2>
+            <p id="profile-email"></p>
+            <p id="profile-campus"></p>
+            <div class="ph-badges">
+              <span class="ph-badge" id="ph-verified-badge" style="display:none"><i class="fa fa-check-circle"></i> Verified</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-stats-row">
+          <div class="psr-item"><div class="psr-num" id="my-listing-count">0</div><div class="psr-lbl">Listings</div></div>
+          <div class="psr-item"><div class="psr-num" id="my-watch-count">0</div><div class="psr-lbl">Saved</div></div>
+          <div class="psr-item"><div class="psr-num" id="profile-joined-days">0</div><div class="psr-lbl">Days on CM</div></div>
+        </div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-section">
+          <div class="profile-section-header"><h3>Edit Profile</h3></div>
+          <div class="profile-form">
+            <div class="field-group"><label>Full Name</label><div class="input-wrap"><i class="fa fa-user"></i><input type="text" id="edit-name" placeholder="Full name"/></div></div>
+            <div class="field-group"><label>WhatsApp / Phone</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="edit-phone" placeholder="+254 7xx xxx xxx"/></div></div>
+            <div class="field-group"><label>Campus / Hostel</label><div class="input-wrap"><i class="fa fa-university"></i><input type="text" id="edit-campus" placeholder="Your campus or hostel block"/></div></div>
+            <div class="field-group"><label>Bio</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="edit-bio" rows="2" maxlength="200" placeholder="Short bio (max 200 chars)"></textarea></div></div>
+            <button class="btn-primary" onclick="saveProfile()"><i class="fa fa-save"></i> Save Changes</button>
+            <button class="verify-student-btn" onclick="openVerifyModal()"><i class="fa fa-user-check"></i> Verify Student Status 🎓</button>
+          </div>
+        </div>
+        <div class="profile-section">
+          <div class="profile-section-header"><h3>My Listings</h3><button class="btn-primary sm" onclick="openModal()"><i class="fa fa-plus"></i> New</button></div>
+          <div class="listings-grid" id="my-listings-grid"></div>
+          <div class="empty-state sm" id="my-listings-empty" style="display:none"><div class="es-icon" style="font-size:32px">📭</div><p>No listings yet</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: NOTIFICATIONS ═══ -->
+    <div id="view-notifications" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🔔 Notifications</h2><button class="sh-action" onclick="clearNotifications()">Clear all</button></div>
+      <div id="notif-list" style="padding:12px 16px 80px"></div>
+      <div class="empty-state" id="notif-empty" style="display:none"><div class="es-icon">🔕</div><h3>No notifications</h3></div>
+    </div>
+
+    <!-- ═══ VIEW: MESSAGES ═══ -->
+    <div id="view-messages" style="display:none">
+      <div class="messages-layout">
+        <div class="chat-list" id="chat-list">
+          <div class="chat-list-header"><h3>Messages</h3></div>
+          <div id="chat-list-inner"></div>
+        </div>
+        <div class="chat-window" id="chat-window">
+          <div class="chat-placeholder"><i class="fa fa-comment-dots"></i><p>Select a conversation to start chatting</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: HELP ═══ -->
+    <div id="view-help" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>❓ Help &amp; Contact</h2></div>
+      <div class="page-body">
+        <div class="newsletter-card">
+          <h3>📬 Newsletter</h3>
+          <p>Get campus deals and updates straight to your inbox</p>
+          <div class="newsletter-row">
+            <input type="email" id="newsletter-email" placeholder="Your email address"/>
+            <button onclick="subscribeNewsletter()">Subscribe</button>
+          </div>
+        </div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I post a listing? <i class="fa fa-chevron-down"></i></button><div class="help-body">Tap the <strong>Sell</strong> button. Fill in your item details, add photos, set a price and post. Your listing goes live instantly!</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I buy something? <i class="fa fa-chevron-down"></i></button><div class="help-body">Browse listings and tap one you like. Contact the seller via WhatsApp or in-app chat. Always meet at a <strong>Campus Safe Zone</strong> and pay in person.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">What are Campus Safe Zones? <i class="fa fa-chevron-down"></i></button><div class="help-body">Safe Zones are verified, well-lit, public campus locations where you should meet sellers. Never meet strangers in private locations.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I report a scammer? <i class="fa fa-chevron-down"></i></button><div class="help-body">Open the listing, tap the 🚩 flag icon and select a reason. Reports are anonymous. Users reported by 3+ people are automatically suspended.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">Contact &amp; Feedback <i class="fa fa-chevron-down"></i></button>
+          <div class="help-body">Email: <a href="mailto:support@campusmart.co.ke">support@campusmart.co.ke</a><br/><br/>
+            <div class="field-group" style="margin-top:10px"><div class="input-wrap"><i class="fa fa-comment" style="top:14px;transform:none"></i><textarea id="feedback-text" rows="3" placeholder="Your feedback or question…"></textarea></div></div>
+            <button class="btn-primary" style="margin-top:8px;width:auto;padding:10px 22px" onclick="submitFeedback()"><i class="fa fa-paper-plane"></i> Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: ABOUT ═══ -->
+    <div id="view-about" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>ℹ️ About CampusMart</h2></div>
+      <div class="page-body">
+        <div class="about-hero-card">
+          <div class="ahc-emoji">🎓</div>
+          <h2>CampusMart</h2>
+          <p>Building the most trusted campus marketplace in Kenya — connecting students to buy, sell and trade safely.</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feat-card"><span>🛡️</span><strong>Safety First</strong><p>Campus Safe Zones, fraud detection and 3-strike suspensions</p></div>
+          <div class="feat-card"><span>⚡</span><strong>Instant</strong><p>Post your item in under 60 seconds — live immediately</p></div>
+          <div class="feat-card"><span>💬</span><strong>Real-time Chat</strong><p>Message sellers instantly with scam detection built in</p></div>
+          <div class="feat-card"><span>🆓</span><strong>Always Free</strong><p>No listing fees, no commissions — ever</p></div>
+        </div>
+        <div class="newsletter-card">
+          <h3>📬 Stay Updated</h3>
+          <p>Subscribe for campus deals, new features and safety tips</p>
+          <div class="newsletter-row">
+            <input type="email" id="newsletter-email-2" placeholder="Your email"/>
+            <button onclick="subscribeNewsletter2()">Subscribe</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: LEGAL ═══ -->
+    <div id="view-legal" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>📄 Legal</h2></div>
+      <div class="page-body">
+        <div class="legal-tabs">
+          <button class="legal-tab active" onclick="switchLegal('terms',this)">Terms</button>
+          <button class="legal-tab" onclick="switchLegal('privacy',this)">Privacy</button>
+          <button class="legal-tab" onclick="switchLegal('cookies',this)">Cookies</button>
+          <button class="legal-tab" onclick="switchLegal('agreement',this)">Agreement</button>
+        </div>
+        <div class="legal-content active" id="legal-terms"><h3>1. Acceptance</h3><p>By using CampusMart you agree to these terms. If you disagree, stop using the platform.</p><h3>2. User Conduct</h3><p>You must be a registered student or staff. You agree not to post fraudulent, stolen or illegal items.</p><h3>3. Listings</h3><p>All listings must be accurate. CampusMart reserves the right to remove any violating listing.</p><h3>4. Transactions</h3><p>CampusMart does not process payments. All transactions happen in person at Campus Safe Zones.</p><h3>5. Safety</h3><p>Always meet at designated Campus Safe Zones. Never send money in advance.</p></div>
+        <div class="legal-content" id="legal-privacy"><h3>Data We Collect</h3><p>We collect your name, email, phone, campus and any info you provide in your profile or listings.</p><h3>How We Use It</h3><p>Your data is used to operate the marketplace and send account emails. We never sell your data.</p><h3>Your Rights</h3><p>Request deletion by contacting support@campusmart.co.ke. We process requests within 30 days.</p></div>
+        <div class="legal-content" id="legal-cookies"><h3>What We Store</h3><p>We use localStorage to remember your login session, theme preference, watchlist and recently viewed items.</p><h3>No Tracking</h3><p>We do not use any third-party advertising or tracking cookies.</p></div>
+        <div class="legal-content" id="legal-agreement"><h3>User Agreement</h3><p>You must be at least 16 years old. You must not post stolen goods, harass users or create fake accounts.</p><h3>Limitation of Liability</h3><p>CampusMart is a peer-to-peer platform. We are not responsible for the quality or safety of listed items.</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: SETTINGS ═══ -->
+    <div id="view-settings" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>⚙️ Settings</h2></div>
+      <div class="page-body">
+        <div class="settings-card">
+          <h3>Appearance</h3>
+          <div class="settings-row"><div><strong>Theme</strong><p>Choose your preferred look</p></div>
+            <div class="theme-toggle-row">
+              <button class="theme-pill active" id="theme-light" onclick="setTheme('light')"><i class="fa fa-sun"></i> Light</button>
+              <button class="theme-pill" id="theme-dark" onclick="setTheme('dark')"><i class="fa fa-moon"></i> Dark</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🛡️ Safety &amp; Trust</h3>
+          <div class="settings-row"><div><strong>Campus Safe Zones</strong><p>Always meet sellers here</p></div></div>
+          <div class="safe-zones-list" id="safe-zones-list"></div>
+          <div class="settings-row"><div><strong>Fraud Scanner</strong><p>Chat messages scanned in real time</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>3-Strike System</strong><p>Reported users auto-suspended</p></div><span class="badge-on">Active</span></div>
+        </div>
+        <div class="settings-card">
+          <h3>Account</h3>
+          <div class="settings-row"><div><strong>Email</strong><p id="settings-email"></p></div></div>
+          <div class="settings-row"><div><strong>Notifications</strong><p>Browser push notifications</p></div><button class="toggle-btn" id="notif-toggle" onclick="toggleBrowserNotifs()">Enable</button></div>
+          <div class="settings-row danger"><div><strong>Logout</strong><p>Sign out of your account</p></div><button class="btn-danger-sm" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i> Logout</button></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  </div><!-- /.market-inner -->
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="bottom-nav">
+    <button class="bnav-item active" id="bnav-home" onclick="bnavGo('listings','bnav-home')"><i class="fa fa-home"></i><span>Home</span></button>
+    <button class="bnav-item" id="bnav-stores" onclick="bnavGo('stores','bnav-stores')"><i class="fa fa-store"></i><span>Stores</span></button>
+    <button class="bnav-sell" onclick="openModal()"><div class="bnav-sell-inner"><i class="fa fa-plus"></i></div></button>
+    <button class="bnav-item" id="bnav-msgs" onclick="bnavGo('messages','bnav-msgs')"><i class="fa fa-comment-dots"></i><span>Chat</span><span class="bnav-badge" id="bnav-msg-badge" style="display:none"></span></button>
+    <button class="bnav-item" id="bnav-prof" onclick="bnavGo('profile','bnav-prof')"><i class="fa fa-user"></i><span>Me</span></button>
+  </nav>
+
+  <!-- Scroll to top -->
+  <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" style="display:none"><i class="fa fa-arrow-up"></i></button>
+</div>
+
+<!-- ══════════════════════════════════
+     MODALS
+══════════════════════════════════ -->
+
+<!-- SELL MODAL -->
+<div class="modal-backdrop" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal-sheet" id="sell-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3 id="modal-title-text">Post a Listing</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-scroll">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-input').click()">
+        <div class="uz-placeholder" id="upload-placeholder"><i class="fa fa-camera"></i><span>Add photos</span><small>Up to 5 · JPG / PNG</small></div>
+        <div class="uz-previews" id="upload-previews"></div>
+        <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="handleImages(event)"/>
+      </div>
+      <div class="field-group"><label>Title *</label><div class="input-wrap"><i class="fa fa-tag"></i><input type="text" id="item-title" placeholder="What are you selling?" oninput="checkListingScamWords(this.value)"/></div></div>
+      <div class="listing-scam-warning" id="listing-scam-warning"><i class="fa fa-exclamation-triangle"></i> Title may look suspicious. Keep it simple and honest.</div>
+      <div class="field-group"><label>Description</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="item-desc" rows="3" placeholder="Condition, age, reason for selling…"></textarea></div></div>
+      <div class="two-col">
+        <div class="field-group"><label>Price (KES) *</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="item-price" placeholder="0" min="0"/></div></div>
+        <div class="field-group"><label>Qty</label><div class="input-wrap"><i class="fa fa-layer-group"></i><input type="number" id="item-stock" placeholder="1" min="1" value="1"/></div></div>
+      </div>
+      <div class="two-col">
+        <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category"><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select></div></div>
+        <div class="field-group"><label>Condition</label><div class="input-wrap"><i class="fa fa-box"></i><select id="item-condition"><option value="New">✨ New</option><option value="Like New">👌 Like New</option><option value="Good">👍 Good</option><option value="Fair">🔄 Fair</option></select></div></div>
+      </div>
+      <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="item-location"><option value="">📍 Select Campus Safe Zone</option></select></div></div>
+      <div class="field-group"><label>WhatsApp / Phone *</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="item-contact" placeholder="+254 7xx xxx xxx"/></div></div>
+      <label class="promo-toggle-label"><input type="checkbox" id="item-is-promo" onchange="togglePromoFields()"/><span><i class="fa fa-tags"></i> Mark as Offer / Promotion</span></label>
+      <div id="promo-fields" style="display:none">
+        <div class="two-col" style="margin-top:10px">
+          <div class="field-group"><label>Promo Label</label><div class="input-wrap"><i class="fa fa-percent"></i><input type="text" id="item-promo-label" placeholder='e.g. "50% OFF"'/></div></div>
+          <div class="field-group"><label>Original Price</label><div class="input-wrap"><i class="fa fa-tag"></i><input type="number" id="item-original-price" placeholder="0"/></div></div>
+        </div>
+      </div>
+      <button class="btn-primary full" id="post-btn" onclick="postListing()"><i class="fa fa-paper-plane"></i> Post Listing</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL BOTTOM SHEET -->
+<div class="modal-backdrop" id="bs-overlay" onclick="closeBottomSheet()"></div>
+<div class="bottom-sheet" id="bottom-sheet">
+  <div class="modal-handle"></div>
+  <div class="bs-topbar">
+    <div class="bs-topbar-actions">
+      <button class="bs-icon-btn" id="bs-watchlist-btn" onclick="toggleWatchlist()" title="Save"><i class="fa fa-heart"></i></button>
+      <button class="bs-icon-btn" onclick="shareCurrentListing()" title="Share"><i class="fa fa-share-alt"></i></button>
+      <button class="bs-icon-btn danger" onclick="openReportModal()" title="Report"><i class="fa fa-flag"></i></button>
+      <button class="bs-icon-btn" onclick="closeBottomSheet()"><i class="fa fa-times"></i></button>
+    </div>
+  </div>
+  <div class="bs-scroll">
+    <!-- Gallery -->
+    <div class="bs-gallery">
+      <div class="bs-gallery-main" id="bs-gallery-main">
+        <img id="bs-main-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;"/>
+        <div id="bs-no-img" class="bs-no-img">📦</div>
+        <button class="fullscreen-btn" id="bs-fullscreen-btn" onclick="openFullscreen()" style="display:none"><i class="fa fa-expand"></i></button>
+        <div class="bs-gallery-nav"><button onclick="bsGalleryNav(-1)"><i class="fa fa-chevron-left"></i></button><span id="bs-img-counter"></span><button onclick="bsGalleryNav(1)"><i class="fa fa-chevron-right"></i></button></div>
+      </div>
+      <div class="bs-thumbs" id="bs-thumbs"></div>
+    </div>
+    <!-- Promo -->
+    <div class="bs-promo-banner" id="bs-promo-banner" style="display:none"></div>
+    <!-- Urgency -->
+    <div class="urgency-row" id="bs-urgency-row"></div>
+    <!-- Info -->
+    <div class="bs-info">
+      <div class="bs-price-row">
+        <div class="bs-price" id="bs-price"></div>
+        <div class="bs-orig-price" id="bs-orig-price" style="display:none"></div>
+        <div class="bs-condition" id="bs-condition"></div>
+      </div>
+      <h2 class="bs-title" id="bs-item-title"></h2>
+      <!-- Popularity -->
+      <div class="pop-row" id="bs-popularity"></div>
+      <!-- Reactions -->
+      <div class="bs-reactions">
+        <button class="react-btn" onclick="reactToListing('🔥')">🔥 <span id="react-fire-count">0</span></button>
+        <button class="react-btn" onclick="reactToListing('😮')">😮 <span id="react-wow-count">0</span></button>
+        <button class="react-btn" onclick="reactToListing('👀')">👀 <span id="react-eyes-count">0</span></button>
+        <button class="react-btn" onclick="reactToListing('💯')">💯 <span id="react-100-count">0</span></button>
+      </div>
+      <!-- Meta -->
+      <div class="bs-meta">
+        <span class="bs-cat-badge" id="bs-badge"></span>
+        <span class="bs-loc" id="bs-loc" style="display:none"><i class="fa fa-map-marker-alt"></i><span id="bs-location"></span></span>
+      </div>
+      <div class="safe-zone-tip" id="bs-safe-zone" style="display:none"><i class="fa fa-shield-alt"></i> Campus Safe Zone — Meet here only</div>
+      <div class="bs-stock" id="bs-stock"></div>
+      <!-- Description -->
+      <div class="bs-section"><div class="bs-section-title">Description</div><p class="bs-desc" id="bs-desc"></p></div>
+      <!-- Seller -->
+      <div class="seller-card" id="bs-seller-card">
+        <div class="sc-avatar" id="bs-seller-avatar">S</div>
+        <div class="sc-info"><div class="sc-name" id="bs-seller-name"></div><div class="sc-label">Campus Seller</div><div class="sc-bio" id="bs-seller-bio"></div></div>
+        <span class="sc-verified" id="bs-verified-badge" style="display:none">✓</span>
+      </div>
+      <!-- Safety -->
+      <div class="safety-tip"><i class="fa fa-shield-alt"></i><div><strong>Stay Safe!</strong> Never send M-Pesa or deposit before meeting in person at a <strong>Campus Safe Zone</strong>.</div></div>
+      <!-- Actions -->
+      <div class="bs-actions" id="bs-actions">
+        <a class="btn-wa" id="bs-wa-btn" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+        <button class="btn-offer" id="bs-offer-btn" onclick="openOfferModal()"><i class="fa fa-handshake"></i> Make Offer</button>
+      </div>
+      <div class="bs-secondary-actions">
+        <button class="btn-secondary" id="bs-call-btn"><i class="fa fa-phone"></i> Call</button>
+        <button class="btn-secondary" id="bs-chat-btn" onclick="startChat()"><i class="fa fa-comment"></i> Chat</button>
+      </div>
+      <!-- Owner controls -->
+      <div id="bs-owner-controls" style="display:none">
+        <div class="owner-actions">
+          <button class="btn-edit" onclick="editListing()"><i class="fa fa-pen"></i> Edit</button>
+          <button class="btn-delete" onclick="deleteCurrentListing()"><i class="fa fa-trash"></i> Delete</button>
+        </div>
+        <div class="stock-row">
+          <span>Stock:</span>
+          <input type="number" id="bs-stock-input" min="0"/>
+          <button onclick="updateStockFromDetail()">Update</button>
+          <button onclick="toggleSoldOut()">Mark Sold</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OFFER MODAL -->
+<div class="modal-backdrop" id="offer-overlay" onclick="if(event.target===this)closeOfferModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-handshake" style="color:var(--amber)"></i> Make an Offer</h3><button class="modal-close" onclick="closeOfferModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Suggest a price — the seller can accept or counter.</p>
+      <div class="offer-presets" id="offer-presets"></div>
+      <div class="field-group" style="margin-top:12px"><label>Your Offer (KES)</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="offer-amount" placeholder="0" min="1"/></div></div>
+      <div class="field-group"><label>Note (optional)</label><div class="input-wrap"><i class="fa fa-comment" style="top:14px;transform:none"></i><textarea id="offer-message" rows="2" placeholder="Add a note to the seller…"></textarea></div></div>
+      <button class="btn-primary full" onclick="sendOffer()"><i class="fa fa-paper-plane"></i> Send Offer via Chat</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-backdrop" id="report-overlay" onclick="closeReportOutside(event)">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-flag" style="color:#ef4444"></i> Report Seller</h3><button class="modal-close" onclick="closeReportModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <div class="info-tip"><i class="fa fa-info-circle"></i> Reports are anonymous. 3+ reports = auto-suspension.</div>
+      <div class="field-group" style="margin-top:12px"><label>Reason</label><div class="input-wrap"><i class="fa fa-list"></i><select id="report-reason"><option value="">Select reason</option><option value="scam">M-Pesa / deposit scam</option><option value="fake">Fake or misrepresented listing</option><option value="harassment">Harassment or threats</option><option value="stolen">Suspected stolen goods</option><option value="overcharge">Extreme overpricing</option><option value="other">Other</option></select></div></div>
+      <div class="field-group"><label>Details (optional)</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="report-details" rows="3" placeholder="Add details…"></textarea></div></div>
+      <button class="btn-danger full" onclick="submitReport()"><i class="fa fa-flag"></i> Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY STUDENT MODAL -->
+<div class="modal-backdrop" id="verify-overlay" onclick="if(event.target===this)closeVerifyModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-user-check" style="color:#3b82f6"></i> Verify Student</h3><button class="modal-close" onclick="closeVerifyModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter your <strong>.ac.ke</strong> or university email to get a verified badge.</p>
+      <div class="field-group"><label>University Email</label><div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="verify-email" placeholder="yourname@university.ac.ke"/></div></div>
+      <button class="btn-verify full" onclick="submitStudentVerify()"><i class="fa fa-check-circle"></i> Send Verification Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORY VIEWER -->
+<div class="story-viewer" id="story-viewer">
+  <div class="sv-bars" id="story-viewer-bar"></div>
+  <div class="sv-header">
+    <div class="sv-avatar" id="sv-avatar">S</div>
+    <div class="sv-info"><div class="sv-name" id="sv-name"></div><div class="sv-time" id="sv-time"></div></div>
+    <button class="sv-close" onclick="closeStoryViewer()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="sv-media" id="sv-img">
+    <div class="sv-no-img" id="sv-no-img">📦</div>
+    <img id="sv-main-img" src="" alt="" style="display:none"/>
+    <div class="sv-tap-prev" onclick="storyNav(-1)"></div>
+    <div class="sv-tap-next" onclick="storyNav(1)"></div>
+  </div>
+  <div class="sv-content">
+    <div class="sv-title" id="sv-title"></div>
+    <div class="sv-price" id="sv-price"></div>
+    <div class="sv-actions">
+      <button class="sv-wa-btn" id="sv-wa-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+      <button class="sv-chat-btn" onclick="closeStoryViewer()"><i class="fa fa-comment"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN IMAGE -->
+<div id="fullscreen-overlay" onclick="closeFullscreen()">
+  <button class="fs-close" onclick="closeFullscreen()"><i class="fa fa-times"></i></button>
+  <button class="fs-nav prev" onclick="fsNav(-1,event)"><i class="fa fa-chevron-left"></i></button>
+  <img id="fullscreen-img" src="" alt="fullscreen"/>
+  <button class="fs-nav next" onclick="fsNav(1,event)"><i class="fa fa-chevron-right"></i></button>
+  <div class="fs-counter" id="fs-counter"></div>
+</div>
+
+<!-- CONFETTI -->
+<canvas class="confetti-canvas" id="confetti-canvas" style="display:none"></canvas>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
