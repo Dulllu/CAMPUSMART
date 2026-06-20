@@ -7,7 +7,11 @@
   <meta http-equiv="X-Frame-Options" content="DENY"/>
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
   <meta name="description" content="CampusMart — The premium campus marketplace. Buy and sell textbooks, electronics, clothes and more with fellow students."/>
-  <meta name="theme-color" content="#0a0a0a"/>
+  <meta name="theme-color" content="#00c896"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="CampusMart"/>
   <title>CampusMart — Campus Marketplace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -259,6 +263,14 @@
       <a class="snav-item" onclick="showPageAnimated('stores');closeSidebar()"><i class="fa fa-store"></i><span>Stores</span></a>
       <a class="snav-item" onclick="showPageAnimated('watchlist');closeSidebar()"><i class="fa fa-heart"></i><span>Watchlist</span><span class="snav-badge" id="snav-watch-count"></span></a>
       <a class="snav-item" onclick="showPageAnimated('recent');closeSidebar()"><i class="fa fa-clock"></i><span>Recently Viewed</span></a>
+      <a class="snav-item" onclick="showPageAnimated('saved-searches');closeSidebar()"><i class="fa fa-bell"></i><span>Saved Searches</span></a>
+      <a class="snav-item" onclick="showPageAnimated('leaderboard');closeSidebar()"><i class="fa fa-trophy"></i><span>Top Sellers</span></a>
+    </nav>
+    <div class="sidebar-section-label">Selling</div>
+    <nav class="sidebar-nav">
+      <a class="snav-item" onclick="showPageAnimated('dashboard');closeSidebar()"><i class="fa fa-chart-line"></i><span>Seller Dashboard</span></a>
+      <a class="snav-item" onclick="showPageAnimated('drafts');closeSidebar()"><i class="fa fa-pen-to-square"></i><span>Drafts</span></a>
+      <a class="snav-item" onclick="showPageAnimated('referral');closeSidebar()"><i class="fa fa-gift"></i><span>Refer &amp; Earn</span></a>
     </nav>
     <div class="sidebar-section-label">Account</div>
     <nav class="sidebar-nav">
@@ -428,6 +440,80 @@
       <div class="empty-state" id="watchlist-empty" style="display:none"><div class="es-icon">🤍</div><h3>Watchlist is empty</h3><p>Tap ❤️ on any listing to save it.</p></div>
     </div>
 
+    <!-- ═══ VIEW: SAVED SEARCHES ═══ -->
+    <div id="view-saved-searches" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🔔 Saved Searches</h2></div>
+      <div class="page-body">
+        <div class="settings-card" style="padding:16px">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Get an email when a new listing matches your search.</p>
+          <div class="two-col">
+            <div class="field-group"><label>Keyword</label><div class="input-wrap"><i class="fa fa-search"></i><input type="text" id="ss-query" placeholder="e.g. MacBook"/></div></div>
+            <div class="field-group"><label>Max Price</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="ss-max-price" placeholder="Optional"/></div></div>
+          </div>
+          <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i>
+            <select id="ss-category"><option value="all">All Categories</option><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select>
+          </div></div>
+          <button class="btn-primary" onclick="createSavedSearch()"><i class="fa fa-bell"></i> Create Alert</button>
+        </div>
+        <div id="saved-searches-list" style="margin-top:14px"></div>
+        <div class="empty-state sm" id="saved-searches-empty" style="display:none"><div class="es-icon" style="font-size:32px">🔔</div><p>No saved searches yet</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: LEADERBOARD ═══ -->
+    <div id="view-leaderboard" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🏆 Top Sellers</h2></div>
+      <div class="page-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:4px" id="leaderboard-period">Last 30 days</p>
+        <div class="leaderboard-list" id="leaderboard-list"></div>
+        <div class="empty-state sm" id="leaderboard-empty" style="display:none"><div class="es-icon" style="font-size:32px">🏆</div><p>No sellers yet this month</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: SELLER DASHBOARD ═══ -->
+    <div id="view-dashboard" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>📊 Seller Dashboard</h2></div>
+      <div class="page-body">
+        <div class="dash-summary-grid" id="dash-summary"></div>
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin:6px 0 4px">My Listings Performance</h3>
+        <div id="dash-listings-list"></div>
+        <div class="empty-state sm" id="dash-empty" style="display:none"><div class="es-icon" style="font-size:32px">📊</div><p>Post a listing to see stats</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: DRAFTS ═══ -->
+    <div id="view-drafts" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>📝 Drafts</h2></div>
+      <div class="page-body">
+        <div id="drafts-list"></div>
+        <div class="empty-state sm" id="drafts-empty" style="display:none"><div class="es-icon" style="font-size:32px">📝</div><p>No drafts saved</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: REFERRAL ═══ -->
+    <div id="view-referral" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🎁 Refer &amp; Earn</h2></div>
+      <div class="page-body">
+        <div class="referral-card">
+          <h3>🎁 Invite Friends, Earn Bumps</h3>
+          <p>Share your code — when a friend joins, you both get a free listing bump!</p>
+          <div class="referral-code-box" id="referral-code-box">------</div>
+          <div class="referral-stats-row">
+            <div class="referral-stat"><strong id="referral-credits">0</strong><span>Bump Credits</span></div>
+            <div class="referral-stat"><strong id="referral-count">0</strong><span>Friends Joined</span></div>
+          </div>
+          <button class="btn-share-referral" onclick="shareReferral()"><i class="fa fa-share-alt"></i> Share My Code</button>
+        </div>
+        <div class="settings-card" style="margin-top:14px;padding:16px">
+          <h4 style="font-size:14px;font-weight:800;margin-bottom:8px">Have a code? Apply it here</h4>
+          <div class="referral-input-row" style="margin-top:0">
+            <input type="text" id="referral-apply-input" placeholder="Enter referral code" style="background:var(--bg);border:1.5px solid var(--border);color:var(--text)"/>
+            <button onclick="applyReferral()" style="background:var(--brand);border-color:var(--brand)">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ VIEW: PROFILE ═══ -->
     <div id="view-profile" style="display:none">
       <div class="profile-hero">
@@ -443,7 +529,9 @@
             <p id="profile-campus"></p>
             <div class="ph-badges">
               <span class="ph-badge" id="ph-verified-badge" style="display:none"><i class="fa fa-check-circle"></i> Verified</span>
+              <span class="id-verified-badge" id="ph-id-verified-badge" style="display:none"><i class="fa fa-id-card"></i> ID Verified</span>
             </div>
+            <div class="seller-rating-row" id="ph-rating-row" style="display:none"></div>
           </div>
         </div>
         <div class="profile-stats-row">
@@ -657,6 +745,7 @@
     <div class="bs-topbar-actions">
       <button class="bs-icon-btn" id="bs-watchlist-btn" onclick="toggleWatchlist()" title="Save"><i class="fa fa-heart"></i></button>
       <button class="bs-icon-btn" onclick="shareCurrentListing()" title="Share"><i class="fa fa-share-alt"></i></button>
+      <button class="bs-icon-btn block" id="bs-block-btn" onclick="confirmBlockUser()" title="Block" style="display:none"><i class="fa fa-ban"></i></button>
       <button class="bs-icon-btn danger" onclick="openReportModal()" title="Report"><i class="fa fa-flag"></i></button>
       <button class="bs-icon-btn" onclick="closeBottomSheet()"><i class="fa fa-times"></i></button>
     </div>
@@ -705,9 +794,16 @@
       <!-- Seller -->
       <div class="seller-card" id="bs-seller-card">
         <div class="sc-avatar" id="bs-seller-avatar">S</div>
-        <div class="sc-info"><div class="sc-name" id="bs-seller-name"></div><div class="sc-label">Campus Seller</div><div class="sc-bio" id="bs-seller-bio"></div></div>
+        <div class="sc-info">
+          <div class="sc-name" id="bs-seller-name"></div>
+          <div class="sc-label">Campus Seller</div>
+          <div class="seller-rating-row" id="bs-seller-rating" style="display:none"></div>
+          <div class="sc-bio" id="bs-seller-bio"></div>
+        </div>
         <span class="sc-verified" id="bs-verified-badge" style="display:none">✓</span>
       </div>
+      <!-- Save Search CTA -->
+      <button class="btn-save-search" onclick="quickSaveSearchFromListing()"><i class="fa fa-bell"></i> Get alerts for similar items</button>
       <!-- Safety -->
       <div class="safety-tip"><i class="fa fa-shield-alt"></i><div><strong>Stay Safe!</strong> Never send M-Pesa or deposit before meeting in person at a <strong>Campus Safe Zone</strong>.</div></div>
       <!-- Actions -->
@@ -731,6 +827,24 @@
           <button onclick="updateStockFromDetail()">Update</button>
           <button onclick="toggleSoldOut()">Mark Sold</button>
         </div>
+        <div id="bs-bump-row" style="margin-top:10px">
+          <button class="btn-secondary" id="bs-bump-btn" onclick="doBumpListing()" style="width:100%"><i class="fa fa-rocket"></i> Bump to Top (free, once/24h)</button>
+        </div>
+      </div>
+      <!-- Meetup Confirmation (non-owner side) -->
+      <div class="meetup-card" id="bs-meetup-card" style="display:none">
+        <div class="meetup-card-title"><i class="fa fa-handshake"></i> Confirm Your Meetup</div>
+        <div class="meetup-status-row">
+          <div class="meetup-status-item"><i class="fa fa-circle-check" id="meetup-buyer-icon"></i> You</div>
+          <div class="meetup-status-item"><i class="fa fa-circle" id="meetup-seller-icon"></i> Seller</div>
+        </div>
+        <button class="btn-confirm-meetup" id="btn-confirm-meetup" onclick="doConfirmMeetup()"><i class="fa fa-check"></i> I Met the Seller</button>
+        <button class="btn-rate-now" id="btn-rate-now" onclick="openRatingModal()" style="display:none"><i class="fa fa-star"></i> Rate This Seller</button>
+      </div>
+      <!-- Similar Listings -->
+      <div class="similar-section">
+        <div class="bs-section-title">Similar Listings</div>
+        <div class="similar-scroll" id="similar-scroll"></div>
       </div>
     </div>
   </div>
@@ -774,8 +888,59 @@
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter your <strong>.ac.ke</strong> or university email to get a verified badge.</p>
       <div class="field-group"><label>University Email</label><div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="verify-email" placeholder="yourname@university.ac.ke"/></div></div>
       <button class="btn-verify full" onclick="submitStudentVerify()"><i class="fa fa-check-circle"></i> Send Verification Email</button>
+
+      <div class="divider"><span>or upload student ID</span></div>
+      <div id="id-status-display"></div>
+      <div class="id-upload-zone" onclick="document.getElementById('student-id-input').click()">
+        <i class="fa fa-id-card"></i>
+        <div style="font-size:13px;font-weight:700">Upload Student ID Photo</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">For manual review — verified within 24h</div>
+        <img id="student-id-preview" class="id-upload-preview" style="display:none" alt="preview"/>
+        <input type="file" id="student-id-input" accept="image/*" style="display:none" onchange="previewStudentId(event)"/>
+      </div>
+      <button class="btn-verify full" id="submit-id-btn" onclick="submitStudentIdUpload()" style="display:none"><i class="fa fa-paper-plane"></i> Submit for Review</button>
     </div>
   </div>
+</div>
+
+<!-- RATING MODAL -->
+<div class="modal-backdrop" id="rating-overlay" onclick="if(event.target===this)closeRatingModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-star" style="color:#fbbf24"></i> Rate This Seller</h3><button class="modal-close" onclick="closeRatingModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <p style="font-size:13px;color:var(--muted);text-align:center">How was your experience with <strong id="rating-seller-name">this seller</strong>?</p>
+      <div class="star-input" id="star-input">
+        <i class="fa fa-star" data-val="1" onclick="setRatingStars(1)"></i>
+        <i class="fa fa-star" data-val="2" onclick="setRatingStars(2)"></i>
+        <i class="fa fa-star" data-val="3" onclick="setRatingStars(3)"></i>
+        <i class="fa fa-star" data-val="4" onclick="setRatingStars(4)"></i>
+        <i class="fa fa-star" data-val="5" onclick="setRatingStars(5)"></i>
+      </div>
+      <div class="field-group"><label>Comment (optional)</label><div class="input-wrap"><i class="fa fa-comment" style="top:14px;transform:none"></i><textarea id="rating-comment" rows="3" placeholder="How did the meetup go?"></textarea></div></div>
+      <button class="btn-primary full" onclick="submitRatingNow()"><i class="fa fa-paper-plane"></i> Submit Rating</button>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK CONFIRM MODAL -->
+<div class="modal-backdrop" id="block-overlay" onclick="if(event.target===this)closeBlockModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-ban" style="color:var(--red)"></i> Block User</h3><button class="modal-close" onclick="closeBlockModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <p class="block-confirm-text">Blocking <strong id="block-user-name">this user</strong> will hide their messages and prevent them from contacting you. You can unblock them later in Settings.</p>
+      <button class="btn-danger full" onclick="doBlockUser()"><i class="fa fa-ban"></i> Block User</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div class="pwa-install-banner" id="pwa-install-banner">
+  <div class="pwa-install-icon">🎓</div>
+  <div class="pwa-install-text"><strong>Install CampusMart</strong><span>Get the app for faster access &amp; notifications</span></div>
+  <button class="pwa-install-btn" onclick="installPWA()">Install</button>
+  <button class="pwa-install-close" onclick="dismissPwaBanner()"><i class="fa fa-times"></i></button>
 </div>
 
 <!-- STORY VIEWER -->

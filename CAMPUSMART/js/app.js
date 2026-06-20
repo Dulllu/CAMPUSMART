@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://thecampusmarketplacebackend.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://thecampusmarketplacebackend.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -1140,4 +1140,488 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Login form enter key
   $('login-pass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+});
+
+/* ═══════════════════════════════════════════════════════
+   v6 — Trust, Discovery, Seller Tools, Retention features
+   ═══════════════════════════════════════════════════════ */
+
+let deferredPWAInstall = null;
+let currentMeetup      = null;
+
+/* ── Star Rating Display Helper ─────────────────────── */
+function starRatingHTML(avg, count, size='') {
+  if (!count) return '';
+  const full = Math.round(avg);
+  let stars = '';
+  for (let i = 1; i <= 5; i++) stars += `<i class="fa fa-star${i>full?' empty':''}"></i>`;
+  return `<div class="star-rating">${stars}<span class="star-rating-text">${avg.toFixed(1)} (${count})</span></div>`;
+}
+
+/* ── Patch showPageAnimated to handle new pages ─────── */
+const _baseShowPageAnimated = showPageAnimated;
+function showPageAnimated(page) {
+  const allViews = ['listings','offers','stores','recent','profile','watchlist','notifications','messages',
+    'settings','help','about','legal','saved-searches','leaderboard','dashboard','drafts','referral'];
+  allViews.forEach(v => { const el = $(`view-${v}`); if (el) el.style.display = 'none'; });
+  const target = $(`view-${page}`);
+  if (target) { target.style.display=''; target.classList.remove('view-transition'); void target.offsetWidth; target.classList.add('view-transition'); }
+
+  if (page==='profile')        loadProfilePage();
+  if (page==='offers')         loadOffers();
+  if (page==='stores')         loadStores();
+  if (page==='recent')         loadRecentlyViewed();
+  if (page==='watchlist')      loadWatchlist();
+  if (page==='notifications')  renderNotifications();
+  if (page==='messages')       renderConversationList();
+  if (page==='saved-searches') loadSavedSearches();
+  if (page==='leaderboard')    loadLeaderboard();
+  if (page==='dashboard')      loadSellerDashboard();
+  if (page==='drafts')         loadDrafts();
+  if (page==='referral')       loadReferralInfo();
+  closeSidebar();
+}
+window.showPage = showPageAnimated;
+
+/* ── Patch loadProfilePage to show rating/ID badges ──── */
+const _baseLoadProfilePage = loadProfilePage;
+function loadProfilePage() {
+  _baseLoadProfilePage();
+  if (!currentUser) return;
+  const idBadge = $('ph-id-verified-badge');
+  if (idBadge) idBadge.style.display = currentUser.isStudentVerified ? '' : 'none';
+  const ratingRow = $('ph-rating-row');
+  if (ratingRow) {
+    if (currentUser.ratingCount > 0) {
+      ratingRow.style.display = '';
+      ratingRow.innerHTML = starRatingHTML(currentUser.ratingAvg || 0, currentUser.ratingCount || 0);
+    } else ratingRow.style.display = 'none';
+  }
+}
+
+/* ── Patch openBottomSheet to wire meetup/rating/block/bump/similar ─── */
+const _baseOpenBottomSheet = openBottomSheet;
+function openBottomSheet(listing) {
+  _baseOpenBottomSheet(listing);
+  if (!listing) return;
+  const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
+  const seller = typeof listing.seller === 'object' ? listing.seller : {};
+
+  // Seller rating in seller card
+  const sellerRatingEl = $('bs-seller-rating');
+  if (sellerRatingEl) {
+    if (seller.ratingCount > 0) { sellerRatingEl.style.display=''; sellerRatingEl.innerHTML = starRatingHTML(seller.ratingAvg||0, seller.ratingCount||0); }
+    else sellerRatingEl.style.display = 'none';
+  }
+
+  // Block button — only show for non-owner
+  const blockBtn = $('bs-block-btn');
+  if (blockBtn) blockBtn.style.display = (!isMine && currentUser) ? '' : 'none';
+
+  // Bump row — owner only (nested inside owner-controls already, but toggle visibility explicitly)
+  const bumpRow = $('bs-bump-row');
+  if (bumpRow) bumpRow.style.display = isMine ? '' : 'none';
+
+  // Meetup card — non-owner only
+  const meetupCard = $('bs-meetup-card');
+  if (meetupCard) {
+    if (!isMine && currentUser) { meetupCard.style.display=''; loadMeetupStatus(listing, seller); }
+    else meetupCard.style.display = 'none';
+  }
+
+  // Similar listings
+  loadSimilarListings(listing._id);
+}
+
+/* ── Similar Listings ─────────────────────────────────── */
+async function loadSimilarListings(listingId) {
+  const scroll = $('similar-scroll'); if (!scroll) return;
+  scroll.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px"><i class="fa fa-spinner fa-spin"></i></div>';
+  try {
+    const r = await fetch(`${API}/listings/${listingId}/similar`, { headers: authHdr() });
+    const d = await r.json();
+    const similar = d.listings || [];
+    if (!similar.length) { scroll.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px 0">No similar listings yet.</p>'; return; }
+    scroll.innerHTML = similar.map(l => {
+      const img = l.images?.[0];
+      const src = img ? (img.startsWith('/')?SERVER:'')+img : catImage(l.category);
+      return `<div class="similar-card" onclick="openDetail('${esc(l._id)}')">
+        <img src="${esc(src)}" alt="${esc(l.title)}" loading="lazy"/>
+        <div class="similar-card-body"><div class="similar-card-title">${esc(l.title)}</div><div class="similar-card-price">${fmtPrice(l.price)}</div></div>
+      </div>`;
+    }).join('');
+  } catch { scroll.innerHTML = ''; }
+}
+
+/* ── Meetup Confirmation ───────────────────────────────── */
+async function loadMeetupStatus(listing, seller) {
+  if (!currentUser) return;
+  try {
+    const r = await fetch(`${API}/meetups/status?listingId=${listing._id}&otherUserId=${seller._id||seller}`, { headers: authHdr() });
+    const d = await r.json();
+    currentMeetup = d.meetup;
+    renderMeetupCard();
+  } catch { currentMeetup = null; }
+}
+
+function renderMeetupCard() {
+  const buyerIcon  = $('meetup-buyer-icon');
+  const sellerIcon = $('meetup-seller-icon');
+  const confirmBtn = $('btn-confirm-meetup');
+  const rateBtn    = $('btn-rate-now');
+  if (!buyerIcon) return;
+
+  const buyerConfirmed  = currentMeetup?.buyerConfirmed  || false;
+  const sellerConfirmed = currentMeetup?.sellerConfirmed || false;
+
+  buyerIcon.className  = `fa fa-circle${buyerConfirmed?'-check confirmed':' pending'}`;
+  sellerIcon.className = `fa fa-circle${sellerConfirmed?'-check confirmed':' pending'}`;
+
+  if (buyerConfirmed) {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fa fa-check"></i> You Confirmed';
+  } else {
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = '<i class="fa fa-check"></i> I Met the Seller';
+  }
+
+  rateBtn.style.display = (buyerConfirmed && sellerConfirmed) ? '' : 'none';
+}
+
+async function doConfirmMeetup() {
+  if (!currentDetail || !currentUser) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+  try {
+    const r = await fetch(`${API}/meetups/confirm`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: currentDetail._id, otherUserId: seller._id }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not confirm.', 'error');
+    currentMeetup = d.meetup;
+    renderMeetupCard();
+    showToast(d.message, 'success');
+  } catch { showToast('Could not confirm meetup.', 'error'); }
+}
+
+/* ── Rating Modal ──────────────────────────────────────── */
+let selectedStars = 0;
+function openRatingModal() {
+  if (!currentDetail) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : {};
+  $('rating-seller-name').textContent = seller.name || 'this seller';
+  selectedStars = 0;
+  document.querySelectorAll('#star-input i').forEach(i => i.classList.remove('active'));
+  $('rating-comment').value = '';
+  $('rating-overlay').classList.add('open');
+}
+function closeRatingModal() { $('rating-overlay')?.classList.remove('open'); }
+function setRatingStars(val) {
+  selectedStars = val;
+  document.querySelectorAll('#star-input i').forEach(i => i.classList.toggle('active', parseInt(i.dataset.val) <= val));
+}
+async function submitRatingNow() {
+  if (!selectedStars) return showToast('Select a star rating.', 'error');
+  if (!currentDetail) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+  try {
+    const r = await fetch(`${API}/ratings`, { method:'POST', headers: authHdr(), body: JSON.stringify({
+      listingId: currentDetail._id, ratee: seller._id, stars: selectedStars, comment: $('rating-comment')?.value.trim() || ''
+    })});
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not submit rating.', 'error');
+    showToast('Thanks for rating! ⭐', 'success');
+    closeRatingModal();
+  } catch { showToast('Could not submit rating.', 'error'); }
+}
+
+/* ── Block User ───────────────────────────────────────── */
+function confirmBlockUser() {
+  if (!currentDetail) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : {};
+  $('block-user-name').textContent = seller.name || 'this user';
+  $('block-overlay').classList.add('open');
+}
+function closeBlockModal() { $('block-overlay')?.classList.remove('open'); }
+async function doBlockUser() {
+  if (!currentDetail) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+  try {
+    const r = await fetch(`${API}/meetups/block`, { method:'POST', headers: authHdr(), body: JSON.stringify({ userId: seller._id }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not block user.', 'error');
+    showToast('User blocked.', 'success');
+    closeBlockModal();
+    closeBottomSheet();
+  } catch { showToast('Could not block user.', 'error'); }
+}
+
+/* ── Bump Listing ─────────────────────────────────────── */
+async function doBumpListing() {
+  if (!currentDetail) return;
+  const btn = $('bs-bump-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Bumping…';
+  try {
+    const r = await fetch(`${API}/listings/${currentDetail._id}/bump`, { method:'POST', headers: authHdr() });
+    const d = await r.json();
+    if (!r.ok) { showToast(d.error || 'Could not bump.', 'error'); return; }
+    showToast(d.message, 'success');
+    await loadListings();
+  } catch { showToast('Could not bump listing.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-rocket"></i> Bump to Top (free, once/24h)'; }
+}
+
+/* ── Saved Searches ───────────────────────────────────── */
+async function createSavedSearch() {
+  const query = $('ss-query')?.value.trim();
+  const category = $('ss-category')?.value;
+  const maxPrice = $('ss-max-price')?.value;
+  if (!query && (!category || category === 'all')) return showToast('Enter a keyword or pick a category.', 'error');
+  try {
+    const r = await fetch(`${API}/auth/saved-searches`, { method:'POST', headers: authHdr(), body: JSON.stringify({ query, category, maxPrice }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not save search.', 'error');
+    showToast(d.message, 'success');
+    $('ss-query').value=''; $('ss-max-price').value=''; $('ss-category').value='all';
+    loadSavedSearches();
+  } catch { showToast('Could not save search.', 'error'); }
+}
+
+async function loadSavedSearches() {
+  const list = $('saved-searches-list'), empty = $('saved-searches-empty');
+  if (!list) return;
+  try {
+    const r = await fetch(`${API}/auth/saved-searches`, { headers: authHdr() });
+    const d = await r.json();
+    const searches = d.savedSearches || [];
+    if (!searches.length) { list.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display = 'none';
+    list.innerHTML = searches.map(s => `
+      <div class="saved-search-card">
+        <div class="saved-search-icon"><i class="fa fa-bell"></i></div>
+        <div class="saved-search-info">
+          <div class="saved-search-query">${esc(s.query || (s.category!=='all'?s.category:'Any item'))}</div>
+          <div class="saved-search-meta">${s.category!=='all'?catEmoji(s.category)+' '+esc(s.category)+' · ':''}${s.maxPrice?'Under '+fmtPrice(s.maxPrice):'Any price'}</div>
+        </div>
+        <button class="saved-search-del" onclick="deleteSavedSearch('${esc(s._id)}')"><i class="fa fa-trash"></i></button>
+      </div>`).join('');
+  } catch { list.innerHTML=''; }
+}
+
+async function deleteSavedSearch(id) {
+  try {
+    const r = await fetch(`${API}/auth/saved-searches/${id}`, { method:'DELETE', headers: authHdr() });
+    if (!r.ok) return showToast('Could not delete.', 'error');
+    showToast('Removed.', 'info');
+    loadSavedSearches();
+  } catch { showToast('Could not delete.', 'error'); }
+}
+
+function quickSaveSearchFromListing() {
+  if (!currentDetail) return;
+  showPageAnimated('saved-searches');
+  closeBottomSheet();
+  setTimeout(() => {
+    $('ss-category') && ($('ss-category').value = currentDetail.category);
+    showToast('Set your keyword and tap "Create Alert" 🔔', 'info');
+  }, 300);
+}
+
+/* ── Leaderboard ──────────────────────────────────────── */
+async function loadLeaderboard() {
+  const list = $('leaderboard-list'), empty = $('leaderboard-empty');
+  if (!list) return;
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i></div>';
+  try {
+    const r = await fetch(`${API}/auth/leaderboard`);
+    const d = await r.json();
+    const top = d.topSellers || [];
+    $('leaderboard-period') && ($('leaderboard-period').textContent = d.period || 'Last 30 days');
+    if (!top.length) { list.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display = 'none';
+    const rankClass = i => i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    list.innerHTML = top.map((s,i) => `
+      <div class="leaderboard-item${i===0?' top1':''}">
+        <div class="leaderboard-rank ${rankClass(i)}">${i+1}</div>
+        <div class="leaderboard-avatar">${(s.user.name||'S')[0].toUpperCase()}</div>
+        <div class="leaderboard-info">
+          <div class="leaderboard-name">${esc(s.user.name||'Seller')} ${s.user.isStudentVerified?'<i class="fa fa-check-circle" style="color:var(--blue);font-size:11px"></i>':''}</div>
+          <div class="leaderboard-meta">${s.user.campus?esc(s.user.campus)+' · ':''}${s.totalViews} total views</div>
+        </div>
+        <div class="leaderboard-listings"><strong>${s.listingCount}</strong><span>listings</span></div>
+      </div>`).join('');
+  } catch { list.innerHTML=''; }
+}
+
+/* ── Seller Dashboard ─────────────────────────────────── */
+async function loadSellerDashboard() {
+  const summaryEl = $('dash-summary'), listEl = $('dash-listings-list'), empty = $('dash-empty');
+  if (!summaryEl) return;
+  try {
+    const r = await fetch(`${API}/listings/my/dashboard`, { headers: authHdr() });
+    const d = await r.json();
+    const s = d.summary || {};
+    summaryEl.innerHTML = `
+      <div class="dash-stat-card"><div class="dash-stat-num">${s.activeListings||0}</div><div class="dash-stat-lbl">Active</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${s.totalViews||0}</div><div class="dash-stat-lbl">Total Views</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${s.totalInterested||0}</div><div class="dash-stat-lbl">Interested</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${s.soldListings||0}</div><div class="dash-stat-lbl">Sold</div></div>`;
+    const listings = d.listings || [];
+    if (!listings.length) { listEl.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display = 'none';
+    listEl.innerHTML = listings.map(l => `
+      <div class="dash-listing-row">
+        <div class="dash-listing-title">${esc(l.title)}</div>
+        <div class="dash-listing-stats">
+          <div class="dash-mini-stat"><strong>${l.views||0}</strong>views</div>
+          <div class="dash-mini-stat"><strong>${l.interestedCount||0}</strong>interest</div>
+        </div>
+      </div>`).join('');
+  } catch { listEl.innerHTML=''; }
+}
+
+/* ── Drafts ───────────────────────────────────────────── */
+async function loadDrafts() {
+  const list = $('drafts-list'), empty = $('drafts-empty');
+  if (!list) return;
+  try {
+    const r = await fetch(`${API}/listings/my/drafts`, { headers: authHdr() });
+    const d = await r.json();
+    const drafts = d.drafts || [];
+    if (!drafts.length) { list.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display = 'none';
+    list.innerHTML = drafts.map(dr => `
+      <div class="card-box" style="padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="draft-badge">DRAFT</span>
+          <strong style="font-size:13px">${esc(dr.title||'Untitled')}</strong>
+        </div>
+        <div style="font-size:12px;color:var(--muted)">${dr.price?fmtPrice(dr.price):'No price set'} · ${catEmoji(dr.category)} ${esc(dr.category)}</div>
+        <div class="draft-actions">
+          <button class="btn-publish-draft" onclick="publishDraft('${esc(dr._id)}')"><i class="fa fa-upload"></i> Publish</button>
+          <button class="btn-edit-draft" onclick="editDraft('${esc(dr._id)}')"><i class="fa fa-pen"></i> Edit</button>
+        </div>
+      </div>`).join('');
+  } catch { list.innerHTML=''; }
+}
+
+async function publishDraft(id) {
+  try {
+    const r = await fetch(`${API}/listings/${id}`, { method:'PUT', headers: authHdr(), body: JSON.stringify({ isDraft: false }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not publish.', 'error');
+    showToast('Draft published! 🎉', 'success');
+    loadDrafts(); loadListings();
+  } catch { showToast('Could not publish draft.', 'error'); }
+}
+
+function editDraft(id) {
+  // Pull from drafts list already fetched, or fetch single listing
+  fetch(`${API}/listings/${id}`, { headers: authHdr() }).then(r=>r.json()).then(d => {
+    if (!d.listing) return showToast('Could not load draft.', 'error');
+    editingListing = d.listing;
+    $('modal-title-text').textContent = 'Edit Draft';
+    $('post-btn').innerHTML = '<i class="fa fa-save"></i> Save Draft';
+    $('item-title').value = d.listing.title||''; $('item-desc').value = d.listing.desc||'';
+    $('item-price').value = d.listing.price||''; $('item-contact').value = d.listing.contact||currentUser?.phone||'';
+    $('item-stock').value = d.listing.stock||1; $('item-category').value = d.listing.category||'other';
+    $('item-condition').value = d.listing.condition||'Good'; $('item-location').value = d.listing.location||'';
+    $('item-is-promo') && ($('item-is-promo').checked = false);
+    $('modal-overlay').classList.add('open'); $('sell-modal').classList.add('open');
+  }).catch(()=>showToast('Could not load draft.', 'error'));
+}
+
+/* ── Referral System ──────────────────────────────────── */
+async function loadReferralInfo() {
+  try {
+    const r = await fetch(`${API}/auth/referral`, { headers: authHdr() });
+    const d = await r.json();
+    $('referral-code-box') && ($('referral-code-box').textContent = d.referralCode || '------');
+    $('referral-credits')  && ($('referral-credits').textContent  = d.referralCredits || 0);
+    $('referral-count')    && ($('referral-count').textContent    = d.referredCount || 0);
+    window._referralShareLink = d.shareLink;
+  } catch {}
+}
+function shareReferral() {
+  const link = window._referralShareLink || window.location.href;
+  const text = `Join me on CampusMart — the campus marketplace! Use my code when you sign up: ${$('referral-code-box')?.textContent}\n${link}`;
+  if (navigator.share) navigator.share({ title: 'Join CampusMart', text, url: link });
+  else { navigator.clipboard?.writeText(text); showToast('Referral link copied! 📋', 'success'); }
+}
+async function applyReferral() {
+  const code = $('referral-apply-input')?.value.trim();
+  if (!code) return showToast('Enter a referral code.', 'error');
+  try {
+    const r = await fetch(`${API}/auth/referral/apply`, { method:'POST', headers: authHdr(), body: JSON.stringify({ code }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Invalid code.', 'error');
+    showToast(d.message, 'success');
+    $('referral-apply-input').value = '';
+  } catch { showToast('Could not apply code.', 'error'); }
+}
+
+/* ── Student ID Upload ────────────────────────────────── */
+let studentIdFile = null;
+function previewStudentId(e) {
+  const file = e.target.files?.[0]; if (!file) return;
+  studentIdFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => { $('student-id-preview').src = ev.target.result; $('student-id-preview').style.display=''; $('submit-id-btn').style.display=''; };
+  reader.readAsDataURL(file);
+}
+async function submitStudentIdUpload() {
+  if (!studentIdFile) return showToast('Choose a photo first.', 'error');
+  const btn = $('submit-id-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading…';
+  const fd = new FormData(); fd.append('idImage', studentIdFile);
+  try {
+    const r = await fetch(`${API}/auth/verify-student-id`, { method:'POST', headers: { Authorization:`Bearer ${localStorage.getItem('cm_token')}` }, body: fd });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Upload failed.', 'error');
+    showToast(d.message, 'success');
+    currentUser = d.user; localStorage.setItem('cm_user', JSON.stringify(d.user));
+    closeVerifyModal();
+    renderIdStatus();
+  } catch { showToast('Upload failed.', 'error'); }
+  finally { btn.disabled=false; btn.innerHTML='<i class="fa fa-paper-plane"></i> Submit for Review'; }
+}
+function renderIdStatus() {
+  const el = $('id-status-display'); if (!el || !currentUser) return;
+  const status = currentUser.studentIdStatus;
+  if (status === 'pending') el.innerHTML = '<div class="id-status-banner pending"><i class="fa fa-clock"></i> Your student ID is under review.</div>';
+  else if (status === 'approved') el.innerHTML = '<div class="id-status-banner approved"><i class="fa fa-check-circle"></i> Your student ID is verified!</div>';
+  else if (status === 'rejected') el.innerHTML = '<div class="id-status-banner rejected"><i class="fa fa-times-circle"></i> ID rejected. Try uploading a clearer photo.</div>';
+  else el.innerHTML = '';
+}
+
+/* ── PWA Install ──────────────────────────────────────── */
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPWAInstall = e;
+  if (!localStorage.getItem('cm_pwa_dismissed')) {
+    setTimeout(() => $('pwa-install-banner')?.classList.add('visible'), 3000);
+  }
+});
+function installPWA() {
+  if (!deferredPWAInstall) return dismissPwaBanner();
+  deferredPWAInstall.prompt();
+  deferredPWAInstall.userChoice.then(() => { dismissPwaBanner(); });
+}
+function dismissPwaBanner() {
+  $('pwa-install-banner')?.classList.remove('visible');
+  localStorage.setItem('cm_pwa_dismissed', '1');
+}
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+
+/* ── Hook ID status render into profile load ──────────── */
+const _baseUpdateUserUI = updateUserUI;
+function updateUserUI() {
+  _baseUpdateUserUI();
+  renderIdStatus();
+}
+
+/* ── Init on DOM ready ─────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  registerServiceWorker();
 });

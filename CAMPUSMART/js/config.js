@@ -12,7 +12,7 @@ const CAMPUSMART_CONFIG = (function() {
   //     e.g. 'https://campusmart-backend.onrender.com'
   //     Leave empty ('') and it will try to auto-detect
   // ─────────────────────────────────────────────────────
-  const PRODUCTION_BACKEND_URL = 'https://thecampusmarketplacebackend.onrender.com';   // ← PASTE YOUR RENDER BACKEND URL HERE
+  const PRODUCTION_BACKEND_URL = '';   // ← PASTE YOUR RENDER BACKEND URL HERE
 
   let server;
   if (isLocal) {

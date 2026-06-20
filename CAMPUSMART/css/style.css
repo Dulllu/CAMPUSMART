@@ -1127,3 +1127,142 @@ textarea{resize:vertical;}
   .listings-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
   .hero-section{padding:40px 32px 36px;}
 }
+
+/* ════════════════════════════════════════
+   v6 — TRUST, RATINGS, DISCOVERY, SELLER TOOLS
+════════════════════════════════════════ */
+
+/* ── Star Rating Display ── */
+.star-rating{display:flex;align-items:center;gap:3px;}
+.star-rating i{color:#fbbf24;font-size:12px;}
+.star-rating i.empty{color:var(--border2);}
+.star-rating-text{font-size:12px;font-weight:700;color:var(--text2);margin-left:4px;}
+.seller-rating-row{display:flex;align-items:center;gap:6px;margin-top:3px;}
+
+/* ── Star Rating Input (interactive) ── */
+.star-input{display:flex;gap:6px;justify-content:center;margin:14px 0;}
+.star-input i{font-size:32px;color:var(--border2);cursor:pointer;transition:var(--transition);}
+.star-input i.active{color:#fbbf24;}
+.star-input i:hover{transform:scale(1.15);}
+
+/* ── Verified ID Badge ── */
+.id-verified-badge{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:4px;}
+.id-pending-badge{background:#fff8e1;color:#7a5800;font-size:10px;font-weight:800;padding:3px 9px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:4px;border:1px solid #fde68a;}
+
+/* ── Meetup Confirmation ── */
+.meetup-card{background:var(--brand-light);border:1.5px solid var(--brand);border-radius:var(--radius-md);padding:14px;margin:12px 0;}
+.meetup-card-title{font-size:13px;font-weight:800;color:var(--brand-dark);display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.meetup-status-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.meetup-status-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);}
+.meetup-status-item i.confirmed{color:var(--brand);}
+.meetup-status-item i.pending{color:var(--muted);}
+.btn-confirm-meetup{width:100%;padding:10px;margin-top:10px;border:none;border-radius:var(--radius-sm);background:var(--brand);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:var(--transition);}
+.btn-confirm-meetup:hover{background:var(--brand-dark);}
+.btn-confirm-meetup:disabled{opacity:.6;cursor:not-allowed;}
+.btn-rate-now{width:100%;padding:10px;margin-top:8px;border:2px solid var(--amber);border-radius:var(--radius-sm);background:none;color:var(--amber-dark);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;}
+
+/* ── Block User ── */
+.bs-icon-btn.block:hover{border-color:var(--red);color:var(--red);}
+
+/* ── Similar Listings ── */
+.similar-section{margin-top:18px;}
+.similar-section .bs-section-title{margin-bottom:10px;}
+.similar-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.similar-scroll::-webkit-scrollbar{display:none;}
+.similar-card{flex-shrink:0;width:130px;background:var(--bg);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:var(--transition);}
+.similar-card:hover{border-color:var(--brand);transform:translateY(-2px);}
+.similar-card img{width:100%;height:90px;object-fit:cover;}
+.similar-card-body{padding:8px;}
+.similar-card-title{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.similar-card-price{font-size:12px;font-weight:800;color:var(--brand-dark);margin-top:2px;}
+
+/* ── Saved Search ── */
+.saved-search-card{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;}
+.saved-search-icon{width:36px;height:36px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.saved-search-info{flex:1;}
+.saved-search-query{font-size:13px;font-weight:700;}
+.saved-search-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.saved-search-del{width:30px;height:30px;border-radius:50%;border:none;background:var(--bg);color:var(--muted);font-size:12px;flex-shrink:0;}
+.saved-search-del:hover{background:#fee2e2;color:var(--red);}
+.btn-save-search{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border:1.5px solid var(--brand);border-radius:var(--radius-full);background:var(--brand-light);color:var(--brand-dark);font-size:12px;font-weight:700;width:100%;margin-top:8px;transition:var(--transition);}
+.btn-save-search:hover{background:var(--brand);color:#fff;}
+
+/* ── Price Drop / Watchlist Alert chip ── */
+.price-drop-chip{background:#fee2e2;color:var(--red);font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:3px;}
+
+/* ── Sort: Near Me ── */
+.lh-select.distance-select{font-weight:700;}
+
+/* ── Seller Dashboard ── */
+.dash-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.dash-stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;text-align:center;}
+.dash-stat-num{font-family:var(--font-display);font-size:24px;font-weight:900;color:var(--brand-dark);}
+.dash-stat-lbl{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px;}
+.dash-listing-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;}
+.dash-listing-title{font-size:13px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dash-listing-stats{display:flex;gap:12px;flex-shrink:0;}
+.dash-mini-stat{text-align:center;font-size:11px;color:var(--muted);}
+.dash-mini-stat strong{display:block;font-size:14px;color:var(--text);font-weight:800;}
+.dash-bump-btn{padding:6px 12px;border:1.5px solid var(--brand);border-radius:var(--radius-full);background:none;color:var(--brand-dark);font-size:11px;font-weight:700;flex-shrink:0;}
+.dash-bump-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── Draft Listings ── */
+.draft-badge{background:#e0e7ff;color:#4338ca;font-size:9px;font-weight:800;padding:2px 8px;border-radius:var(--radius-full);}
+[data-theme=dark] .draft-badge{background:rgba(99,102,241,.15);color:#a5b4fc;}
+.draft-actions{display:flex;gap:6px;margin-top:8px;}
+.btn-publish-draft{flex:1;padding:8px;border:none;border-radius:var(--radius-sm);background:var(--brand);color:#fff;font-size:12px;font-weight:700;}
+.btn-edit-draft{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:none;color:var(--text2);font-size:12px;font-weight:700;}
+
+/* ── Referral ── */
+.referral-card{background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:var(--radius-lg);padding:24px;color:#fff;text-align:center;}
+.referral-card h3{font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:6px;}
+.referral-card p{font-size:13px;opacity:.9;margin-bottom:16px;}
+.referral-code-box{background:rgba(255,255,255,.15);border:1.5px dashed rgba(255,255,255,.5);border-radius:var(--radius-md);padding:14px;font-family:var(--font-display);font-size:24px;font-weight:900;letter-spacing:4px;margin-bottom:14px;}
+.referral-stats-row{display:flex;gap:0;background:rgba(255,255,255,.12);border-radius:var(--radius-md);padding:12px;margin-bottom:14px;}
+.referral-stat{flex:1;text-align:center;}
+.referral-stat strong{display:block;font-size:20px;font-weight:900;}
+.referral-stat span{font-size:10px;opacity:.8;}
+.btn-share-referral{width:100%;padding:12px;background:#fff;color:#7c3aed;border:none;border-radius:var(--radius-md);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;}
+.referral-input-row{display:flex;gap:8px;margin-top:14px;}
+.referral-input-row input{flex:1;padding:10px 14px;border:none;border-radius:var(--radius-md);font-size:13px;}
+.referral-input-row button{padding:10px 16px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);border-radius:var(--radius-md);color:#fff;font-weight:700;font-size:12px;}
+
+/* ── Leaderboard ── */
+.leaderboard-list{display:flex;flex-direction:column;gap:8px;}
+.leaderboard-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);position:relative;}
+.leaderboard-item.top1{border-color:#fbbf24;background:linear-gradient(135deg,#fff8e1,var(--card) 60%);}
+[data-theme=dark] .leaderboard-item.top1{background:linear-gradient(135deg,#2a2200,var(--card) 60%);}
+.leaderboard-rank{width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;font-size:14px;color:var(--muted);flex-shrink:0;}
+.leaderboard-rank.gold{background:#fbbf24;color:#78350f;}
+.leaderboard-rank.silver{background:#cbd5e1;color:#334155;}
+.leaderboard-rank.bronze{background:#fb923c;color:#7c2d12;}
+.leaderboard-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;font-family:var(--font-display);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.leaderboard-info{flex:1;min-width:0;}
+.leaderboard-name{font-size:13px;font-weight:700;}
+.leaderboard-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.leaderboard-listings{text-align:right;flex-shrink:0;}
+.leaderboard-listings strong{font-family:var(--font-display);font-size:18px;font-weight:900;color:var(--brand-dark);display:block;}
+.leaderboard-listings span{font-size:10px;color:var(--muted);}
+
+/* ── PWA Install Prompt ── */
+.pwa-install-banner{position:fixed;bottom:calc(var(--bnav-h) + 12px);left:16px;right:16px;background:var(--card);border:1.5px solid var(--brand);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-lg);z-index:600;display:none;align-items:center;gap:12px;animation:slideInUp .3s ease;}
+.pwa-install-banner.visible{display:flex;}
+.pwa-install-icon{font-size:32px;flex-shrink:0;}
+.pwa-install-text{flex:1;}
+.pwa-install-text strong{font-size:13px;display:block;}
+.pwa-install-text span{font-size:11px;color:var(--muted);}
+.pwa-install-btn{padding:8px 16px;background:var(--brand);color:#fff;border:none;border-radius:var(--radius-full);font-size:12px;font-weight:700;flex-shrink:0;}
+.pwa-install-close{background:none;border:none;color:var(--muted);font-size:14px;padding:4px;flex-shrink:0;}
+
+/* ── Student ID Upload ── */
+.id-upload-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;transition:var(--transition);margin:14px 0;}
+.id-upload-zone:hover{border-color:var(--blue);background:rgba(59,130,246,.05);}
+.id-upload-zone i{font-size:28px;color:var(--blue);margin-bottom:8px;}
+.id-upload-preview{max-width:100%;border-radius:var(--radius-md);margin-top:10px;}
+.id-status-banner{padding:10px 14px;border-radius:var(--radius-md);font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;margin:10px 0;}
+.id-status-banner.pending{background:#fff8e1;color:#7a5800;border:1px solid #fde68a;}
+.id-status-banner.approved{background:var(--brand-light);color:var(--brand-dark);border:1px solid var(--brand);}
+.id-status-banner.rejected{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+
+/* ── Block confirmation modal ── */
+.block-confirm-text{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
