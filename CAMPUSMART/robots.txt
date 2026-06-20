@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://campusmart-nron.onrender.com/sitemap.xml
