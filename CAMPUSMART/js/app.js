@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -298,7 +298,7 @@ function enterMarket() {
 }
 
 /* ── User UI ─────────────────────────────────────────── */
-function updateUserUI() {
+function updateUserUIBase() {
   if(!currentUser) return;
   const init=(currentUser.name||'S')[0].toUpperCase();
   ['user-avatar','sidebar-avatar','profile-avatar-big'].forEach(id=>{
@@ -330,7 +330,7 @@ function updateUserUI() {
 }
 
 /* ── Page Navigation ─────────────────────────────────── */
-function showPageAnimated(page) {
+function showPageAnimatedBase(page) {
   const views=['listings','offers','stores','recent','profile','watchlist','notifications','messages','settings','help','about','legal'];
   views.forEach(v=>{const el=$(`view-${v}`);if(el)el.style.display='none';});
   const target=$(`view-${page}`);
@@ -570,7 +570,7 @@ function openDetail(id) {
   openBottomSheet(listing);
 }
 
-function openBottomSheet(listing){
+function openBottomSheetBase(listing){
   if(!listing) return;
   currentDetail=listing; bsGalleryIndex=0;
   const isMine=currentUser&&(listing.seller?._id||listing.seller)===currentUser._id;
@@ -680,7 +680,7 @@ function loadWatchlist(){const grid=$('watchlist-grid'),empty=$('watchlist-empty
 function loadRecentlyViewed(){const grid=$('recent-grid'),empty=$('recent-empty');if(!grid)return;const ids=currentUser?.recentlyViewed||[];const items=ids.map(id=>allListings.find(l=>l._id===(id._id||id))).filter(Boolean);grid.innerHTML=items.map(l=>cardHTML(l)).join('');empty.style.display=items.length?'none':'';initLazyImages();}
 
 /* ── Profile ─────────────────────────────────────────── */
-function loadProfilePage(){
+function loadProfilePageBase(){
   updateUserUI();
   const myListings=allListings.filter(l=>(l.seller?._id||l.seller)===currentUser?._id);
   const g=$('my-listings-grid');if(g){g.innerHTML=myListings.map(l=>cardHTML(l)).join('');initLazyImages();}
@@ -1159,7 +1159,6 @@ function starRatingHTML(avg, count, size='') {
 }
 
 /* ── Patch showPageAnimated to handle new pages ─────── */
-const _baseShowPageAnimated = showPageAnimated;
 function showPageAnimated(page) {
   const allViews = ['listings','offers','stores','recent','profile','watchlist','notifications','messages',
     'settings','help','about','legal','saved-searches','leaderboard','dashboard','drafts','referral'];
@@ -1184,9 +1183,8 @@ function showPageAnimated(page) {
 window.showPage = showPageAnimated;
 
 /* ── Patch loadProfilePage to show rating/ID badges ──── */
-const _baseLoadProfilePage = loadProfilePage;
 function loadProfilePage() {
-  _baseLoadProfilePage();
+  loadProfilePageBase();
   if (!currentUser) return;
   const idBadge = $('ph-id-verified-badge');
   if (idBadge) idBadge.style.display = currentUser.isStudentVerified ? '' : 'none';
@@ -1200,9 +1198,8 @@ function loadProfilePage() {
 }
 
 /* ── Patch openBottomSheet to wire meetup/rating/block/bump/similar ─── */
-const _baseOpenBottomSheet = openBottomSheet;
 function openBottomSheet(listing) {
-  _baseOpenBottomSheet(listing);
+  openBottomSheetBase(listing);
   if (!listing) return;
   const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
   const seller = typeof listing.seller === 'object' ? listing.seller : {};
@@ -1615,9 +1612,8 @@ function registerServiceWorker() {
 }
 
 /* ── Hook ID status render into profile load ──────────── */
-const _baseUpdateUserUI = updateUserUI;
 function updateUserUI() {
-  _baseUpdateUserUI();
+  updateUserUIBase();
   renderIdStatus();
 }
 

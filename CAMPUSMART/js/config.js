@@ -25,5 +25,8 @@ const CAMPUSMART_CONFIG = (function() {
   }
 
   console.log(`[CampusMart] Backend: ${server}`);
+  if (!isLocal && !PRODUCTION_BACKEND_URL) {
+    console.warn('⚠️ [CampusMart] PRODUCTION_BACKEND_URL is not set in js/config.js — the app will likely fail to load profile, listings, images and chat. Edit js/config.js and paste your Render backend URL.');
+  }
   return { SERVER: server, API: server + '/api' };
 })();
