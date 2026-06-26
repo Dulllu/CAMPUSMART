@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -427,12 +427,18 @@ function populateSafeZones() {
 /* ── Load Listings ───────────────────────────────────── */
 async function loadListings() {
   renderSkeletons('listings-grid',8);
+  const pri=$('pull-refresh-indicator');
   try {
     const r=await fetch(`${API}/listings?limit=100`,{headers:authHdr()});
     const d=await r.json();
     allListings=d.listings||[]; filteredList=[...allListings]; currentPage=1;
     renderListings(); loadStats(); loadAiPicks(); buildStories(); buildCampusFilter(); startLiveFeedCheck();
-  } catch {showToast('Could not load listings.','error');}
+  } catch {
+    showToast('Could not load listings.','error');
+    const g=$('listings-grid'); if(g) g.innerHTML='';
+  } finally {
+    if(pri) pri.classList.remove('visible');
+  }
 }
 
 function renderSkeletons(gridId,count) {

@@ -76,7 +76,7 @@
     <!-- Left panel (desktop only) -->
     <div class="auth-left">
       <div class="auth-left-content">
-        <div class="auth-brand-logo">🎓</div>
+        <div class="auth-brand-logo"><svg class="brand-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:1.2em;height:1.2em;vertical-align:middle;color:var(--brand)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity="0.7"/></svg></div>
         <h1>CampusMart</h1>
         <p>The most trusted campus marketplace. Buy, sell and connect with thousands of students.</p>
         <div class="auth-features">
@@ -235,7 +235,10 @@
       <div class="nav-left">
         <button class="nav-hamburger" onclick="openSidebar()" aria-label="Menu"><i class="fa fa-bars"></i></button>
         <div class="nav-brand" onclick="goHome()">
-          <span class="nb-logo">🎓</span>
+          <svg class="nb-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/>
+            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity="0.7"/>
+          </svg>
           <span class="nb-text">CampusMart</span>
         </div>
       </div>
@@ -272,7 +275,7 @@
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
-      <div class="sidebar-brand" onclick="goHome();closeSidebar()"><span>🎓</span> CampusMart</div>
+      <div class="sidebar-brand" onclick="goHome();closeSidebar()"><svg class="brand-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:1.2em;height:1.2em;vertical-align:middle;color:var(--brand)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity="0.7"/></svg> CampusMart</div>
       <button class="sidebar-close" onclick="closeSidebar()"><i class="fa fa-times"></i></button>
     </div>
     <div class="sidebar-user" id="sidebar-user">
@@ -664,6 +667,10 @@
     <div id="view-help" style="display:none">
       <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>❓ Help &amp; Contact</h2></div>
       <div class="page-body">
+        <div class="about-hero-card" style="padding:24px;text-align:left">
+          <p style="font-size:15px;font-weight:700;margin:0 0 4px;opacity:1">Need help? We've got you.</p>
+          <p style="font-size:13px;margin:0;opacity:0.85">Find answers below or send us a message. We usually respond within a few hours.</p>
+        </div>
         <div class="newsletter-card">
           <h3>📬 Newsletter</h3>
           <p>Get campus deals and updates straight to your inbox</p>
@@ -676,6 +683,12 @@
         <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I buy something? <i class="fa fa-chevron-down"></i></button><div class="help-body">Browse listings and tap one you like. Contact the seller via WhatsApp or in-app chat. Always meet at a <strong>Campus Safe Zone</strong> and pay in person.</div></div>
         <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">What are Campus Safe Zones? <i class="fa fa-chevron-down"></i></button><div class="help-body">Safe Zones are verified, well-lit, public campus locations where you should meet sellers. Never meet strangers in private locations.</div></div>
         <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I report a scammer? <i class="fa fa-chevron-down"></i></button><div class="help-body">Open the listing, tap the 🚩 flag icon and select a reason. Reports are anonymous. Users reported by 3+ people are automatically suspended.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">Is CampusMart free to use? <i class="fa fa-chevron-down"></i></button><div class="help-body">Yes — 100% free. No listing fees, no commission, no hidden charges. You post, you sell, you keep all the money. CampusMart earns nothing from your transaction.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How do I edit or delete my listing? <i class="fa fa-chevron-down"></i></button><div class="help-body">Go to your <strong>Profile → My Listings</strong>. Tap on the listing you want to change. You'll see options to Edit, Mark as Sold, or Delete. Changes go live immediately.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">Can I sell food on CampusMart? <i class="fa fa-chevron-down"></i></button><div class="help-body">Yes! Food & Snacks is a supported category. Just make sure your items are freshly prepared and you include pickup details. Buyers will contact you via chat to arrange a handover.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">What is the Verified Student badge? <i class="fa fa-chevron-down"></i></button><div class="help-body">The ✅ Verified Student badge shows that a user has submitted their student ID or MMUST registration number. Verified sellers are more trustworthy because their identity has been confirmed. Get verified in your <strong>Profile</strong> settings.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">I was scammed — what do I do? <i class="fa fa-chevron-down"></i></button><div class="help-body">1. Report the user immediately using the 🚩 flag on their listing or profile.<br/>2. Contact us at <a href="mailto:support@campusmart.co.ke">support@campusmart.co.ke</a> with details.<br/>3. Never send more money. CampusMart will investigate within 24 hours. Fraudulent accounts are permanently banned.</div></div>
+        <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">How does AI Smart Search work? <i class="fa fa-chevron-down"></i></button><div class="help-body">Tap the ✦ wand icon in the search bar to enable AI mode. You can then type natural language queries like <em>"laptop under KES 20,000"</em> or <em>"bedsitter near main gate"</em> and CampusMart will interpret your request intelligently and filter the right results.</div></div>
         <div class="help-section"><button class="help-acc" onclick="toggleAccordion(this)">Contact &amp; Feedback <i class="fa fa-chevron-down"></i></button>
           <div class="help-body">Email: <a href="mailto:support@campusmart.co.ke">support@campusmart.co.ke</a><br/><br/>
             <div class="field-group" style="margin-top:10px"><div class="input-wrap"><i class="fa fa-comment" style="top:14px;transform:none"></i><textarea id="feedback-text" rows="3" placeholder="Your feedback or question…"></textarea></div></div>
@@ -695,10 +708,21 @@
           <p>Building the most trusted campus marketplace in Kenya — connecting students to buy, sell and trade safely.</p>
         </div>
         <div class="feature-grid">
-          <div class="feat-card"><span>🛡️</span><strong>Safety First</strong><p>Campus Safe Zones, fraud detection and 3-strike suspensions</p></div>
-          <div class="feat-card"><span>⚡</span><strong>Instant</strong><p>Post your item in under 60 seconds — live immediately</p></div>
-          <div class="feat-card"><span>💬</span><strong>Real-time Chat</strong><p>Message sellers instantly with scam detection built in</p></div>
-          <div class="feat-card"><span>🆓</span><strong>Always Free</strong><p>No listing fees, no commissions — ever</p></div>
+          <div class="feat-card"><span>🛡️</span><strong>Safety First</strong><p>Campus Safe Zones, real-time fraud detection, and a 3-strike automatic suspension system keep every transaction safe.</p></div>
+          <div class="feat-card"><span>⚡</span><strong>Post in 60 Seconds</strong><p>Take a photo, set a price, tap Post. Your listing goes live on campus instantly — no waiting, no approvals.</p></div>
+          <div class="feat-card"><span>💬</span><strong>Real-time Chat</strong><p>Message sellers directly with our in-app chat. Scam keywords are detected automatically and flagged before any money moves.</p></div>
+          <div class="feat-card"><span>🆓</span><strong>Always Free</strong><p>No listing fees, no buyer commissions, no subscriptions. CampusMart is and will always be 100% free for students.</p></div>
+          <div class="feat-card"><span>🤖</span><strong>AI-Powered</strong><p>Smart search understands natural language, AI suggests fair prices, and auto-generates listing descriptions from photos.</p></div>
+          <div class="feat-card"><span>✅</span><strong>Student Verified</strong><p>Verified Student badges confirm real MMUST students. Buyers can shop with confidence knowing who they're dealing with.</p></div>
+          <div class="feat-card"><span>🏠</span><strong>Housing &amp; Jobs</strong><p>Find bedsitters, hostel rooms, internships, gigs and tutoring opportunities — all in one campus-focused platform.</p></div>
+          <div class="feat-card"><span>📊</span><strong>Seller Dashboard</strong><p>Track your listing views, sales, ratings and follower counts. Know exactly how your campus business is performing.</p></div>
+        </div>
+        <div class="settings-card" style="margin-top:4px">
+          <h3>📍 Built for MMUST</h3>
+          <div class="settings-row"><div><strong>University</strong><p>Masinde Muliro University of Science and Technology</p></div></div>
+          <div class="settings-row"><div><strong>Location</strong><p>Kakamega, Western Kenya</p></div></div>
+          <div class="settings-row"><div><strong>Students Served</strong><p>Thousands of MMUST students buying and selling every week</p></div></div>
+          <div class="settings-row"><div><strong>Platform Version</strong><p>CampusMart v2.1.0 — continuously improving based on student feedback</p></div></div>
         </div>
         <div class="newsletter-card">
           <h3>📬 Stay Updated</h3>
@@ -732,28 +756,80 @@
     <div id="view-settings" style="display:none">
       <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>⚙️ Settings</h2></div>
       <div class="page-body">
+
+        <!-- Appearance -->
         <div class="settings-card">
-          <h3>Appearance</h3>
-          <div class="settings-row"><div><strong>Theme</strong><p>Choose your preferred look</p></div>
+          <h3>🎨 Appearance</h3>
+          <div class="settings-row">
+            <div><strong>Theme</strong><p>Switch between light and dark mode</p></div>
             <div class="theme-toggle-row">
               <button class="theme-pill active" id="theme-light" onclick="setTheme('light')"><i class="fa fa-sun"></i> Light</button>
               <button class="theme-pill" id="theme-dark" onclick="setTheme('dark')"><i class="fa fa-moon"></i> Dark</button>
             </div>
           </div>
+          <div class="settings-row">
+            <div><strong>Language</strong><p>Display language for the app</p></div>
+            <span class="badge-off">English</span>
+          </div>
+          <div class="settings-row">
+            <div><strong>Currency</strong><p>Prices shown in Kenyan Shillings</p></div>
+            <span class="badge-off">KES</span>
+          </div>
         </div>
+
+        <!-- Notifications -->
+        <div class="settings-card">
+          <h3>🔔 Notifications</h3>
+          <div class="settings-row"><div><strong>Push Notifications</strong><p>Get alerts for new messages and listings</p></div><button class="toggle-btn" id="notif-toggle" onclick="toggleBrowserNotifs()">Enable</button></div>
+          <div class="settings-row"><div><strong>New Message Alerts</strong><p>Notify me when I receive a chat message</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>Price Drop Alerts</strong><p>Alert me when a watchlisted item drops in price</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>Saved Search Matches</strong><p>Alert me when a new listing matches my saved search</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>Promotional Emails</strong><p>Receive campus deals and weekly highlights</p></div><span class="badge-off">Off</span></div>
+        </div>
+
+        <!-- Safety & Trust -->
         <div class="settings-card">
           <h3>🛡️ Safety &amp; Trust</h3>
-          <div class="settings-row"><div><strong>Campus Safe Zones</strong><p>Always meet sellers here</p></div></div>
+          <div class="settings-row"><div><strong>Fraud Scanner</strong><p>Chat messages scanned in real time for scam keywords like M-Pesa deposit requests</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>3-Strike System</strong><p>Users reported by 3 or more people are automatically suspended</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>Safe Zone Meetings</strong><p>All in-person meetups are guided to verified Campus Safe Zones</p></div><span class="badge-on">Active</span></div>
+          <div class="settings-row"><div><strong>Campus Safe Zones</strong><p>Verified, well-lit public campus locations for meetups</p></div></div>
           <div class="safe-zones-list" id="safe-zones-list"></div>
-          <div class="settings-row"><div><strong>Fraud Scanner</strong><p>Chat messages scanned in real time</p></div><span class="badge-on">Active</span></div>
-          <div class="settings-row"><div><strong>3-Strike System</strong><p>Reported users auto-suspended</p></div><span class="badge-on">Active</span></div>
         </div>
+
+        <!-- Account -->
         <div class="settings-card">
-          <h3>Account</h3>
-          <div class="settings-row"><div><strong>Email</strong><p id="settings-email"></p></div></div>
-          <div class="settings-row"><div><strong>Notifications</strong><p>Browser push notifications</p></div><button class="toggle-btn" id="notif-toggle" onclick="toggleBrowserNotifs()">Enable</button></div>
-          <div class="settings-row danger"><div><strong>Logout</strong><p>Sign out of your account</p></div><button class="btn-danger-sm" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i> Logout</button></div>
+          <h3>👤 Account</h3>
+          <div class="settings-row"><div><strong>Email Address</strong><p id="settings-email">Not logged in</p></div></div>
+          <div class="settings-row" onclick="showPageAnimated('profile')" style="cursor:pointer"><div><strong>Edit Profile</strong><p>Update your name, campus, photo and bio</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+          <div class="settings-row" onclick="showPageAnimated('referral')" style="cursor:pointer"><div><strong>Refer &amp; Earn</strong><p>Invite friends and earn free listing bumps</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+          <div class="settings-row" onclick="showPageAnimated('saved-searches')" style="cursor:pointer"><div><strong>Saved Searches</strong><p>Manage your search alerts and filters</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
         </div>
+
+        <!-- Privacy -->
+        <div class="settings-card">
+          <h3>🔒 Privacy &amp; Data</h3>
+          <div class="settings-row"><div><strong>Profile Visibility</strong><p>Your profile is visible to other students on CampusMart</p></div><span class="badge-on">Public</span></div>
+          <div class="settings-row"><div><strong>Data Collection</strong><p>We only collect what's needed to run the marketplace. No ads, no data selling.</p></div><span class="badge-on">Minimal</span></div>
+          <div class="settings-row" onclick="showLegal&&showLegal('privacy')" style="cursor:pointer"><div><strong>Privacy Policy</strong><p>Read how we handle your data</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+          <div class="settings-row" onclick="showLegal&&showLegal('terms')" style="cursor:pointer"><div><strong>Terms of Service</strong><p>The rules for using CampusMart</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+        </div>
+
+        <!-- About & Support -->
+        <div class="settings-card">
+          <h3>ℹ️ About &amp; Support</h3>
+          <div class="settings-row" onclick="showPageAnimated('help')" style="cursor:pointer"><div><strong>Help &amp; FAQ</strong><p>Answers to common questions</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+          <div class="settings-row" onclick="showPageAnimated('about')" style="cursor:pointer"><div><strong>About CampusMart</strong><p>Our mission, features and story</p></div><i class="fa fa-chevron-right" style="color:var(--muted);font-size:13px"></i></div>
+          <div class="settings-row"><div><strong>App Version</strong><p>CampusMart v2.1.0 — Built for Kenyan campus life</p></div><span class="badge-off">v2.1.0</span></div>
+          <div class="settings-row"><div><strong>Contact Support</strong><p>support@campusmart.co.ke</p></div><a href="mailto:support@campusmart.co.ke" style="color:var(--brand);font-size:13px;font-weight:700">Email →</a></div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-card">
+          <h3>⚠️ Account Actions</h3>
+          <div class="settings-row danger"><div><strong>Logout</strong><p>Sign out of your account on this device</p></div><button class="btn-danger-sm" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i> Logout</button></div>
+        </div>
+
       </div>
     </div>
 
@@ -784,11 +860,11 @@
       </div>
       <p class="footer-tagline">The trusted campus marketplace for students</p>
       <div class="footer-links">
-        <a onclick="showLegal('terms')">Terms</a>
+        <a onclick="showLegal && showLegal('terms')">Terms</a>
         <span>·</span>
-        <a onclick="showLegal('privacy')">Privacy</a>
+        <a onclick="showLegal && showLegal('privacy')">Privacy</a>
         <span>·</span>
-        <a onclick="showLegal('cookies')">Cookies</a>
+        <a onclick="showLegal && showLegal('cookies')">Cookies</a>
         <span>·</span>
         <a onclick="showPageAnimated('about')">About</a>
       </div>
