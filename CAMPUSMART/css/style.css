@@ -1520,3 +1520,123 @@ body{ background:transparent; }
   .nb-text{ font-size:15px; }
   .sidebar{ right:8px; left:8px; width:auto; top:78px; }
 }
+
+/* ════════════════════════════════════════
+   NAV LAYOUT FIXES — hamburger + brand ordering
+════════════════════════════════════════ */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+/* Always show hamburger and keep it before brand */
+.nav-hamburger {
+  order: 0;
+}
+.nav-brand {
+  order: 1;
+  gap: 10px;
+}
+/* Enlarge CampusMart brand text */
+.nb-text {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.6px !important;
+  background: linear-gradient(135deg, var(--text) 0%, var(--brand) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.nb-logo {
+  font-size: 26px !important;
+}
+
+/* Smooth transitions everywhere */
+*, *::before, *::after {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.page, .modal-sheet, .bottom-sheet, .sidebar {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+.listing-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+}
+.listing-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ════════════════════════════════════════
+   SITE FOOTER — copyright 2026
+════════════════════════════════════════ */
+.site-footer {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--glass-border);
+  padding: 28px 20px 100px; /* 100px bottom padding on mobile for bnav clearance */
+  margin-top: 24px;
+  text-align: center;
+}
+@media(min-width:1024px) {
+  .site-footer {
+    padding: 32px 20px 40px;
+  }
+}
+.site-footer-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.footer-logo {
+  font-size: 22px;
+}
+.footer-brand-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--text) 0%, var(--brand) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-tagline {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 12px;
+}
+.footer-links a {
+  color: var(--brand);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.footer-links a:hover {
+  opacity: 0.75;
+}
+.footer-links span {
+  color: var(--border);
+}
+.footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-weight: 500;
+}
