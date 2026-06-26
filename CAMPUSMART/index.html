@@ -266,6 +266,13 @@
     </div>
   </nav>
 
+  <!-- ── MOBILE SEARCH ROW (shown only on phones) ── -->
+  <div class="mobile-search-row">
+    <i class="fa fa-search"></i>
+    <input type="text" placeholder='Search listings, housing, jobs…' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off" id="mobile-search-input"/>
+    <button class="search-ai-btn" onclick="toggleSmartSearch()" title="AI Search" style="background:none;border:none;color:var(--muted);font-size:13px;padding:0"><i class="fa fa-wand-magic-sparkles"></i></button>
+  </div>
+
   <!-- ── SIDEBAR OVERLAY ── -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 

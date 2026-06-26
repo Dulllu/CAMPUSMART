@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -1787,7 +1787,18 @@ function searchListingsBase() {
 }
 
 async function searchListings() {
-  const q = $('search-input')?.value.trim() || '';
+  // Sync mobile and desktop search inputs
+  const mainInput   = $('search-input');
+  const mobileInput = $('mobile-search-input');
+  // Use whichever was most recently typed into (document.activeElement)
+  let q = '';
+  if (document.activeElement === mobileInput) {
+    q = mobileInput?.value.trim() || '';
+    if (mainInput) mainInput.value = mobileInput.value;
+  } else {
+    q = mainInput?.value.trim() || '';
+    if (mobileInput) mobileInput.value = mainInput?.value || '';
+  }
   const clearBtn = $('search-clear'); if (clearBtn) clearBtn.style.display = q ? '' : 'none';
 
   if (!smartSearchEnabled || q.length < 4) { searchListingsBase(); return; }
