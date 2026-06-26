@@ -3,63 +3,32 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-
-  <!-- Google Search Console -->
-  <meta name="google-site-verification" content="nJxQL_zNtsk6sVSHEW2CUSQ1ZOX8rLdcWUjBWDvuFBY"/>
-
-  <!-- Security -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
   <meta http-equiv="X-Frame-Options" content="DENY"/>
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
-
-  <!-- SEO -->
-  <title>CampusMart MMUST | Buy, Sell, Housing, Jobs & Student Services</title>
-
-  <meta name="description" content="CampusMart MMUST is the student marketplace for Masinde Muliro University of Science and Technology. Buy and sell products, find housing, jobs, services, roommates, and lost & found items."/>
-
-  <meta name="keywords" content="CampusMart, MMUST, Masinde Muliro University of Science and Technology, MMUST Marketplace, MMUST Housing, MMUST Hostels, MMUST Jobs, Student Marketplace Kenya, Campus Marketplace, Buy and Sell MMUST, Lost and Found MMUST, Student Services, Roommates MMUST, MMUST Accommodation"/>
-
-  <meta name="author" content="CampusMart MMUST"/>
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website"/>
-  <meta property="og:title" content="CampusMart MMUST"/>
-  <meta property="og:description" content="Buy, sell, find housing, jobs, services and lost items within MMUST."/>
-  <meta property="og:url" content="https://campusmart-nron.onrender.com"/>
-  <meta property="og:site_name" content="CampusMart MMUST"/>
-
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="CampusMart MMUST"/>
-  <meta name="twitter:description" content="The MMUST student marketplace for products, housing, jobs, services and lost & found."/>
-
-  <!-- Theme -->
+  <meta name="description" content="CampusMart — The premium campus marketplace. Buy and sell textbooks, electronics, clothes and more with fellow students."/>
   <meta name="theme-color" content="#00c896"/>
-
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
-
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="CampusMart"/>
-
-  <!-- Favicon -->
+  <title>CampusMart — Campus Marketplace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>"/>
-
-  <!-- Performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-
-  <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-
-  <!-- Styles -->
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
+
+<!-- Fixed glassmorphism gradient background -->
+<div class="bg-blobs">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+
 
 <!-- ══ LOADER ══ -->
 <div id="app-loader">
@@ -183,6 +152,14 @@
             <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             Continue with Google
           </button>
+          <button class="btn-social btn-facebook" onclick="doFacebookAuth()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.95h-1.5c-1.5 0-1.96.93-1.96 1.89v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+            Continue with Facebook
+          </button>
+          <button class="btn-social btn-apple" onclick="doAppleAuth()">
+            <svg width="16" height="16" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 35-17.5 19.8-27.8 44.3-25.6 71.9 26-2 49.9-15.2 69.5-34.4z"/></svg>
+            Continue with Apple
+          </button>
           <p class="auth-link center">No account? <span onclick="switchAuth('signup')">Create one free</span></p>
         </div>
 
@@ -216,6 +193,14 @@
           <button class="btn-google" onclick="doGoogleAuth()">
             <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             Sign up with Google
+          </button>
+          <button class="btn-social btn-facebook" onclick="doFacebookAuth()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.95h-1.5c-1.5 0-1.96.93-1.96 1.89v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+            Sign up with Facebook
+          </button>
+          <button class="btn-social btn-apple" onclick="doAppleAuth()">
+            <svg width="16" height="16" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 35-17.5 19.8-27.8 44.3-25.6 71.9 26-2 49.9-15.2 69.5-34.4z"/></svg>
+            Sign up with Apple
           </button>
           <p class="auth-link center">Already have an account? <span onclick="switchAuth('signin')">Sign in</span></p>
         </div>
@@ -254,9 +239,17 @@
           <span class="nb-text">CampusMart</span>
         </div>
       </div>
+      <div class="nav-pills">
+        <a class="nav-pill active" id="pill-home" onclick="goHome()"><i class="fa fa-house"></i> Home</a>
+        <a class="nav-pill" id="pill-housing" onclick="navPillGo('housing','pill-housing')"><i class="fa fa-bed"></i> Housing</a>
+        <a class="nav-pill" id="pill-jobs" onclick="navPillGo('jobs','pill-jobs')"><i class="fa fa-briefcase"></i> Jobs</a>
+        <a class="nav-pill" id="pill-lostfound" onclick="navPillGo('lostfound','pill-lostfound')"><i class="fa fa-magnifying-glass"></i> Lost&amp;Found</a>
+        <a class="nav-pill" id="pill-stores" onclick="navPillGo('stores','pill-stores')"><i class="fa fa-store"></i> Stores</a>
+      </div>
       <div class="nav-search" id="search-wrap">
         <i class="fa fa-search"></i>
-        <input type="text" id="search-input" placeholder="Search listings, categories…" oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
+        <input type="text" id="search-input" placeholder='Search or ask: "bedsitter under KES 5000"' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
+        <button class="search-ai-btn" id="search-ai-toggle" onclick="toggleSmartSearch()" title="AI Smart Search"><i class="fa fa-wand-magic-sparkles"></i></button>
         <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none"><i class="fa fa-times"></i></button>
         <div class="search-suggestions" id="search-suggestions" style="display:none"></div>
       </div>
@@ -296,6 +289,12 @@
       <a class="snav-item" id="snav-services"           onclick="filterCategory('services');closeSidebar()"><i class="fa fa-tools"></i><span>Services</span></a>
       <a class="snav-item" id="snav-other"              onclick="filterCategory('other');closeSidebar()"><i class="fa fa-box"></i><span>Other</span></a>
     </nav>
+    <div class="sidebar-section-label">MMUST Hub</div>
+    <nav class="sidebar-nav">
+      <a class="snav-item" id="snav-housing"  onclick="showPageAnimated('housing');closeSidebar()"><i class="fa fa-house"></i><span>Housing</span></a>
+      <a class="snav-item" id="snav-jobs"     onclick="showPageAnimated('jobs');closeSidebar()"><i class="fa fa-briefcase"></i><span>Jobs &amp; Gigs</span></a>
+      <a class="snav-item" id="snav-lostfound" onclick="showPageAnimated('lostfound');closeSidebar()"><i class="fa fa-magnifying-glass"></i><span>Lost &amp; Found</span></a>
+    </nav>
     <div class="sidebar-section-label">Quick Links</div>
     <nav class="sidebar-nav">
       <a class="snav-item" onclick="showPageAnimated('offers');closeSidebar()"><i class="fa fa-fire"></i><span>Hot Offers</span><span class="snav-badge hot">🔥</span></a>
@@ -310,6 +309,7 @@
       <a class="snav-item" onclick="showPageAnimated('dashboard');closeSidebar()"><i class="fa fa-chart-line"></i><span>Seller Dashboard</span></a>
       <a class="snav-item" onclick="showPageAnimated('drafts');closeSidebar()"><i class="fa fa-pen-to-square"></i><span>Drafts</span></a>
       <a class="snav-item" onclick="showPageAnimated('referral');closeSidebar()"><i class="fa fa-gift"></i><span>Refer &amp; Earn</span></a>
+      <a class="snav-item" onclick="showPageAnimated('schedules');closeSidebar()"><i class="fa fa-calendar-check"></i><span>My Meetups</span></a>
     </nav>
     <div class="sidebar-section-label">Account</div>
     <nav class="sidebar-nav">
@@ -479,6 +479,42 @@
       <div class="empty-state" id="watchlist-empty" style="display:none"><div class="es-icon">🤍</div><h3>Watchlist is empty</h3><p>Tap ❤️ on any listing to save it.</p></div>
     </div>
 
+    <!-- ═══ VIEW: HOUSING ═══ -->
+    <div id="view-housing" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🏠 Housing &amp; Accommodation</h2><button class="btn-primary sm" onclick="openModal();switchListingType('housing')"><i class="fa fa-plus"></i> Post</button></div>
+      <div class="campus-filter-bar" id="housing-hostel-filter"></div>
+      <div class="listings-grid" id="housing-grid"></div>
+      <div class="empty-state" id="housing-empty" style="display:none"><div class="es-icon">🏠</div><h3>No housing listings yet</h3><p>Be the first to post a room or bedsitter!</p></div>
+    </div>
+
+    <!-- ═══ VIEW: JOBS ═══ -->
+    <div id="view-jobs" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>💼 Jobs &amp; Gigs</h2><button class="btn-primary sm" onclick="openModal();switchListingType('job')"><i class="fa fa-plus"></i> Post</button></div>
+      <div class="listings-grid" id="jobs-grid"></div>
+      <div class="empty-state" id="jobs-empty" style="display:none"><div class="es-icon">💼</div><h3>No jobs posted yet</h3><p>Post an internship, gig, or tutoring opportunity!</p></div>
+    </div>
+
+    <!-- ═══ VIEW: LOST & FOUND ═══ -->
+    <div id="view-lostfound" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🔍 Lost &amp; Found</h2><button class="btn-primary sm" onclick="openModal();switchListingType('lostfound')"><i class="fa fa-plus"></i> Post</button></div>
+      <div class="tab-row lf-filter-tabs">
+        <button class="cat-pill active" onclick="filterLostFound('all',this)">All</button>
+        <button class="cat-pill" onclick="filterLostFound('lost',this)">😟 Lost</button>
+        <button class="cat-pill" onclick="filterLostFound('found',this)">🙌 Found</button>
+      </div>
+      <div class="listings-grid" id="lostfound-grid"></div>
+      <div class="empty-state" id="lostfound-empty" style="display:none"><div class="es-icon">🔍</div><h3>Nothing posted yet</h3><p>Lost something or found someone's item? Post it here!</p></div>
+    </div>
+
+    <!-- ═══ VIEW: MY MEETUPS (Delivery Scheduling) ═══ -->
+    <div id="view-schedules" style="display:none">
+      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>📅 My Meetups</h2></div>
+      <div class="page-body">
+        <div id="schedules-list"></div>
+        <div class="empty-state sm" id="schedules-empty" style="display:none"><div class="es-icon" style="font-size:32px">📅</div><p>No upcoming meetups scheduled</p></div>
+      </div>
+    </div>
+
     <!-- ═══ VIEW: SAVED SEARCHES ═══ -->
     <div id="view-saved-searches" style="display:none">
       <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🔔 Saved Searches</h2></div>
@@ -586,6 +622,11 @@
             <div class="field-group"><label>Full Name</label><div class="input-wrap"><i class="fa fa-user"></i><input type="text" id="edit-name" placeholder="Full name"/></div></div>
             <div class="field-group"><label>WhatsApp / Phone</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="edit-phone" placeholder="+254 7xx xxx xxx"/></div></div>
             <div class="field-group"><label>Campus / Hostel</label><div class="input-wrap"><i class="fa fa-university"></i><input type="text" id="edit-campus" placeholder="Your campus or hostel block"/></div></div>
+            <div class="two-col">
+              <div class="field-group"><label>School / Faculty</label><div class="input-wrap"><i class="fa fa-graduation-cap"></i><select id="edit-school"><option value="">Select school</option></select></div></div>
+              <div class="field-group"><label>Hostel / Area</label><div class="input-wrap"><i class="fa fa-building"></i><select id="edit-hostel"><option value="">Select area</option></select></div></div>
+            </div>
+            <div class="field-group"><label>MMUST Registration Number</label><div class="input-wrap"><i class="fa fa-id-badge"></i><input type="text" id="edit-reg-number" placeholder="e.g. SCI/CS/01/19"/></div></div>
             <div class="field-group"><label>Bio</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="edit-bio" rows="2" maxlength="200" placeholder="Short bio (max 200 chars)"></textarea></div></div>
             <button class="btn-primary" onclick="saveProfile()"><i class="fa fa-save"></i> Save Changes</button>
             <button class="verify-student-btn" onclick="openVerifyModal()"><i class="fa fa-user-check"></i> Verify Student Status 🎓</button>
@@ -722,11 +763,13 @@
 
   <!-- ── BOTTOM NAV ── -->
   <nav class="bottom-nav">
-    <button class="bnav-item active" id="bnav-home" onclick="bnavGo('listings','bnav-home')"><i class="fa fa-home"></i><span>Home</span></button>
-    <button class="bnav-item" id="bnav-stores" onclick="bnavGo('stores','bnav-stores')"><i class="fa fa-store"></i><span>Stores</span></button>
-    <button class="bnav-sell" onclick="openModal()"><div class="bnav-sell-inner"><i class="fa fa-plus"></i></div></button>
-    <button class="bnav-item" id="bnav-msgs" onclick="bnavGo('messages','bnav-msgs')"><i class="fa fa-comment-dots"></i><span>Chat</span><span class="bnav-badge" id="bnav-msg-badge" style="display:none"></span></button>
-    <button class="bnav-item" id="bnav-prof" onclick="bnavGo('profile','bnav-prof')"><i class="fa fa-user"></i><span>Me</span></button>
+    <div class="bnav-pill-wrap">
+      <button class="bnav-item active" id="bnav-home" onclick="bnavGo('listings','bnav-home')"><i class="fa fa-home"></i><span>Home</span></button>
+      <button class="bnav-item" id="bnav-search" onclick="focusMobileSearch()"><i class="fa fa-search"></i><span>Search</span></button>
+      <button class="bnav-sell" onclick="openModal()"><div class="bnav-sell-inner"><i class="fa fa-plus"></i></div></button>
+      <button class="bnav-item" id="bnav-msgs" onclick="bnavGo('messages','bnav-msgs')"><i class="fa fa-comment-dots"></i><span>Chat</span><span class="bnav-badge" id="bnav-msg-badge" style="display:none"></span></button>
+      <button class="bnav-item" id="bnav-prof" onclick="bnavGo('profile','bnav-prof')"><i class="fa fa-user"></i><span>Me</span></button>
+    </div>
   </nav>
 
   <!-- Scroll to top -->
@@ -746,31 +789,107 @@
       <button class="modal-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-scroll">
+
+      <!-- Listing Type Tabs -->
+      <div class="listing-type-tabs" id="listing-type-tabs">
+        <button class="lt-tab active" data-type="marketplace" onclick="switchListingType('marketplace')"><i class="fa fa-store"></i> Marketplace</button>
+        <button class="lt-tab" data-type="housing" onclick="switchListingType('housing')"><i class="fa fa-house"></i> Housing</button>
+        <button class="lt-tab" data-type="job" onclick="switchListingType('job')"><i class="fa fa-briefcase"></i> Job/Gig</button>
+        <button class="lt-tab" data-type="lostfound" onclick="switchListingType('lostfound')"><i class="fa fa-magnifying-glass"></i> Lost &amp; Found</button>
+      </div>
+
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-input').click()">
         <div class="uz-placeholder" id="upload-placeholder"><i class="fa fa-camera"></i><span>Add photos</span><small>Up to 5 · JPG / PNG</small></div>
         <div class="uz-previews" id="upload-previews"></div>
         <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="handleImages(event)"/>
       </div>
+
+      <!-- AI Generator -->
+      <div class="ai-generate-box">
+        <div class="field-group" style="margin-bottom:8px"><label>✨ Describe it in a few words — AI fills the rest</label>
+          <div class="input-wrap"><i class="fa fa-wand-magic-sparkles"></i><input type="text" id="ai-blurb" placeholder="e.g. used calculus textbook, like new"/></div>
+        </div>
+        <button class="btn-ai-generate" onclick="aiGenerateListingNow()"><i class="fa fa-wand-magic-sparkles"></i> Generate Title, Description &amp; Category</button>
+      </div>
+
       <div class="field-group"><label>Title *</label><div class="input-wrap"><i class="fa fa-tag"></i><input type="text" id="item-title" placeholder="What are you selling?" oninput="checkListingScamWords(this.value)"/></div></div>
       <div class="listing-scam-warning" id="listing-scam-warning"><i class="fa fa-exclamation-triangle"></i> Title may look suspicious. Keep it simple and honest.</div>
       <div class="field-group"><label>Description</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="item-desc" rows="3" placeholder="Condition, age, reason for selling…"></textarea></div></div>
-      <div class="two-col">
-        <div class="field-group"><label>Price (KES) *</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="item-price" placeholder="0" min="0"/></div></div>
-        <div class="field-group"><label>Qty</label><div class="input-wrap"><i class="fa fa-layer-group"></i><input type="number" id="item-stock" placeholder="1" min="1" value="1"/></div></div>
-      </div>
-      <div class="two-col">
-        <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category"><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select></div></div>
-        <div class="field-group"><label>Condition</label><div class="input-wrap"><i class="fa fa-box"></i><select id="item-condition"><option value="New">✨ New</option><option value="Like New">👌 Like New</option><option value="Good">👍 Good</option><option value="Fair">🔄 Fair</option></select></div></div>
-      </div>
-      <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="item-location"><option value="">📍 Select Campus Safe Zone</option></select></div></div>
-      <div class="field-group"><label>WhatsApp / Phone *</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="item-contact" placeholder="+254 7xx xxx xxx"/></div></div>
-      <label class="promo-toggle-label"><input type="checkbox" id="item-is-promo" onchange="togglePromoFields()"/><span><i class="fa fa-tags"></i> Mark as Offer / Promotion</span></label>
-      <div id="promo-fields" style="display:none">
-        <div class="two-col" style="margin-top:10px">
-          <div class="field-group"><label>Promo Label</label><div class="input-wrap"><i class="fa fa-percent"></i><input type="text" id="item-promo-label" placeholder='e.g. "50% OFF"'/></div></div>
-          <div class="field-group"><label>Original Price</label><div class="input-wrap"><i class="fa fa-tag"></i><input type="number" id="item-original-price" placeholder="0"/></div></div>
+
+      <!-- MARKETPLACE fields -->
+      <div id="fields-marketplace">
+        <div class="two-col">
+          <div class="field-group"><label>Price (KES) *</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="item-price" placeholder="0" min="0"/></div></div>
+          <div class="field-group"><label>Qty</label><div class="input-wrap"><i class="fa fa-layer-group"></i><input type="number" id="item-stock" placeholder="1" min="1" value="1"/></div></div>
+        </div>
+        <div class="two-col">
+          <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category"><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select></div></div>
+          <div class="field-group"><label>Condition</label><div class="input-wrap"><i class="fa fa-box"></i><select id="item-condition"><option value="New">✨ New</option><option value="Like New">👌 Like New</option><option value="Good">👍 Good</option><option value="Fair">🔄 Fair</option></select></div></div>
+        </div>
+        <label class="promo-toggle-label"><input type="checkbox" id="item-is-promo" onchange="togglePromoFields()"/><span><i class="fa fa-tags"></i> Mark as Offer / Promotion</span></label>
+        <div id="promo-fields" style="display:none">
+          <div class="two-col" style="margin-top:10px">
+            <div class="field-group"><label>Promo Label</label><div class="input-wrap"><i class="fa fa-percent"></i><input type="text" id="item-promo-label" placeholder='e.g. "50% OFF"'/></div></div>
+            <div class="field-group"><label>Original Price</label><div class="input-wrap"><i class="fa fa-tag"></i><input type="number" id="item-original-price" placeholder="0"/></div></div>
+          </div>
         </div>
       </div>
+
+      <!-- HOUSING fields -->
+      <div id="fields-housing" style="display:none">
+        <div class="two-col">
+          <div class="field-group"><label>Rent (KES) *</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="housing-price" placeholder="0" min="0"/></div></div>
+          <div class="field-group"><label>Rent Period</label><div class="input-wrap"><i class="fa fa-calendar"></i><select id="housing-rent-period"><option value="monthly">Monthly</option><option value="per-semester">Per Semester</option><option value="per-year">Per Year</option></select></div></div>
+        </div>
+        <div class="two-col">
+          <div class="field-group"><label>Property Type</label><div class="input-wrap"><i class="fa fa-door-open"></i><select id="housing-property-type"><option value="hostel-room">Hostel Room</option><option value="bedsitter">Bedsitter</option><option value="one-bedroom">One Bedroom</option><option value="two-bedroom">Two Bedroom</option><option value="shared-room">Shared Room</option><option value="other">Other</option></select></div></div>
+          <div class="field-group"><label>Deposit (KES)</label><div class="input-wrap"><i class="fa fa-shield"></i><input type="number" id="housing-deposit" placeholder="0" min="0"/></div></div>
+        </div>
+        <div class="field-group"><label>Distance to MMUST</label><div class="input-wrap"><i class="fa fa-route"></i><input type="text" id="housing-distance" placeholder="e.g. 5 min walk, 10 min boda"/></div></div>
+        <div class="two-col">
+          <div class="field-group"><label>Vacancies</label><div class="input-wrap"><i class="fa fa-users"></i><input type="number" id="housing-vacancies" placeholder="1" min="1" value="1"/></div></div>
+          <div class="field-group" style="display:flex;align-items:flex-end"><label class="promo-toggle-label" style="margin:0"><input type="checkbox" id="housing-roommates"/><span>Roommates wanted</span></label></div>
+        </div>
+        <div class="field-group"><label>Amenities (comma separated)</label><div class="input-wrap"><i class="fa fa-wifi"></i><input type="text" id="housing-amenities" placeholder="WiFi, Water 24/7, Furnished"/></div></div>
+        <div class="field-group"><label>Hostel / Area</label><div class="input-wrap"><i class="fa fa-location-dot"></i><select id="housing-hostel"><option value="">Select area</option></select></div></div>
+      </div>
+
+      <!-- JOB fields -->
+      <div id="fields-job" style="display:none">
+        <div class="two-col">
+          <div class="field-group"><label>Job Type</label><div class="input-wrap"><i class="fa fa-briefcase"></i><select id="job-type"><option value="part-time">Part-time</option><option value="internship">Internship</option><option value="attachment">Attachment</option><option value="tutoring">Tutoring</option><option value="freelance">Freelance</option><option value="full-time">Full-time</option></select></div></div>
+          <div class="field-group"><label>Pay Type</label><div class="input-wrap"><i class="fa fa-money-bill"></i><select id="job-pay-type"><option value="negotiable">Negotiable</option><option value="hourly">Hourly</option><option value="fixed">Fixed</option><option value="monthly">Monthly</option></select></div></div>
+        </div>
+        <div class="two-col">
+          <div class="field-group"><label>Pay Amount (KES)</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="job-pay-amount" placeholder="0" min="0"/></div></div>
+          <div class="field-group"><label>Duration</label><div class="input-wrap"><i class="fa fa-clock"></i><input type="text" id="job-duration" placeholder="e.g. 3 months, ongoing"/></div></div>
+        </div>
+        <div class="field-group"><label>Skills Needed (comma separated)</label><div class="input-wrap"><i class="fa fa-list-check"></i><input type="text" id="job-skills" placeholder="Excel, Communication, Sales"/></div></div>
+        <label class="promo-toggle-label"><input type="checkbox" id="job-remote"/><span><i class="fa fa-wifi"></i> Remote / Online job</span></label>
+      </div>
+
+      <!-- LOST & FOUND fields -->
+      <div id="fields-lostfound" style="display:none">
+        <div class="lf-toggle-row">
+          <button class="lf-toggle-btn active" data-kind="lost" onclick="setLostFoundKind('lost')"><i class="fa fa-circle-question"></i> I Lost Something</button>
+          <button class="lf-toggle-btn" data-kind="found" onclick="setLostFoundKind('found')"><i class="fa fa-hand-holding"></i> I Found Something</button>
+        </div>
+        <div class="two-col">
+          <div class="field-group"><label>Date Lost/Found</label><div class="input-wrap"><i class="fa fa-calendar"></i><input type="date" id="lf-date"/></div></div>
+          <div class="field-group"><label>Location</label><div class="input-wrap"><i class="fa fa-location-dot"></i><input type="text" id="lf-location" placeholder="e.g. Library, Main Gate"/></div></div>
+        </div>
+      </div>
+
+      <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="item-location"><option value="">📍 Select Campus Safe Zone</option></select></div></div>
+
+      <!-- MMUST taxonomy -->
+      <div class="two-col">
+        <div class="field-group"><label>School / Faculty</label><div class="input-wrap"><i class="fa fa-graduation-cap"></i><select id="item-school"><option value="">Optional</option></select></div></div>
+        <div class="field-group" id="item-hostel-wrap"><label>Hostel</label><div class="input-wrap"><i class="fa fa-building"></i><select id="item-hostel-general"><option value="">Optional</option></select></div></div>
+      </div>
+
+      <div class="field-group"><label>WhatsApp / Phone *</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="item-contact" placeholder="+254 7xx xxx xxx"/></div></div>
+
       <button class="btn-primary full" id="post-btn" onclick="postListing()"><i class="fa fa-paper-plane"></i> Post Listing</button>
     </div>
   </div>
@@ -877,8 +996,10 @@
           <div class="meetup-status-item"><i class="fa fa-circle-check" id="meetup-buyer-icon"></i> You</div>
           <div class="meetup-status-item"><i class="fa fa-circle" id="meetup-seller-icon"></i> Seller</div>
         </div>
+        <button class="btn-schedule-meetup" onclick="openScheduleModal()"><i class="fa fa-calendar-plus"></i> Schedule a Meetup Time</button>
         <button class="btn-confirm-meetup" id="btn-confirm-meetup" onclick="doConfirmMeetup()"><i class="fa fa-check"></i> I Met the Seller</button>
         <button class="btn-rate-now" id="btn-rate-now" onclick="openRatingModal()" style="display:none"><i class="fa fa-star"></i> Rate This Seller</button>
+        <button class="btn-dispute" onclick="openDisputeModal()"><i class="fa fa-gavel"></i> Report a Problem / Raise Dispute</button>
       </div>
       <!-- Similar Listings -->
       <div class="similar-section">
@@ -970,6 +1091,33 @@
     <div class="modal-scroll">
       <p class="block-confirm-text">Blocking <strong id="block-user-name">this user</strong> will hide their messages and prevent them from contacting you. You can unblock them later in Settings.</p>
       <button class="btn-danger full" onclick="doBlockUser()"><i class="fa fa-ban"></i> Block User</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE MEETUP MODAL -->
+<div class="modal-backdrop modal-backdrop-top" id="schedule-overlay" onclick="if(event.target===this)closeScheduleModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-calendar-check" style="color:var(--brand)"></i> Schedule Meetup</h3><button class="modal-close" onclick="closeScheduleModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll schedule-form">
+      <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="schedule-location"><option value="">Select Campus Safe Zone</option></select></div></div>
+      <div class="field-group"><label>Date &amp; Time</label><div class="input-wrap"><i class="fa fa-clock"></i><input type="datetime-local" id="schedule-time"/></div></div>
+      <div class="field-group"><label>Notes (optional)</label><div class="input-wrap"><i class="fa fa-comment" style="top:14px;transform:none"></i><textarea id="schedule-notes" rows="2" placeholder="Anything the other person should know…"></textarea></div></div>
+      <button class="btn-primary full" onclick="sendScheduleProposal()"><i class="fa fa-paper-plane"></i> Propose Meetup</button>
+    </div>
+  </div>
+</div>
+
+<!-- DISPUTE MODAL -->
+<div class="modal-backdrop modal-backdrop-top" id="dispute-overlay" onclick="if(event.target===this)closeDisputeModal()">
+  <div class="modal-sheet sm">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h3><i class="fa fa-gavel" style="color:var(--red)"></i> Raise a Dispute</h3><button class="modal-close" onclick="closeDisputeModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <div class="info-tip"><i class="fa fa-info-circle"></i> Use this only for serious issues after a meetup (e.g. item not as described, payment issue). Our team reviews disputes within 48 hours.</div>
+      <div class="field-group" style="margin-top:12px"><label>What happened? (min 10 characters)</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="dispute-reason" rows="4" placeholder="Describe the issue in detail…"></textarea></div></div>
+      <button class="btn-danger full" onclick="submitDispute()"><i class="fa fa-gavel"></i> Submit Dispute</button>
     </div>
   </div>
 </div>

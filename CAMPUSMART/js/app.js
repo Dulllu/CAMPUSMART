@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -262,6 +262,39 @@ async function doGoogleAuth() {
   window.location.href=`${API}/auth/google`;
 }
 
+async function doFacebookAuth() {
+  try {
+    const p=await fetch(`${API}/auth/facebook`,{method:'HEAD'}).catch(()=>null);
+    if(p&&p.status===503){showToast('Facebook Sign-In not configured.','warning');return;}
+  } catch {}
+  window.location.href=`${API}/auth/facebook`;
+}
+
+async function doAppleAuth() {
+  try {
+    const p=await fetch(`${API}/auth/apple`,{method:'HEAD'}).catch(()=>null);
+    if(p&&p.status===503){showToast('Sign in with Apple is not configured.','warning');return;}
+  } catch {}
+  window.location.href=`${API}/auth/apple`;
+}
+
+function handleOAuthErrorParam() {
+  const params = new URLSearchParams(window.location.search);
+  const err = params.get('error');
+  if (!err) return;
+  history.replaceState(null, '', window.location.pathname);
+  const messages = {
+    oauth_auth_failed:        'Sign-in was cancelled or failed. Please try again.',
+    google_not_configured:    'Google Sign-In is not available right now.',
+    google_failed:            'Google Sign-In failed. Please try again.',
+    facebook_not_configured:  'Facebook Sign-In is not available right now.',
+    facebook_failed:          'Facebook Sign-In failed. Please try again.',
+    apple_not_configured:     'Sign in with Apple is not available right now.',
+    apple_failed:             'Sign in with Apple failed. Please try again.',
+  };
+  showToast(messages[err] || 'Sign-in failed. Please try again.', 'error', 5000);
+}
+
 function handleGoogleRedirect() {
   const hash=window.location.hash;
   if(!hash.includes('google_token=')) return;
@@ -271,8 +304,13 @@ function handleGoogleRedirect() {
   localStorage.setItem('cm_token',token);
   fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}})
     .then(r=>r.json()).then(d=>{
-      if(d.user){currentUser=d.user;localStorage.setItem('cm_user',JSON.stringify(d.user));loadLocalData();enterMarket();showToast('Signed in with Google! 🎉','success');}
-    }).catch(()=>showToast('Google sign-in succeeded but profile failed. Refresh.','warning'));
+      if(d.user){
+        currentUser=d.user;localStorage.setItem('cm_user',JSON.stringify(d.user));loadLocalData();enterMarket();
+        const providerNames={google:'Google',facebook:'Facebook',apple:'Apple'};
+        const provider=providerNames[d.user.authProvider]||'your account';
+        showToast(`Signed in with ${provider}! 🎉`,'success');
+      }
+    }).catch(()=>showToast('Sign-in succeeded but profile failed. Refresh.','warning'));
 }
 
 /* ── Logout ──────────────────────────────────────────── */
@@ -288,7 +326,7 @@ function doLogout() {
 }
 
 /* ── Enter Market ────────────────────────────────────── */
-function enterMarket() {
+function enterMarketBase() {
   $('login-page').classList.remove('active');
   $('market-page').classList.add('active');
   populateSafeZones(); updateUserUI(); loadListings();
@@ -344,10 +382,28 @@ function showPageAnimatedBase(page) {
   if(page==='messages')      renderConversationList();
   closeSidebar();
 }
-window.showPage = showPageAnimated;
 
-function goHome() { showPageAnimated('listings'); document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active')); $('bnav-home')?.classList.add('active'); }
+function goHome() {
+  showPageAnimated('listings');
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  $('bnav-home')?.classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
+  $('pill-home')?.classList.add('active');
+}
 function bnavGo(page,btnId) { showPageAnimated(page); document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active')); $(btnId)?.classList.add('active'); }
+
+/* ── Top pill nav (desktop primary destinations) ──────── */
+function navPillGo(page, pillId) {
+  showPageAnimated(page);
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  $(pillId)?.classList.add('active');
+}
+
+/* ── Mobile bottom-pill "Search" shortcut ─────────────── */
+function focusMobileSearch() {
+  goHome();
+  setTimeout(() => $('search-input')?.focus(), 250);
+}
 function showLegal(tab) { showPageAnimated('legal'); switchLegal(tab, document.querySelector(`.legal-tab[onclick*="${tab}"]`)); }
 function switchLegal(tab,btn) {
   document.querySelectorAll('.legal-content').forEach(c=>c.classList.remove('active'));
@@ -1119,6 +1175,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initCookieBanner();
   initScrollTop();
   handleGoogleRedirect();
+  handleOAuthErrorParam();
   populateSafeZones();
 
   const t=localStorage.getItem('cm_token'), u=localStorage.getItem('cm_user');
@@ -1159,9 +1216,10 @@ function starRatingHTML(avg, count, size='') {
 }
 
 /* ── Patch showPageAnimated to handle new pages ─────── */
-function showPageAnimated(page) {
+function showPageAnimatedV6(page) {
   const allViews = ['listings','offers','stores','recent','profile','watchlist','notifications','messages',
-    'settings','help','about','legal','saved-searches','leaderboard','dashboard','drafts','referral'];
+    'settings','help','about','legal','saved-searches','leaderboard','dashboard','drafts','referral',
+    'housing','jobs','lostfound','schedules'];
   allViews.forEach(v => { const el = $(`view-${v}`); if (el) el.style.display = 'none'; });
   const target = $(`view-${page}`);
   if (target) { target.style.display=''; target.classList.remove('view-transition'); void target.offsetWidth; target.classList.add('view-transition'); }
@@ -1180,7 +1238,6 @@ function showPageAnimated(page) {
   if (page==='referral')       loadReferralInfo();
   closeSidebar();
 }
-window.showPage = showPageAnimated;
 
 /* ── Patch loadProfilePage to show rating/ID badges ──── */
 function loadProfilePage() {
@@ -1198,7 +1255,7 @@ function loadProfilePage() {
 }
 
 /* ── Patch openBottomSheet to wire meetup/rating/block/bump/similar ─── */
-function openBottomSheet(listing) {
+function openBottomSheetV6(listing) {
   openBottomSheetBase(listing);
   if (!listing) return;
   const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
@@ -1621,3 +1678,544 @@ function updateUserUI() {
 window.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
 });
+
+/* ═══════════════════════════════════════════════════════
+   v7 — MMUST Hub (Housing/Jobs/Lost&Found), AI Search/Generator,
+   Admin role check, Delivery Scheduling, Disputes,
+   Server-synced Watchlist, Push Subscriptions
+   ═══════════════════════════════════════════════════════ */
+
+let mmustTaxonomy = { schools: [], hostels: [] };
+let currentListingTypeInModal = 'marketplace';
+let currentLostFoundKind = 'lost';
+let currentLostFoundFilter = 'all';
+let smartSearchEnabled = false;
+
+/* ── Load MMUST taxonomy and populate all selects ────── */
+async function loadMmustTaxonomy() {
+  try {
+    const r = await fetch(`${API}/listings/taxonomy`);
+    const d = await r.json();
+    mmustTaxonomy = { schools: d.schools || [], hostels: d.hostels || [] };
+
+    const schoolSelects = ['item-school', 'edit-school'];
+    const hostelSelects = ['item-hostel-general', 'housing-hostel', 'edit-hostel'];
+
+    schoolSelects.forEach(id => {
+      const sel = $(id); if (!sel) return;
+      mmustTaxonomy.schools.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+    });
+    hostelSelects.forEach(id => {
+      const sel = $(id); if (!sel) return;
+      mmustTaxonomy.hostels.forEach(h => { const o = document.createElement('option'); o.value = h; o.textContent = h; sel.appendChild(o); });
+    });
+
+    // Housing filter chips on the Housing page
+    const filterBar = $('housing-hostel-filter');
+    if (filterBar) {
+      filterBar.innerHTML = `<button class="campus-chip active" data-hostel="" onclick="filterHousingByHostel('',this)">📍 All Areas</button>` +
+        mmustTaxonomy.hostels.map(h => `<button class="campus-chip" data-hostel="${esc(h)}" onclick="filterHousingByHostel('${esc(h)}',this)">🏠 ${esc(h)}</button>`).join('');
+    }
+  } catch {}
+}
+
+/* ── Listing Type Switching (Sell Modal) ─────────────── */
+function switchListingType(type) {
+  currentListingTypeInModal = type;
+  document.querySelectorAll('.lt-tab').forEach(t => t.classList.toggle('active', t.dataset.type === type));
+  ['marketplace','housing','job','lostfound'].forEach(t => {
+    const el = $(`fields-${t}`); if (el) el.style.display = t === type ? '' : 'none';
+  });
+  // Marketplace fields hold price/category which are needed for all types in the backend's
+  // generic `price` field — for housing we mirror housing-price into item-price on submit.
+  const hostelWrap = $('item-hostel-wrap');
+  if (hostelWrap) hostelWrap.style.display = type === 'housing' ? 'none' : ''; // housing has its own hostel select
+}
+
+function setLostFoundKind(kind) {
+  currentLostFoundKind = kind;
+  document.querySelectorAll('.lf-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.kind === kind));
+}
+
+/* ── AI Listing Generator ─────────────────────────────── */
+async function aiGenerateListingNow() {
+  const blurb = $('ai-blurb')?.value.trim();
+  if (!blurb || blurb.length < 3) return showToast('Type a short description first.', 'error');
+  const btn = document.querySelector('.btn-ai-generate');
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating…';
+  try {
+    const r = await fetch(`${API}/listings/ai-generate`, { method:'POST', headers: authHdr(), body: JSON.stringify({ input: blurb, listingType: currentListingTypeInModal }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not generate.', 'error');
+    $('item-title').value = d.title;
+    $('item-desc').value  = d.desc;
+    if (currentListingTypeInModal === 'marketplace') {
+      $('item-category').value  = d.category;
+      $('item-condition').value = d.condition;
+    }
+    showToast('✨ Generated! Review and edit as needed.', 'success');
+  } catch { showToast('Could not generate listing.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-wand-magic-sparkles"></i> Generate Title, Description & Category'; }
+}
+
+/* ── Smart (AI) Search Toggle ─────────────────────────── */
+function toggleSmartSearch() {
+  smartSearchEnabled = !smartSearchEnabled;
+  $('search-ai-toggle')?.classList.toggle('active', smartSearchEnabled);
+  showToast(smartSearchEnabled ? '✨ Smart search on — try "bedsitter under KES 5000"' : 'Smart search off', 'info', 2500);
+  searchListings();
+}
+
+/* ── Patch searchListings to support smart mode via API ──── */
+function searchListingsBase() {
+  clearTimeout(searchDebounce);
+  const q = $('search-input')?.value.trim().toLowerCase() || '';
+  const clearBtn = $('search-clear'); if (clearBtn) clearBtn.style.display = q ? '' : 'none';
+  showSearchSuggestions(q);
+  searchDebounce = setTimeout(() => {
+    currentPage = 1;
+    filteredList = allListings.filter(l => !q || l.title.toLowerCase().includes(q) || l.desc?.toLowerCase().includes(q) || l.category.toLowerCase().includes(q));
+    if (activeCampus !== 'all') filteredList = filteredList.filter(l => (l.seller?.campus || '') === activeCampus);
+    applySortToFiltered(); renderListings(); hideSearchSuggestions();
+  }, 300);
+}
+
+async function searchListings() {
+  const q = $('search-input')?.value.trim() || '';
+  const clearBtn = $('search-clear'); if (clearBtn) clearBtn.style.display = q ? '' : 'none';
+
+  if (!smartSearchEnabled || q.length < 4) { searchListingsBase(); return; }
+
+  clearTimeout(searchDebounce);
+  hideSearchSuggestions();
+  searchDebounce = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/listings?search=${encodeURIComponent(q)}&smart=true&limit=50`, { headers: authHdr() });
+      const d = await r.json();
+      filteredList = d.listings || [];
+      currentPage = 1;
+      renderListings();
+      if (d.interpretedAs) {
+        const parts = [];
+        if (d.interpretedAs.maxPrice) parts.push(`under ${fmtPrice(d.interpretedAs.maxPrice)}`);
+        if (d.interpretedAs.categoryHint) parts.push(catEmoji(d.interpretedAs.categoryHint) + ' ' + d.interpretedAs.categoryHint);
+        if (d.interpretedAs.listingTypeHint) parts.push(d.interpretedAs.listingTypeHint);
+        if (parts.length) showToast(`✨ Searching: ${parts.join(', ')}`, 'info', 3000);
+      }
+    } catch { searchListingsBase(); }
+  }, 400);
+}
+
+/* ── Housing Page ─────────────────────────────────────── */
+let currentHousingHostelFilter = '';
+async function loadHousingPage() {
+  const grid = $('housing-grid'), empty = $('housing-empty'); if (!grid) return;
+  try {
+    const url = `${API}/listings?listingType=housing&limit=50${currentHousingHostelFilter ? '&hostel=' + encodeURIComponent(currentHousingHostelFilter) : ''}`;
+    const r = await fetch(url, { headers: authHdr() });
+    const d = await r.json();
+    const listings = d.listings || [];
+    if (!listings.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = listings.map(l => housingCardHTML(l)).join('');
+    initLazyImages();
+  } catch { grid.innerHTML = ''; }
+}
+function filterHousingByHostel(hostel, btn) {
+  currentHousingHostelFilter = hostel;
+  document.querySelectorAll('#housing-hostel-filter .campus-chip').forEach(c => c.classList.remove('active'));
+  btn?.classList.add('active');
+  loadHousingPage();
+}
+function housingCardHTML(l) {
+  const img = l.images?.[0], imgSrc = img ? (img.startsWith('/')?SERVER:'')+img : catImage('other');
+  const h = l.housing || {};
+  return `<div class="listing-card" onclick="openDetail('${esc(l._id)}')">
+    <div class="card-img-wrap"><img class="card-img lazy" data-src="${esc(imgSrc)}" src="" alt="${esc(l.title)}" loading="lazy"/></div>
+    <div class="card-body">
+      <div class="card-title">${esc(l.title)}</div>
+      <div class="card-time">${esc(l.hostel||'')}</div>
+      <div class="card-price">${fmtPrice(l.price)}<span style="font-size:10px;color:var(--muted);font-weight:600"> /${esc(h.rentPeriod||'month')}</span></div>
+      <div class="housing-card-meta">
+        <span class="housing-rent-badge">${esc(h.propertyType||'Room')}</span>
+        ${h.vacanciesCount ? `<span class="housing-vacancy-badge">${h.vacanciesCount} vacancy</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Jobs Page ─────────────────────────────────────────── */
+async function loadJobsPage() {
+  const grid = $('jobs-grid'), empty = $('jobs-empty'); if (!grid) return;
+  try {
+    const r = await fetch(`${API}/listings?listingType=job&limit=50`, { headers: authHdr() });
+    const d = await r.json();
+    const listings = d.listings || [];
+    if (!listings.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = listings.map(l => jobCardHTML(l)).join('');
+    initLazyImages();
+  } catch { grid.innerHTML = ''; }
+}
+function jobCardHTML(l) {
+  const img = l.images?.[0], imgSrc = img ? (img.startsWith('/')?SERVER:'')+img : catImage('services');
+  const j = l.job || {};
+  const payText = j.payType === 'negotiable' ? 'Negotiable' : `${fmtPrice(j.payAmount||l.price)} ${j.payType==='hourly'?'/hr':j.payType==='monthly'?'/mo':''}`;
+  return `<div class="listing-card" onclick="openDetail('${esc(l._id)}')">
+    <div class="card-img-wrap"><img class="card-img lazy" data-src="${esc(imgSrc)}" src="" alt="${esc(l.title)}" loading="lazy"/></div>
+    <div class="card-body">
+      <div class="card-title">${esc(l.title)}</div>
+      <div class="card-time">${timeAgo(l.createdAt)}</div>
+      <div class="card-price">${payText}</div>
+      <div class="housing-card-meta">
+        <span class="job-pay-badge">${esc(j.jobType||'Job')}</span>
+        ${j.isRemote ? '<span class="job-pay-badge">🌐 Remote</span>' : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Lost & Found Page ────────────────────────────────── */
+async function loadLostFoundPage() {
+  const grid = $('lostfound-grid'), empty = $('lostfound-empty'); if (!grid) return;
+  try {
+    const r = await fetch(`${API}/listings?listingType=lostfound&limit=50`, { headers: authHdr() });
+    const d = await r.json();
+    let listings = d.listings || [];
+    if (currentLostFoundFilter !== 'all') listings = listings.filter(l => l.lostfound?.kind === currentLostFoundFilter);
+    if (!listings.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = listings.map(l => lostFoundCardHTML(l)).join('');
+    initLazyImages();
+  } catch { grid.innerHTML = ''; }
+}
+function filterLostFound(kind, btn) {
+  currentLostFoundFilter = kind;
+  document.querySelectorAll('.lf-filter-tabs .cat-pill').forEach(c => c.classList.remove('active'));
+  btn?.classList.add('active');
+  loadLostFoundPage();
+}
+function lostFoundCardHTML(l) {
+  const img = l.images?.[0], imgSrc = img ? (img.startsWith('/')?SERVER:'')+img : catImage('other');
+  const lf = l.lostfound || {};
+  return `<div class="listing-card" onclick="openDetail('${esc(l._id)}')">
+    <div class="card-img-wrap"><img class="card-img lazy" data-src="${esc(imgSrc)}" src="" alt="${esc(l.title)}" loading="lazy"/>
+      ${lf.isClaimed ? '<div class="sold-out-overlay">CLAIMED</div>' : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${esc(l.title)}</div>
+      <div class="card-time">${esc(lf.locationLost||l.location||'')} · ${timeAgo(l.createdAt)}</div>
+      <div class="housing-card-meta">
+        <span class="lf-kind-badge ${lf.kind}">${lf.kind==='lost'?'😟 Lost':'🙌 Found'}</span>
+        ${lf.isClaimed ? '<span class="lf-claimed-badge">Claimed</span>' : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+async function markLostFoundClaimedNow() {
+  if (!currentDetail) return;
+  if (!confirm('Mark this item as claimed/returned?')) return;
+  try {
+    const r = await fetch(`${API}/listings/${currentDetail._id}/claim`, { method:'POST', headers: authHdr() });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not update.', 'error');
+    showToast('Marked as claimed! 🎉', 'success');
+    closeBottomSheet();
+    loadLostFoundPage();
+  } catch { showToast('Could not update.', 'error'); }
+}
+
+/* ── Delivery Scheduling ──────────────────────────────── */
+function openScheduleModal() {
+  if (!currentDetail) return;
+  populateSafeZonesInto('schedule-location');
+  $('schedule-time').value = '';
+  $('schedule-notes').value = '';
+  $('schedule-overlay').classList.add('open');
+}
+function closeScheduleModal() { $('schedule-overlay')?.classList.remove('open'); }
+function populateSafeZonesInto(selectId) {
+  const sel = $(selectId); if (!sel || sel.options.length > 1) return;
+  SAFE_ZONES.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = `📍 ${z}`; sel.appendChild(o); });
+}
+async function sendScheduleProposal() {
+  if (!currentDetail) return;
+  const meetupLocation = $('schedule-location')?.value;
+  const meetupTime = $('schedule-time')?.value;
+  const notes = $('schedule-notes')?.value.trim();
+  if (!meetupLocation || !meetupTime) return showToast('Select a location and time.', 'error');
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+  try {
+    const r = await fetch(`${API}/delivery/propose`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: currentDetail._id, otherUserId: seller._id, meetupLocation, meetupTime, notes }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not propose meetup.', 'error');
+    showToast('Meetup proposed! 📅', 'success');
+    closeScheduleModal();
+  } catch { showToast('Could not propose meetup.', 'error'); }
+}
+
+async function loadSchedules() {
+  const list = $('schedules-list'), empty = $('schedules-empty'); if (!list) return;
+  try {
+    const r = await fetch(`${API}/delivery/mine`, { headers: authHdr() });
+    const d = await r.json();
+    const schedules = d.schedules || [];
+    if (!schedules.length) { list.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    list.innerHTML = schedules.map(s => {
+      const isMineProposed = s.proposedBy === currentUser._id;
+      const otherParty = s.buyer._id === currentUser._id ? s.seller : s.buyer;
+      return `<div class="schedule-card">
+        <div class="schedule-card-title"><i class="fa fa-box"></i> ${esc(s.listing?.title||'Listing')}</div>
+        <div class="schedule-meta"><i class="fa fa-user"></i> With ${esc(otherParty?.name||'User')}</div>
+        <div class="schedule-meta"><i class="fa fa-map-marker-alt"></i> ${esc(s.meetupLocation)}</div>
+        <div class="schedule-meta"><i class="fa fa-clock"></i> ${new Date(s.meetupTime).toLocaleString('en-KE',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+        <span class="schedule-status-badge ${s.status}">${esc(s.status)}</span>
+        ${s.status === 'proposed' && !isMineProposed ? `
+          <div class="schedule-actions">
+            <button style="background:var(--brand);color:#fff" onclick="respondSchedule('${s._id}','accept')">Accept</button>
+            <button style="background:var(--red);color:#fff" onclick="respondSchedule('${s._id}','decline')">Decline</button>
+          </div>` : ''}
+      </div>`;
+    }).join('');
+  } catch { list.innerHTML = ''; }
+}
+async function respondSchedule(scheduleId, action) {
+  try {
+    const r = await fetch(`${API}/delivery/respond`, { method:'POST', headers: authHdr(), body: JSON.stringify({ scheduleId, action }) });
+    if (!r.ok) return showToast('Action failed.', 'error');
+    showToast(`Meetup ${action}ed.`, 'success');
+    loadSchedules();
+  } catch { showToast('Action failed.', 'error'); }
+}
+
+/* ── Disputes ──────────────────────────────────────────── */
+function openDisputeModal() {
+  if (!currentDetail) return;
+  $('dispute-reason').value = '';
+  $('dispute-overlay').classList.add('open');
+}
+function closeDisputeModal() { $('dispute-overlay')?.classList.remove('open'); }
+async function submitDispute() {
+  const reason = $('dispute-reason')?.value.trim();
+  if (!reason || reason.length < 10) return showToast('Describe the issue (10+ characters).', 'error');
+  if (!currentDetail) return;
+  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+  try {
+    const r = await fetch(`${API}/disputes`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: currentDetail._id, against: seller._id, reason }) });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Could not submit dispute.', 'error');
+    showToast(d.message, 'success', 5000);
+    closeDisputeModal();
+  } catch { showToast('Could not submit dispute.', 'error'); }
+}
+
+/* ── Server-synced Watchlist (replaces localStorage-only) ──── */
+async function syncWatchlistFromServer() {
+  if (!currentUser) return;
+  try {
+    const r = await fetch(`${API}/auth/watchlist`, { headers: authHdr() });
+    const d = await r.json();
+    watchlist = (d.watchlist || []).map(l => l._id);
+    localStorage.setItem('cm_watchlist', JSON.stringify(watchlist));
+    updateBadges();
+  } catch {}
+}
+
+async function toggleWatchlistByIdServer(id) {
+  // Optimistic local update first (instant UI feedback)
+  const idx = watchlist.indexOf(id);
+  if (idx >= 0) watchlist.splice(idx, 1); else watchlist.push(id);
+  localStorage.setItem('cm_watchlist', JSON.stringify(watchlist));
+  updateBadges();
+  // Then sync with server in background
+  if (!currentUser) return;
+  try {
+    await fetch(`${API}/auth/watchlist/toggle`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: id }) });
+  } catch {}
+}
+// Override the localStorage-only version with the server-synced one
+function toggleWatchlistById(id) { toggleWatchlistByIdServer(id); }
+
+/* ── MMUST Profile Fields (school/hostel/regNumber) ──────── */
+async function saveMmustProfileFields() {
+  const school = $('edit-school')?.value;
+  const hostel = $('edit-hostel')?.value;
+  const regNumber = $('edit-reg-number')?.value.trim();
+  try {
+    if (school !== undefined || hostel !== undefined) {
+      await fetch(`${API}/auth/mmust-profile`, { method:'PUT', headers: authHdr(), body: JSON.stringify({ school, hostel }) });
+    }
+    if (regNumber) {
+      const r = await fetch(`${API}/auth/reg-number`, { method:'POST', headers: authHdr(), body: JSON.stringify({ regNumber, school }) });
+      const d = await r.json();
+      if (!r.ok) showToast(d.error, 'warning');
+    }
+  } catch {}
+}
+
+/* ── Patch saveProfile to also save MMUST fields ──────────── */
+function saveProfile() {
+  saveProfileBase();
+  saveMmustProfileFields();
+}
+
+/* ── Patch updateUserUI to populate MMUST select values ───── */
+function populateMmustProfileSelects() {
+  if (!currentUser) return;
+  $('edit-school') && ($('edit-school').value = currentUser.school || '');
+  $('edit-hostel') && ($('edit-hostel').value = currentUser.hostel || '');
+  $('edit-reg-number') && ($('edit-reg-number').value = currentUser.regNumber || '');
+}
+
+/* ── Patch postListing to handle housing/job/lostfound payloads ─── */
+async function postListing() {
+  const title = $('item-title')?.value.trim();
+  if (!title) return showToast('Title is required.', 'error');
+
+  const type = currentListingTypeInModal;
+  let price = $('item-price')?.value;
+  let contact = $('item-contact')?.value.trim();
+
+  if (type === 'housing') price = $('housing-price')?.value;
+  if (type === 'job') price = $('job-pay-amount')?.value || '0';
+  if (type === 'lostfound') price = '0';
+
+  if (!contact) return showToast('Contact is required.', 'error');
+  if (type !== 'lostfound' && !price) return showToast('Price is required.', 'error');
+
+  const btn = $('post-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Posting…';
+
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('desc', $('item-desc')?.value.trim() || '');
+  fd.append('price', price || '0');
+  fd.append('contact', contact);
+  fd.append('listingType', type);
+  fd.append('location', $('item-location')?.value || '');
+  fd.append('school', $('item-school')?.value || '');
+
+  if (type === 'marketplace') {
+    fd.append('category', $('item-category')?.value || 'other');
+    fd.append('condition', $('item-condition')?.value || 'Good');
+    fd.append('stock', $('item-stock')?.value || '1');
+    fd.append('hostel', $('item-hostel-general')?.value || '');
+    fd.append('isPromo', $('item-is-promo')?.checked ? 'true' : 'false');
+    if ($('item-is-promo')?.checked) {
+      fd.append('promoLabel', $('item-promo-label')?.value || '');
+      fd.append('originalPrice', $('item-original-price')?.value || '');
+    }
+  } else if (type === 'housing') {
+    fd.append('hostel', $('housing-hostel')?.value || '');
+    fd.append('housing', JSON.stringify({
+      propertyType: $('housing-property-type')?.value || '',
+      rentPeriod: $('housing-rent-period')?.value || 'monthly',
+      deposit: parseFloat($('housing-deposit')?.value) || 0,
+      distanceToMmust: $('housing-distance')?.value || '',
+      roommatesWanted: $('housing-roommates')?.checked || false,
+      vacanciesCount: parseInt($('housing-vacancies')?.value) || 1,
+      amenities: ($('housing-amenities')?.value || '').split(',').map(a => a.trim()).filter(Boolean),
+    }));
+  } else if (type === 'job') {
+    fd.append('job', JSON.stringify({
+      jobType: $('job-type')?.value || '',
+      payType: $('job-pay-type')?.value || 'negotiable',
+      payAmount: parseFloat($('job-pay-amount')?.value) || 0,
+      duration: $('job-duration')?.value || '',
+      skillsNeeded: ($('job-skills')?.value || '').split(',').map(s => s.trim()).filter(Boolean),
+      isRemote: $('job-remote')?.checked || false,
+    }));
+  } else if (type === 'lostfound') {
+    fd.append('lostfound', JSON.stringify({
+      kind: currentLostFoundKind,
+      itemDateLost: $('lf-date')?.value || null,
+      locationLost: $('lf-location')?.value || '',
+    }));
+  }
+
+  uploadedImages.forEach(f => fd.append('images', f));
+
+  try {
+    const url = editingListing ? `${API}/listings/${editingListing._id}` : `${API}/listings`;
+    const method = editingListing ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: { Authorization: `Bearer ${localStorage.getItem('cm_token')}` }, body: fd });
+    const d = await r.json();
+    if (!r.ok) return showToast(d.error || 'Post failed.', 'error');
+    if (!editingListing && !localStorage.getItem('cm_has_posted')) { localStorage.setItem('cm_has_posted', '1'); setTimeout(launchConfetti, 500); }
+    showToast(editingListing ? 'Listing updated! ✅' : 'Listing posted! 🎉', 'success');
+    closeModal();
+    await loadListings();
+  } catch { showToast('Could not post listing.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-paper-plane"></i> Post Listing'; }
+}
+
+/* ── Push Notification Subscription ───────────────────────── */
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      // No VAPID key configured yet — this is a no-op until you add one server-side.
+      // Kept here so the wiring is ready the moment a VAPID key is added.
+      return;
+    }
+    await fetch(`${API}/auth/push-subscribe`, { method:'POST', headers: authHdr(), body: JSON.stringify({ subscription: sub }) });
+  } catch {}
+}
+
+/* ── Final showPageAnimated wrapper — calls v6 then adds v7 pages ────── */
+function showPageAnimated(page) {
+  showPageAnimatedV6(page);
+  if (page === 'housing')   loadHousingPage();
+  if (page === 'jobs')      loadJobsPage();
+  if (page === 'lostfound') loadLostFoundPage();
+  if (page === 'schedules') loadSchedules();
+  if (page === 'profile')   populateMmustProfileSelects();
+}
+window.showPage = showPageAnimated;
+
+/* ── Add lost&found claim button to bottom sheet owner controls ─── */
+function openBottomSheet(listing) {
+  openBottomSheetV6(listing);
+  if (!listing) return;
+  const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
+  if (listing.listingType === 'lostfound' && isMine && !listing.lostfound?.isClaimed) {
+    const ownerControls = $('bs-owner-controls');
+    if (ownerControls && !$('bs-claim-btn')) {
+      const btn = document.createElement('button');
+      btn.id = 'bs-claim-btn'; btn.className = 'btn-confirm-meetup'; btn.style.marginTop = '8px';
+      btn.innerHTML = '<i class="fa fa-check"></i> Mark as Claimed';
+      btn.onclick = markLostFoundClaimedNow;
+      ownerControls.appendChild(btn);
+    }
+  } else {
+    $('bs-claim-btn')?.remove();
+  }
+}
+
+/* ── Rename original saveProfile for the patch above ──────── */
+function saveProfileBase() {
+  const updates = { name: $('edit-name')?.value.trim(), phone: $('edit-phone')?.value.trim(), campus: $('edit-campus')?.value.trim(), bio: $('edit-bio')?.value.trim() };
+  fetch(`${API}/auth/me`, { method:'PUT', headers: authHdr(), body: JSON.stringify(updates) })
+    .then(r => r.json().then(d => ({ ok: r.ok, d })))
+    .then(({ ok, d }) => {
+      if (!ok) return showToast(d.error || 'Update failed.', 'error');
+      currentUser = d.user; localStorage.setItem('cm_user', JSON.stringify(d.user));
+      updateUserUI();
+      showToast('Profile updated! ✅', 'success');
+    })
+    .catch(() => showToast('Could not save profile.', 'error'));
+}
+
+/* ── Init v7 features ──────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  loadMmustTaxonomy();
+});
+
+function enterMarket() {
+  enterMarketBase();
+  syncWatchlistFromServer();
+}

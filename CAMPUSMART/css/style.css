@@ -235,6 +235,18 @@ textarea{resize:vertical;}
   transition:var(--transition);margin-top:8px;
 }
 .btn-google:hover{background:var(--bg);border-color:var(--border2);box-shadow:var(--shadow-sm);}
+.btn-social{
+  width:100%;padding:12px;border:2px solid var(--border);border-radius:var(--radius-md);
+  background:var(--card);color:var(--text2);font-size:14px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:var(--transition);margin-top:8px;
+}
+.btn-social:hover{background:var(--bg);border-color:var(--border2);box-shadow:var(--shadow-sm);}
+.btn-facebook svg{flex-shrink:0;}
+.btn-apple{color:#fff;background:#000;border-color:#000;}
+.btn-apple:hover{background:#1a1a1a;border-color:#1a1a1a;}
+[data-theme=dark] .btn-apple{background:#fff;color:#000;border-color:#fff;}
+[data-theme=dark] .btn-apple:hover{background:#e5e5e5;}
 .btn-danger{width:100%;padding:13px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--transition);}
 .btn-danger.full{margin-top:16px;}
 .btn-danger:hover{transform:translateY(-2px);}
@@ -1112,20 +1124,8 @@ textarea{resize:vertical;}
 }
 
 @media(min-width:1024px){
-  /* Sidebar becomes a fixed left column */
+  /* Sidebar is now a floating glass dropdown on desktop too — no docking */
   .market-inner{display:flex;flex:1;min-height:calc(100vh - var(--topnav-h));}
-  .sidebar{
-    position:sticky;top:var(--topnav-h);
-    height:calc(100vh - var(--topnav-h));
-    width:220px;flex-shrink:0;
-    transform:none !important; /* always visible */
-    border-right:1px solid var(--border);
-    overflow-y:auto;
-  }
-  .sidebar-top{display:none;} /* hide close button on desktop */
-  .sidebar-close{display:none;}
-  .sidebar-overlay{display:none !important;}
-  .nav-hamburger{display:none;}
   .main-wrap{flex:1;min-width:0;padding-bottom:0;}
   .bottom-nav{display:none;}
   .listings-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
@@ -1270,3 +1270,253 @@ textarea{resize:vertical;}
 
 /* ── Block confirmation modal ── */
 .block-confirm-text{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
+
+/* ════════════════════════════════════════
+   v7 — MMUST Hub, Housing, Jobs, Lost&Found,
+   AI Search/Generator, Delivery Scheduling
+════════════════════════════════════════ */
+
+/* ── Listing Type Tabs (sell modal) ── */
+.listing-type-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none;}
+.listing-type-tabs::-webkit-scrollbar{display:none;}
+.lt-tab{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--radius-full);background:var(--bg);color:var(--text2);font-size:12px;font-weight:700;transition:var(--transition);}
+.lt-tab.active{background:var(--brand);border-color:var(--brand);color:#fff;}
+
+/* ── AI Generate Box ── */
+.ai-generate-box{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(168,85,247,.08));border:1.5px solid #c4b5fd;border-radius:var(--radius-lg);padding:14px;margin-bottom:16px;}
+[data-theme=dark] .ai-generate-box{border-color:#4c1d95;background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(168,85,247,.08));}
+.btn-ai-generate{width:100%;padding:10px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--transition);}
+.btn-ai-generate:hover{opacity:.9;}
+.btn-ai-generate:disabled{opacity:.6;}
+
+/* ── Lost & Found toggle ── */
+.lf-toggle-row{display:flex;gap:8px;margin-bottom:14px;}
+.lf-toggle-btn{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg);color:var(--text2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:var(--transition);}
+.lf-toggle-btn.active{background:var(--amber-dark);border-color:var(--amber-dark);color:#fff;}
+.lf-toggle-btn.active[data-kind="found"]{background:var(--brand-dark);border-color:var(--brand-dark);}
+
+/* ── Search AI toggle button ── */
+.search-ai-btn{position:absolute;right:36px;background:none;border:none;color:var(--muted);font-size:14px;padding:4px;transition:var(--transition);cursor:pointer;}
+.search-ai-btn:hover,.search-ai-btn.active{color:#a855f7;}
+.nav-search input{padding-right:64px;}
+
+/* ── Housing-specific listing card badges ── */
+.housing-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.housing-rent-badge{background:var(--brand-light);color:var(--brand-dark);font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);}
+.housing-vacancy-badge{background:#fff8e1;color:#7a5800;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);}
+.job-pay-badge{background:#e0e7ff;color:#4338ca;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);}
+[data-theme=dark] .job-pay-badge{background:rgba(99,102,241,.15);color:#a5b4fc;}
+.lf-kind-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--radius-full);}
+.lf-kind-badge.lost{background:#fee2e2;color:#991b1b;}
+.lf-kind-badge.found{background:var(--brand-light);color:var(--brand-dark);}
+.lf-claimed-badge{background:#e2e8f0;color:#475569;font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--radius-full);}
+
+/* ── Schedule / Meetup proposal cards ── */
+.schedule-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;}
+.schedule-card-title{font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.schedule-meta{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.schedule-status-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--radius-full);}
+.schedule-status-badge.proposed{background:#fff8e1;color:#7a5800;}
+.schedule-status-badge.accepted{background:var(--brand-light);color:var(--brand-dark);}
+.schedule-status-badge.declined{background:#fee2e2;color:#991b1b;}
+.schedule-actions{display:flex;gap:8px;margin-top:10px;}
+.schedule-actions button{flex:1;padding:8px;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;}
+.btn-schedule-meetup{width:100%;padding:11px;margin-top:8px;border:1.5px solid var(--brand);border-radius:var(--radius-md);background:none;color:var(--brand-dark);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-schedule-meetup:hover{background:var(--brand);color:#fff;}
+
+/* ── Schedule propose modal ── */
+.schedule-form .field-group{margin-bottom:12px;}
+
+/* ── Dispute button ── */
+.btn-dispute{width:100%;padding:10px;margin-top:8px;border:1.5px solid var(--red);border-radius:var(--radius-md);background:none;color:var(--red);font-size:12px;font-weight:700;}
+
+/* ── Registration number badge ── */
+.reg-number-badge{font-size:11px;color:var(--muted);background:var(--bg);padding:3px 9px;border-radius:var(--radius-full);font-weight:600;}
+
+/* ═══════════════════════════════════════════════════════
+   v8 — GLASSMORPHISM REDESIGN
+   Floating gradient background, glass pill nav (top + bottom),
+   hamburger glass panel replaces fixed sidebar
+   ═══════════════════════════════════════════════════════ */
+
+:root{
+  --glass-bg:        rgba(255,255,255,.55);
+  --glass-bg-strong: rgba(255,255,255,.7);
+  --glass-border:    rgba(255,255,255,.6);
+  --glass-blur:      18px;
+  --glass-shadow:    0 8px 32px rgba(31,38,135,.18);
+}
+[data-theme=dark]{
+  --glass-bg:        rgba(17,24,32,.55);
+  --glass-bg-strong: rgba(17,24,32,.72);
+  --glass-border:    rgba(255,255,255,.08);
+  --glass-shadow:    0 8px 32px rgba(0,0,0,.4);
+}
+
+/* ── Fixed gradient blob background behind everything ── */
+.bg-blobs{
+  position:fixed; inset:0; z-index:-1; overflow:hidden;
+  background:linear-gradient(135deg,#5b3df0 0%,#3d6cf0 45%,#2e9ef0 100%);
+}
+[data-theme=dark] .bg-blobs{ background:linear-gradient(135deg,#1a0f3d 0%,#0f1f47 45%,#0a2840 100%); }
+.bg-blobs .blob{
+  position:absolute; border-radius:50%; filter:blur(60px); opacity:.55;
+  background:radial-gradient(circle at 30% 30%,#c084fc,#60a5fa 70%);
+}
+.bg-blobs .blob1{ width:560px; height:560px; top:-160px; left:-140px; }
+.bg-blobs .blob2{ width:620px; height:480px; bottom:-180px; right:-160px; background:radial-gradient(circle at 60% 40%,#a78bfa,#38bdf8 70%); }
+.bg-blobs .blob3{ width:380px; height:380px; top:40%; right:8%; background:radial-gradient(circle at 50% 50%,#f0abfc,#818cf8 70%); opacity:.35; }
+
+/* Body/app sit transparent so the fixed blob background shows through */
+body{ background:transparent; }
+#market-page.active{ background:transparent; }
+.main-wrap{ background:transparent; }
+
+/* ── Glass utility ── */
+.glass{
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+}
+
+/* ════════════════════════════════════════
+   TOP PILL NAV (glass)
+════════════════════════════════════════ */
+.topnav{
+  background:transparent !important; border:none !important; backdrop-filter:none !important;
+  position:sticky; top:0; z-index:600; padding:14px 16px 0;
+  height:auto;
+}
+.nav-inner{
+  max-width:1400px; margin:0 auto;
+  background:var(--glass-bg-strong);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+  border-radius:var(--radius-full);
+  padding:8px 10px 8px 16px;
+  height:auto;
+}
+.nav-brand{ flex-shrink:0; }
+.nb-text{ color:var(--text); }
+
+/* Primary pill links inside the top nav (desktop) */
+.nav-pills{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.nav-pill{
+  display:flex; align-items:center; gap:6px;
+  padding:9px 16px; border-radius:var(--radius-full);
+  font-size:13px; font-weight:700; color:var(--text2);
+  background:rgba(255,255,255,.18); border:1px solid transparent;
+  transition:var(--transition); white-space:nowrap;
+}
+[data-theme=dark] .nav-pill{ background:rgba(255,255,255,.06); }
+.nav-pill:hover{ background:rgba(255,255,255,.32); color:var(--text); }
+.nav-pill.active{ background:var(--brand); color:#fff; box-shadow:var(--shadow-brand); }
+.nav-pill i{ font-size:12px; }
+
+.nav-search{
+  background:rgba(255,255,255,.35);
+  border:1px solid var(--glass-border);
+}
+[data-theme=dark] .nav-search{ background:rgba(255,255,255,.05); }
+.nav-search input{ background:transparent; border:none; }
+.nav-search input:focus{ background:transparent; border:none; box-shadow:none; }
+
+.nav-icon-btn{
+  background:rgba(255,255,255,.25); border:1px solid transparent;
+}
+[data-theme=dark] .nav-icon-btn{ background:rgba(255,255,255,.07); }
+.nav-icon-btn:hover{ background:rgba(255,255,255,.4); }
+
+/* Hamburger — now the primary "everything else" trigger, always visible */
+.nav-hamburger{
+  display:flex !important; align-items:center; justify-content:center;
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,.25); border:1px solid transparent;
+  color:var(--text2); font-size:16px; transition:var(--transition); flex-shrink:0;
+}
+[data-theme=dark] .nav-hamburger{ background:rgba(255,255,255,.07); }
+.nav-hamburger:hover{ background:rgba(255,255,255,.4); }
+
+/* ════════════════════════════════════════
+   HAMBURGER GLASS PANEL (replaces sidebar entirely)
+════════════════════════════════════════ */
+.sidebar-overlay{ background:rgba(20,15,50,.35); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+
+.sidebar{
+  /* now a floating glass panel, not a docked column */
+  position:fixed !important; top:84px; right:16px; left:auto;
+  width:320px; max-width:calc(100vw - 32px);
+  max-height:calc(100vh - 110px);
+  border-radius:var(--radius-xl) !important;
+  background:var(--glass-bg-strong) !important;
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%) !important;
+  border:1px solid var(--glass-border) !important;
+  box-shadow:var(--glass-shadow) !important;
+  transform:translateY(-12px) scale(.97); opacity:0; pointer-events:none;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+  overflow-y:auto;
+}
+.sidebar.open{ transform:translateY(0) scale(1); opacity:1; pointer-events:all; }
+.sidebar-top{ background:transparent; border-bottom:1px solid var(--glass-border); }
+.sidebar-user{ background:rgba(255,255,255,.25); }
+[data-theme=dark] .sidebar-user{ background:rgba(255,255,255,.05); }
+.snav-item:hover, .snav-item.active{ background:rgba(255,255,255,.3); }
+[data-theme=dark] .snav-item:hover, [data-theme=dark] .snav-item.active{ background:rgba(255,255,255,.08); }
+
+/* ════════════════════════════════════════
+   BOTTOM GLASS PILL NAV (mobile)
+════════════════════════════════════════ */
+.bottom-nav{
+  background:transparent !important; border:none !important;
+  bottom:14px; left:14px; right:14px; height:auto;
+  display:flex; justify-content:center; padding:0;
+}
+.bnav-pill-wrap{
+  display:flex; align-items:center; justify-content:space-around;
+  width:100%; max-width:420px; padding:8px 10px;
+  background:var(--glass-bg-strong);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+  border-radius:var(--radius-full);
+}
+.bnav-item{ background:none; }
+.bnav-item.active{ color:var(--brand-dark); }
+
+/* ── Glass-ify cards, modals, sheets, sections everywhere ── */
+.listing-card, .ai-card, .store-card, .similar-card, .schedule-card,
+.profile-section, .settings-card, .card-box, .help-section,
+.newsletter-card, .feat-card, .about-hero-card, .seller-card,
+.modal-sheet, .bottom-sheet, .auth-card{
+  background:var(--glass-bg-strong) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(150%) !important;
+  backdrop-filter:blur(14px) saturate(150%) !important;
+  border:1px solid var(--glass-border) !important;
+}
+.hero-section{ background:transparent !important; }
+.hero-section::before{ display:none; }
+.view-header{ background:var(--glass-bg-strong) !important; -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--glass-border) !important; }
+.chat-list, .chat-window, .chat-header, .chat-input-bar{ background:var(--glass-bg-strong) !important; -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE — glass nav adapts
+════════════════════════════════════════ */
+@media(max-width:1023px){
+  .nav-pills{ display:none; } /* primary destinations move to bottom pill on mobile */
+}
+@media(min-width:1024px){
+  .bottom-nav{ display:none; } /* desktop uses top pill nav only */
+  .sidebar{ top:84px; }
+}
+@media(max-width:640px){
+  .topnav{ padding:10px 10px 0; }
+  .nav-inner{ padding:6px 8px 6px 12px; gap:8px; }
+  .nb-text{ font-size:15px; }
+  .sidebar{ right:8px; left:8px; width:auto; top:78px; }
+}
