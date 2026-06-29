@@ -33,7 +33,7 @@
 
   /* ── Layout ── */
   --topnav-h:       64px;
-  --bnav-h:         68px;
+  --bnav-h:         96px; /* 68px nav + ~28px footer bar */
 
   /* ── Radius ── */
   --radius-sm:      8px;
@@ -899,7 +899,7 @@ textarea{resize:vertical;}
 ════════════════════════════════════════ */
 .bottom-nav{
   position:fixed;
-  bottom:0; left:0; right:0;
+  bottom:28px; left:0; right:0;
   z-index:500;
   height:auto;
   background:transparent;
@@ -907,7 +907,7 @@ textarea{resize:vertical;}
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding:10px 16px;
   pointer-events:none; /* let clicks pass through the transparent wrapper */
 }
 [data-theme=dark] .bottom-nav{ background:transparent; }
@@ -1653,60 +1653,59 @@ body{ background:transparent; }
    FOOTER — copyright 2026
 ════════════════════════════════════════ */
 .site-footer {
-  background: var(--glass-bg-strong, rgba(10,20,30,0.7));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 450;
+  background: var(--glass-bg-strong, rgba(10,20,30,0.85));
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08));
-  padding: 28px 20px 110px;
-  margin-top: 24px;
+  padding: 5px 16px calc(5px + env(safe-area-inset-bottom, 0px));
   text-align: center;
   width: 100%;
   box-sizing: border-box;
-  position: relative;
-  left: 0;
-  right: 0;
 }
 @media(min-width:1024px){
-  .site-footer { padding: 36px 20px 48px; }
+  .site-footer { padding: 5px 20px; }
 }
 .site-footer-inner {
-  max-width: 560px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
 }
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
-.footer-logo { font-size: 22px; }
+.footer-logo { font-size: 12px; }
 .footer-brand-name {
-  font-size: 18px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 800;
   background: linear-gradient(135deg, var(--text) 0%, var(--brand) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .footer-tagline {
-  font-size: 13px;
-  color: var(--muted, #8a9bb0);
-  margin: 0;
+  display: none;
 }
 .footer-links {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  font-size: 13px;
-  margin-top: 2px;
+  gap: 6px;
+  font-size: 10px;
+  margin-top: 0;
 }
 .footer-links a {
-  color: var(--brand);
+  color: var(--muted);
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
@@ -1714,11 +1713,15 @@ body{ background:transparent; }
 .footer-links a:hover { opacity: 0.75; }
 .footer-links span { color: var(--border, rgba(255,255,255,0.12)); }
 .footer-copy {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--muted, #8a9bb0);
-  margin: 4px 0 0;
+  margin: 0;
   font-weight: 500;
+  opacity: 0.7;
 }
+
+/* Fixed copyright — sits at very bottom, never scrolls */
+.footer-copy-fixed { display: none; }
 
 /* ════════════════════════════════════════
    DESKTOP CENTERING — all view pages
