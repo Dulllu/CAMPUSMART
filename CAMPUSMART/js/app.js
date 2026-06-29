@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -40,6 +40,24 @@ const esc      = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 const fmtPrice = n  => 'KES ' + Number(n||0).toLocaleString();
 const authHdr  = () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('cm_token')}` });
 const isVerified = u => u && u.phone && u.campus && u.bio;
+
+// Normalize any Kenyan/international phone number to WhatsApp-compatible format
+// Handles: 0712345678, +254712345678, 254712345678, 712345678, +1-800-555-0000
+const normalizePhone = (raw = '') => {
+  // Strip everything except digits and leading +
+  const stripped = raw.trim();
+  const digitsOnly = stripped.replace(/[^\d]/g, '');
+  // Already has country code (10+ digits not starting with 0)
+  if (digitsOnly.length >= 11 && !digitsOnly.startsWith('0')) return digitsOnly;
+  // Kenyan 07xx or 01xx -> 254xx
+  if (digitsOnly.startsWith('0') && digitsOnly.length === 10) return '254' + digitsOnly.slice(1);
+  // Kenyan 7xx (9 digits) -> 2547xx
+  if (digitsOnly.startsWith('7') && digitsOnly.length === 9) return '254' + digitsOnly;
+  // Already 254xx (12 digits)
+  if (digitsOnly.startsWith('254') && digitsOnly.length === 12) return digitsOnly;
+  // Return as-is stripped of non-digits (best effort)
+  return digitsOnly;
+};
 
 const timeAgo = d => {
   const s = (Date.now() - new Date(d)) / 1000;
@@ -744,10 +762,15 @@ function openBottomSheetBase(listing){
   else if(listing.stock!==undefined)stockEl.innerHTML=`<span class="stock-badge${listing.stock<3?' low':''}">${listing.stock} in stock</span>`;
   else stockEl.innerHTML='';
 
-  const phone=listing.contact||seller.phone||'';
-  const waText=encodeURIComponent(`Hi! I saw your listing "${listing.title}" (${fmtPrice(listing.price)}) on CampusMart.`);
-  $('bs-wa-btn').href=`https://wa.me/${phone.replace(/\D/g,'')}?text=${waText}`;
-  $('bs-call-btn').onclick=()=>{window.location.href=`tel:${phone}`;};
+  const rawPhone=listing.contact||seller.phone||'';
+  const waPhone=normalizePhone(rawPhone);
+  const waText=encodeURIComponent(`Hi! I saw your listing "${listing.title}" (${fmtPrice(listing.price)}) on CampusMart. Is it still available?`);
+  const waEl=$('bs-wa-btn');
+  if(waEl){
+    if(waPhone){waEl.href=`https://wa.me/${waPhone}?text=${waText}`;waEl.style.display='';}
+    else waEl.style.display='none';
+  }
+  $('bs-call-btn').onclick=()=>{if(rawPhone)window.location.href=`tel:${rawPhone}`;else showToast('No phone number listed','error');};
 
   // Gallery
   const mainImg=$('bs-main-img'),noImg=$('bs-no-img'),thumbs=$('bs-thumbs'),fsBtn=$('bs-fullscreen-btn');
@@ -863,7 +886,7 @@ function openModal(){
   $('upload-previews')&&($('upload-previews').innerHTML='');
   $('upload-placeholder')&&($('upload-placeholder').style.display='');
   $('listing-scam-warning')&&($('listing-scam-warning').classList.remove('visible'));
-  if(currentUser?.phone)$('item-contact').value=currentUser.phone;
+  if(currentUser?.phone){ const norm=normalizePhone(currentUser.phone); $('item-contact').value=currentUser.phone; }
   $('modal-overlay').classList.add('open');
   $('sell-modal').classList.add('open');
 }
@@ -1183,8 +1206,9 @@ function renderStory(){
   $('sv-title').textContent=l.title;$('sv-price').textContent=fmtPrice(l.price);
   const img=l.images?.[0],mainImg=$('sv-main-img'),noImg=$('sv-no-img');
   if(img){mainImg.src=(img.startsWith('/')?SERVER:'')+img;mainImg.style.display='block';noImg.style.display='none';}else{mainImg.src=catImage(l.category);mainImg.style.display='block';noImg.style.display='none';}
-  const phone=l.contact||seller.phone||'';const t=encodeURIComponent(`Hi! I saw "${l.title}" for ${fmtPrice(l.price)} on CampusMart!`);
-  $('sv-wa-btn').onclick=()=>window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${t}`,'_blank');
+  const rawPhoneSv=l.contact||seller.phone||'';const waPhoneSv=normalizePhone(rawPhoneSv);const t=encodeURIComponent(`Hi! I saw "${l.title}" for ${fmtPrice(l.price)} on CampusMart. Is it still available?`);
+  const svWaBtn=$('sv-wa-btn');
+  if(svWaBtn){if(waPhoneSv){svWaBtn.onclick=()=>window.open(`https://wa.me/${waPhoneSv}?text=${t}`,'_blank');svWaBtn.style.display='';}else svWaBtn.style.display='none';}
   const bar=$('story-viewer-bar');
   bar.innerHTML=storyListings.map((_,i)=>`<div class="sv-bar"><div class="sv-bar-fill" id="svf-${i}" style="width:${i<storyIndex?'100%':'0%'}"></div></div>`).join('');
   clearTimeout(storyTimer);const fill=$(`svf-${storyIndex}`);
@@ -1837,7 +1861,8 @@ async function aiGenerateListingNow() {
       $('item-category').value  = d.category;
       $('item-condition').value = d.condition;
     }
-    showToast('✨ Generated! Review and edit as needed.', 'success');
+    showToast(d.aiPowered ? '✨ AI-generated! Review and edit as needed.' : '✨ Generated! Review and edit as needed.', 'success');
+    if(d.aiPowered){ const btn=document.querySelector('.btn-ai-generate'); if(btn){ btn.innerHTML='<i class="fa fa-check"></i> AI Generated'; setTimeout(()=>btn.innerHTML='<i class="fa fa-wand-magic-sparkles"></i> Generate with AI',2000); } }
   } catch { showToast('Could not generate listing.', 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-wand-magic-sparkles"></i> Generate Title, Description & Category'; }
 }
