@@ -1,5 +1,5 @@
 'use strict';
-const API = (window.CAMPUSMART_CONFIG?.API) || 'https://campus-mart-y7bu.onrender.com/admin.html/api';
+const API = (window.CAMPUSMART_CONFIG?.API) || 'https://campus-mart-y7bu.onrender.com/api';
 const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
 
 const $ = id => document.getElementById(id);
