@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
