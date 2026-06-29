@@ -13,18 +13,36 @@ function showToast(msg) {
 }
 
 /* ── Auth ────────────────────────────────────────────── */
+function showLoginError(msg) {
+  const el = $('login-error');
+  el.textContent = msg;
+  el.style.cssText = 'display:block !important; color:#ef4444; font-size:13px; margin-top:10px; font-weight:600;';
+}
+
 async function adminLogin() {
   const email = $('admin-email').value.trim();
   const password = $('admin-password').value;
+  const btn = document.querySelector('#login-screen button');
+
+  if (!email || !password) return showLoginError('Enter your email and password.');
+
   $('login-error').style.display = 'none';
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
   try {
     const r = await fetch(`${API}/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
     const d = await r.json();
-    if (!r.ok) { $('login-error').textContent = d.error || 'Login failed.'; $('login-error').style.display=''; return; }
-    if (d.user.role !== 'admin') { $('login-error').textContent = 'This account does not have admin access.'; $('login-error').style.display=''; return; }
+    if (!r.ok) return showLoginError(d.error || 'Login failed.');
+    if (d.user.role !== 'admin') return showLoginError('This account does not have admin access.');
     localStorage.setItem('cm_admin_token', d.token);
     enterAdmin();
-  } catch { $('login-error').textContent = 'Could not reach server.'; $('login-error').style.display=''; }
+  } catch (err) {
+    showLoginError('Could not reach server. Check your connection.');
+  } finally {
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
+  }
 }
 
 function adminLogout() {

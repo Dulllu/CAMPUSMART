@@ -27,7 +27,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .login-card input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:12px;background:var(--bg);color:var(--text);}
 .login-card input:focus{outline:none;border-color:var(--brand);}
 .login-card button{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
-.login-error{color:var(--red);font-size:12px;margin-top:8px;display:none;}
+.login-error{color:var(--red);font-size:13px;margin-top:10px;display:none;font-weight:600;}
 
 /* App shell */
 #app{display:none;}
@@ -94,8 +94,8 @@ input#promo-subject, input#promo-cta-text, input#promo-cta-link{width:100%;paddi
   <div class="login-card">
     <h1>🎓 CampusMart Admin</h1>
     <p>Sign in with your admin account</p>
-    <input type="email" id="admin-email" placeholder="Admin email"/>
-    <input type="password" id="admin-password" placeholder="Password"/>
+    <input type="email" id="admin-email" placeholder="Admin email" onkeydown="if(event.key==='Enter')$('admin-password').focus()"/>
+    <input type="password" id="admin-password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
     <button onclick="adminLogin()">Sign In</button>
     <div class="login-error" id="login-error"></div>
   </div>
