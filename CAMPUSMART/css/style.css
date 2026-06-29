@@ -1525,13 +1525,13 @@ body{ background:transparent; }
   align-items:center;
   justify-content:space-around;
   width:100%;
-  max-width:420px;
-  padding:8px 14px;
+  max-width:100%;
+  padding:8px 10px;
   background:var(--glass-bg-strong);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   backdrop-filter:blur(20px) saturate(180%);
-  border:1.5px solid var(--glass-border);
-  box-shadow:0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.10);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
   border-radius:var(--radius-full);   /* same pill shape as topnav */
   pointer-events:all;                 /* re-enable clicks on the pill */
 }
@@ -2386,20 +2386,20 @@ body {
     border: none !important;
     border-top: none !important;
     box-shadow: none !important;
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .bnav-pill-wrap {
-    /* Match the topnav pill exactly */
+    /* Match the topnav .nav-inner pill exactly */
     background: var(--glass-bg-strong) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1.5px solid var(--glass-border) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.12) !important;
-    border-radius: 9999px !important;         /* full pill */
-    padding: 8px 16px !important;
-    /* No rectangle behind it — just the pill */
-    width: auto !important;
-    max-width: 360px !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+    border-radius: var(--radius-full) !important;
+    padding: 8px 10px !important;
+    /* Stretch to match topnav width */
+    width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
     margin: 0 auto !important;
   }
