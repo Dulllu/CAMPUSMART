@@ -1,5 +1,5 @@
 // CampusMart Service Worker — minimal, enables PWA installability + push notifications
-const CACHE_NAME = 'campusmart-v1';
+const CACHE_NAME = 'campusmart-v10';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
@@ -291,13 +291,35 @@
     </div>
     <div class="sidebar-section-label">Browse</div>
     <nav class="sidebar-nav">
-      <a class="snav-item active" id="snav-all"         onclick="filterCategory('all');closeSidebar()"><i class="fa fa-th-large"></i><span>All Listings</span></a>
-      <a class="snav-item" id="snav-books"              onclick="filterCategory('books');closeSidebar()"><i class="fa fa-book"></i><span>Textbooks</span></a>
-      <a class="snav-item" id="snav-electronics"        onclick="filterCategory('electronics');closeSidebar()"><i class="fa fa-laptop"></i><span>Electronics</span></a>
-      <a class="snav-item" id="snav-clothes"            onclick="filterCategory('clothes');closeSidebar()"><i class="fa fa-tshirt"></i><span>Clothes</span></a>
-      <a class="snav-item" id="snav-food"               onclick="filterCategory('food');closeSidebar()"><i class="fa fa-utensils"></i><span>Food &amp; Snacks</span></a>
-      <a class="snav-item" id="snav-services"           onclick="filterCategory('services');closeSidebar()"><i class="fa fa-tools"></i><span>Services</span></a>
-      <a class="snav-item" id="snav-other"              onclick="filterCategory('other');closeSidebar()"><i class="fa fa-box"></i><span>Other</span></a>
+      <a class="snav-item active" id="snav-all"            onclick="filterCategory('all');closeSidebar()"><i class="fa fa-th-large"></i><span>All Listings</span></a>
+      <div class="snav-section-label">🎓 Academics</div>
+      <a class="snav-item" id="snav-books"               onclick="filterCategory('books');closeSidebar()"><i class="fa fa-book"></i><span>Textbooks &amp; Notes</span></a>
+      <a class="snav-item" id="snav-instruments"         onclick="filterCategory('instruments');closeSidebar()"><i class="fa fa-compass-drafting"></i><span>Lab &amp; Instruments</span></a>
+      <div class="snav-section-label">💻 Electronics</div>
+      <a class="snav-item" id="snav-electronics"         onclick="filterCategory('electronics');closeSidebar()"><i class="fa fa-laptop"></i><span>Laptops &amp; Computers</span></a>
+      <a class="snav-item" id="snav-phones"              onclick="filterCategory('phones');closeSidebar()"><i class="fa fa-mobile-alt"></i><span>Phones &amp; Tablets</span></a>
+      <a class="snav-item" id="snav-accessories"         onclick="filterCategory('accessories');closeSidebar()"><i class="fa fa-plug"></i><span>Accessories</span></a>
+      <a class="snav-item" id="snav-gaming"              onclick="filterCategory('gaming');closeSidebar()"><i class="fa fa-gamepad"></i><span>Gaming</span></a>
+      <div class="snav-section-label">👕 Fashion</div>
+      <a class="snav-item" id="snav-clothes"             onclick="filterCategory('clothes');closeSidebar()"><i class="fa fa-tshirt"></i><span>Clothing &amp; Shoes</span></a>
+      <a class="snav-item" id="snav-beauty"              onclick="filterCategory('beauty');closeSidebar()"><i class="fa fa-spa"></i><span>Beauty &amp; Care</span></a>
+      <div class="snav-section-label">🏠 Essentials</div>
+      <a class="snav-item" id="snav-hostel"              onclick="filterCategory('hostel');closeSidebar()"><i class="fa fa-bed"></i><span>Hostel &amp; Room</span></a>
+      <a class="snav-item" id="snav-kitchen"             onclick="filterCategory('kitchen');closeSidebar()"><i class="fa fa-utensils"></i><span>Kitchen &amp; Cooking</span></a>
+      <div class="snav-section-label">🎨 Lifestyle</div>
+      <a class="snav-item" id="snav-sports"              onclick="filterCategory('sports');closeSidebar()"><i class="fa fa-futbol"></i><span>Sports &amp; Fitness</span></a>
+      <a class="snav-item" id="snav-creative"            onclick="filterCategory('creative');closeSidebar()"><i class="fa fa-camera"></i><span>Creative &amp; Media</span></a>
+      <a class="snav-item" id="snav-food"                onclick="filterCategory('food');closeSidebar()"><i class="fa fa-hamburger"></i><span>Food &amp; Snacks</span></a>
+      <a class="snav-item" id="snav-pets"                onclick="filterCategory('pets');closeSidebar()"><i class="fa fa-paw"></i><span>Pets</span></a>
+      <div class="snav-section-label">💼 Services &amp; Digital</div>
+      <a class="snav-item" id="snav-services"            onclick="filterCategory('services');closeSidebar()"><i class="fa fa-tools"></i><span>Services</span></a>
+      <a class="snav-item" id="snav-digital"             onclick="filterCategory('digital');closeSidebar()"><i class="fa fa-download"></i><span>Digital Products</span></a>
+      <div class="snav-section-label">🔄 More</div>
+      <a class="snav-item" id="snav-transport"           onclick="filterCategory('transport');closeSidebar()"><i class="fa fa-bicycle"></i><span>Transport</span></a>
+      <a class="snav-item" id="snav-rentals"             onclick="filterCategory('rentals');closeSidebar()"><i class="fa fa-rotate-left"></i><span>Rentals</span></a>
+      <a class="snav-item" id="snav-events"              onclick="filterCategory('events');closeSidebar()"><i class="fa fa-ticket"></i><span>Events &amp; Tickets</span></a>
+      <a class="snav-item" id="snav-free"                onclick="filterCategory('free');closeSidebar()"><i class="fa fa-gift"></i><span>Free Stuff</span></a>
+      <a class="snav-item" id="snav-other"               onclick="filterCategory('other');closeSidebar()"><i class="fa fa-box"></i><span>Miscellaneous</span></a>
     </nav>
     <div class="sidebar-section-label">MMUST Hub</div>
     <nav class="sidebar-nav">
@@ -365,10 +387,10 @@
         </div>
         <div class="hero-visual">
           <div class="hero-float-cards">
-            <div class="hfc hfc-1" style="background-image:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=200&h=200&fit=crop')"><span class="hfc-label">Books</span></div>
-            <div class="hfc hfc-2" style="background-image:url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop')"><span class="hfc-label">Electronics</span></div>
-            <div class="hfc hfc-3" style="background-image:url('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=200&fit=crop')"><span class="hfc-label">Clothes</span></div>
-            <div class="hfc hfc-4" style="background-image:url('https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=200&h=200&fit=crop')"><span class="hfc-label">Food</span></div>
+            <div class="hfc hfc-1" style="background-image:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=200&h=200&fit=crop')"><span class="hfc-label">📚 Books</span></div>
+            <div class="hfc hfc-2" style="background-image:url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop')"><span class="hfc-label">💻 Electronics</span></div>
+            <div class="hfc hfc-3" style="background-image:url('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=200&fit=crop')"><span class="hfc-label">👕 Fashion</span></div>
+            <div class="hfc hfc-4" style="background-image:url('https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=200&h=200&fit=crop')"><span class="hfc-label">🍔 Food</span></div>
           </div>
         </div>
       </section>
@@ -376,7 +398,7 @@
       <!-- Animated ticker -->
       <div class="ticker-wrap">
         <div class="ticker-inner">
-          <span class="ticker-content">📚 Textbooks &nbsp;&nbsp;•&nbsp;&nbsp; 📱 Electronics &nbsp;&nbsp;•&nbsp;&nbsp; 👕 Clothes &nbsp;&nbsp;•&nbsp;&nbsp; 🍔 Food &amp; Snacks &nbsp;&nbsp;•&nbsp;&nbsp; 💻 Laptops &nbsp;&nbsp;•&nbsp;&nbsp; 🎧 Headphones &nbsp;&nbsp;•&nbsp;&nbsp; 📖 Notes &nbsp;&nbsp;•&nbsp;&nbsp; 👟 Sneakers &nbsp;&nbsp;•&nbsp;&nbsp; 🍕 Meals &nbsp;&nbsp;•&nbsp;&nbsp; 🎮 Games &nbsp;&nbsp;•&nbsp;&nbsp; 📚 Textbooks &nbsp;&nbsp;•&nbsp;&nbsp; 📱 Electronics &nbsp;&nbsp;•&nbsp;&nbsp; 👕 Clothes &nbsp;&nbsp;•&nbsp;&nbsp; 🍔 Food &amp; Snacks &nbsp;&nbsp;•&nbsp;&nbsp; 💻 Laptops &nbsp;&nbsp;•&nbsp;&nbsp; 🎧 Headphones</span>
+          <span class="ticker-content">📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 🛏 Hostel Essentials &nbsp;•&nbsp; 🏋 Sports &nbsp;•&nbsp; 🎨 Creative &nbsp;•&nbsp; 💼 Services &nbsp;•&nbsp; 🔬 Instruments &nbsp;•&nbsp; 🐶 Pets &nbsp;•&nbsp; 🚲 Transport &nbsp;•&nbsp; 🎟 Events &nbsp;•&nbsp; ❤️ Free Stuff &nbsp;•&nbsp; 💄 Beauty &nbsp;•&nbsp; 🍽 Kitchen &nbsp;•&nbsp; 🔄 Rentals &nbsp;•&nbsp; 📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food</span>
         </div>
       </div>
 
@@ -393,13 +415,28 @@
       <!-- Category pills -->
       <section class="cats-section">
         <div class="cats-row" id="cats-row">
-          <button class="cat-pill active" data-cat="all" onclick="filterCategory('all')"><span>🏠</span> All</button>
-          <button class="cat-pill" data-cat="books" onclick="filterCategory('books')"><span>📚</span> Books</button>
-          <button class="cat-pill" data-cat="electronics" onclick="filterCategory('electronics')"><span>💻</span> Electronics</button>
-          <button class="cat-pill" data-cat="clothes" onclick="filterCategory('clothes')"><span>👕</span> Clothes</button>
-          <button class="cat-pill" data-cat="food" onclick="filterCategory('food')"><span>🍔</span> Food</button>
-          <button class="cat-pill" data-cat="services" onclick="filterCategory('services')"><span>🛠</span> Services</button>
-          <button class="cat-pill" data-cat="other" onclick="filterCategory('other')"><span>📦</span> Other</button>
+          <button class="cat-pill active" data-cat="all"          onclick="filterCategory('all')"><span>🏠</span> All</button>
+          <button class="cat-pill" data-cat="books"          onclick="filterCategory('books')"><span>📚</span> Academics</button>
+          <button class="cat-pill" data-cat="electronics"    onclick="filterCategory('electronics')"><span>💻</span> Electronics</button>
+          <button class="cat-pill" data-cat="phones"         onclick="filterCategory('phones')"><span>📱</span> Phones</button>
+          <button class="cat-pill" data-cat="accessories"    onclick="filterCategory('accessories')"><span>🔌</span> Accessories</button>
+          <button class="cat-pill" data-cat="clothes"        onclick="filterCategory('clothes')"><span>👕</span> Fashion</button>
+          <button class="cat-pill" data-cat="beauty"         onclick="filterCategory('beauty')"><span>💄</span> Beauty</button>
+          <button class="cat-pill" data-cat="hostel"         onclick="filterCategory('hostel')"><span>🏠</span> Hostel</button>
+          <button class="cat-pill" data-cat="kitchen"        onclick="filterCategory('kitchen')"><span>🍽</span> Kitchen</button>
+          <button class="cat-pill" data-cat="food"           onclick="filterCategory('food')"><span>🍔</span> Food</button>
+          <button class="cat-pill" data-cat="gaming"         onclick="filterCategory('gaming')"><span>🎮</span> Gaming</button>
+          <button class="cat-pill" data-cat="sports"         onclick="filterCategory('sports')"><span>🏋</span> Sports</button>
+          <button class="cat-pill" data-cat="creative"       onclick="filterCategory('creative')"><span>🎨</span> Creative</button>
+          <button class="cat-pill" data-cat="services"       onclick="filterCategory('services')"><span>💼</span> Services</button>
+          <button class="cat-pill" data-cat="digital"        onclick="filterCategory('digital')"><span>💻</span> Digital</button>
+          <button class="cat-pill" data-cat="transport"      onclick="filterCategory('transport')"><span>🚲</span> Transport</button>
+          <button class="cat-pill" data-cat="rentals"        onclick="filterCategory('rentals')"><span>🔄</span> Rentals</button>
+          <button class="cat-pill" data-cat="events"         onclick="filterCategory('events')"><span>🎟</span> Events</button>
+          <button class="cat-pill" data-cat="free"           onclick="filterCategory('free')"><span>❤️</span> Free</button>
+          <button class="cat-pill" data-cat="pets"           onclick="filterCategory('pets')"><span>🐶</span> Pets</button>
+          <button class="cat-pill" data-cat="instruments"    onclick="filterCategory('instruments')"><span>🔬</span> Instruments</button>
+          <button class="cat-pill" data-cat="other"          onclick="filterCategory('other')"><span>📦</span> Other</button>
         </div>
       </section>
 
@@ -461,17 +498,49 @@
 
     <!-- ═══ VIEW: STORES ═══ -->
     <div id="view-stores" style="display:none">
-      <div class="view-header"><button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i> Back</button><h2>🏪 Campus Stores</h2></div>
-      <div class="store-grid" id="store-grid"></div>
-      <div class="empty-state" id="stores-empty" style="display:none"><div class="es-icon">🏪</div><h3>No stores yet</h3></div>
-      <div id="store-detail" style="display:none">
-        <div class="store-detail-header">
-          <div class="sdh-avatar" id="store-detail-avatar">S</div>
-          <div class="sdh-info"><div class="sdh-name" id="store-detail-name"></div><div class="sdh-meta" id="store-detail-meta"></div></div>
-          <button class="btn-follow" id="store-follow-btn" onclick="toggleFollowStore()">+ Follow</button>
+      <div class="view-header">
+        <button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i></button>
+        <h2>🏪 Campus Stores</h2>
+        <button class="btn-primary sm" onclick="openModal()" style="margin-left:auto"><i class="fa fa-plus"></i> Sell</button>
+      </div>
+
+      <!-- Store list -->
+      <div class="page-body" id="store-list-section">
+        <div class="settings-card" style="padding:16px 18px;display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;border:none">
+          <span style="font-size:28px">🏪</span>
+          <div>
+            <strong style="font-size:15px;display:block">Campus Stores</strong>
+            <p style="font-size:12px;opacity:.85;margin:2px 0 0">Browse shops from fellow students. Anyone can sell — no store required.</p>
+          </div>
         </div>
-        <div class="listings-grid" id="store-listings-grid"></div>
-        <div class="empty-state" id="store-listings-empty" style="display:none"><p>No active listings.</p></div>
+        <div class="store-grid" id="store-grid"></div>
+        <div class="empty-state" id="stores-empty" style="display:none">
+          <div class="es-icon">🏪</div>
+          <h3>No stores yet</h3>
+          <p>Be the first to set up your campus store!</p>
+          <button class="btn-primary" onclick="showPageAnimated('profile')">Set Up My Store</button>
+        </div>
+      </div>
+
+      <!-- Store detail view -->
+      <div id="store-detail" style="display:none">
+        <div class="store-banner-wrap">
+          <div class="store-banner-img" id="store-banner-img"></div>
+          <div class="store-detail-header">
+            <div class="sdh-avatar" id="store-detail-avatar">S</div>
+            <div class="sdh-info">
+              <div class="sdh-name" id="store-detail-name"></div>
+              <div class="sdh-meta" id="store-detail-meta"></div>
+              <div class="sdh-bio" id="store-detail-bio"></div>
+            </div>
+            <button class="btn-follow" id="store-follow-btn" onclick="toggleFollowStore()">+ Follow</button>
+          </div>
+        </div>
+        <div class="store-stats-bar" id="store-stats-bar"></div>
+        <div class="listings-grid" id="store-listings-grid" style="padding:0 12px 80px"></div>
+        <div class="empty-state" id="store-listings-empty" style="display:none">
+          <div class="es-icon">📦</div><p>This seller has no active listings right now.</p>
+        </div>
       </div>
     </div>
 
@@ -536,7 +605,30 @@
             <div class="field-group"><label>Max Price</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="ss-max-price" placeholder="Optional"/></div></div>
           </div>
           <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i>
-            <select id="ss-category"><option value="all">All Categories</option><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select>
+            <select id="ss-category">
+  <option value="all">All Categories</option>
+  <option value="books">📚 Textbooks &amp; Notes</option>
+  <option value="instruments">🔬 Lab &amp; Instruments</option>
+  <option value="electronics">💻 Laptops &amp; Computers</option>
+  <option value="phones">📱 Phones &amp; Tablets</option>
+  <option value="accessories">🔌 Accessories</option>
+  <option value="gaming">🎮 Gaming</option>
+  <option value="clothes">👕 Clothing &amp; Shoes</option>
+  <option value="beauty">💄 Beauty &amp; Care</option>
+  <option value="hostel">🛏 Hostel &amp; Room</option>
+  <option value="kitchen">🍽 Kitchen</option>
+  <option value="food">🍔 Food &amp; Snacks</option>
+  <option value="sports">🏋 Sports &amp; Fitness</option>
+  <option value="creative">🎨 Creative &amp; Media</option>
+  <option value="pets">🐶 Pets</option>
+  <option value="transport">🚲 Transport</option>
+  <option value="services">💼 Services</option>
+  <option value="digital">💻 Digital Products</option>
+  <option value="rentals">🔄 Rentals</option>
+  <option value="events">🎟 Events &amp; Tickets</option>
+  <option value="free">❤️ Free Stuff</option>
+  <option value="other">📦 Miscellaneous</option>
+</select>
           </div></div>
           <button class="btn-primary" onclick="createSavedSearch()"><i class="fa fa-bell"></i> Create Alert</button>
         </div>
@@ -638,6 +730,15 @@
             </div>
             <div class="field-group"><label>MMUST Registration Number</label><div class="input-wrap"><i class="fa fa-id-badge"></i><input type="text" id="edit-reg-number" placeholder="e.g. SCI/CS/01/19"/></div></div>
             <div class="field-group"><label>Bio</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="edit-bio" rows="2" maxlength="200" placeholder="Short bio (max 200 chars)"></textarea></div></div>
+
+            <!-- Store branding section -->
+            <div class="profile-section-header" style="margin:16px -4px 10px;padding:12px 4px 0;border-top:1px solid var(--border)">
+              <h3 style="display:flex;align-items:center;gap:8px">🏪 My Store <span style="font-size:11px;font-weight:500;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:20px">optional</span></h3>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:-6px 0 12px">Give your shop a custom name. You don't need a store to sell — anyone can post listings.</p>
+            <div class="field-group"><label>Store Name</label><div class="input-wrap"><i class="fa fa-store"></i><input type="text" id="edit-store-name" placeholder="e.g. TechHub MMUST, Rose Boutique..." maxlength="60"/></div></div>
+            <div class="field-group"><label>Store Tagline</label><div class="input-wrap"><i class="fa fa-quote-left" style="top:14px;transform:none"></i><textarea id="edit-store-bio" rows="2" maxlength="200" placeholder="e.g. Best electronics prices on campus..."></textarea></div></div>
+
             <button class="btn-primary" onclick="saveProfile()"><i class="fa fa-save"></i> Save Changes</button>
             <button class="verify-student-btn" onclick="openVerifyModal()"><i class="fa fa-user-check"></i> Verify Student Status 🎓</button>
           </div>
@@ -927,7 +1028,43 @@
           <div class="field-group"><label>Qty</label><div class="input-wrap"><i class="fa fa-layer-group"></i><input type="number" id="item-stock" placeholder="1" min="1" value="1"/></div></div>
         </div>
         <div class="two-col">
-          <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category"><option value="books">📚 Textbooks</option><option value="electronics">💻 Electronics</option><option value="clothes">👕 Clothes</option><option value="food">🍔 Food</option><option value="services">🛠 Services</option><option value="other">📦 Other</option></select></div></div>
+          <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category">
+  <optgroup label="🎓 Academics">
+    <option value="books">📚 Textbooks &amp; Notes</option>
+    <option value="instruments">🔬 Lab &amp; Instruments</option>
+  </optgroup>
+  <optgroup label="💻 Electronics">
+    <option value="electronics">💻 Laptops &amp; Computers</option>
+    <option value="phones">📱 Phones &amp; Tablets</option>
+    <option value="accessories">🔌 Accessories &amp; Cables</option>
+    <option value="gaming">🎮 Gaming</option>
+  </optgroup>
+  <optgroup label="👕 Fashion">
+    <option value="clothes">👕 Clothing &amp; Shoes</option>
+    <option value="beauty">💄 Beauty &amp; Personal Care</option>
+  </optgroup>
+  <optgroup label="🏠 Hostel &amp; Living">
+    <option value="hostel">🛏 Hostel &amp; Room Essentials</option>
+    <option value="kitchen">🍽 Kitchen &amp; Cooking</option>
+  </optgroup>
+  <optgroup label="🎨 Lifestyle">
+    <option value="food">🍔 Food &amp; Snacks</option>
+    <option value="sports">🏋 Sports &amp; Fitness</option>
+    <option value="creative">🎨 Creative &amp; Media</option>
+    <option value="pets">🐶 Pets</option>
+    <option value="transport">🚲 Transport</option>
+  </optgroup>
+  <optgroup label="💼 Services &amp; Digital">
+    <option value="services">💼 Services</option>
+    <option value="digital">💻 Digital Products</option>
+  </optgroup>
+  <optgroup label="🔄 More">
+    <option value="rentals">🔄 Rentals</option>
+    <option value="events">🎟 Events &amp; Tickets</option>
+    <option value="free">❤️ Free Stuff</option>
+    <option value="other">📦 Miscellaneous</option>
+  </optgroup>
+</select></div></div>
           <div class="field-group"><label>Condition</label><div class="input-wrap"><i class="fa fa-box"></i><select id="item-condition"><option value="New">✨ New</option><option value="Like New">👌 Like New</option><option value="Good">👍 Good</option><option value="Fair">🔄 Fair</option></select></div></div>
         </div>
         <label class="promo-toggle-label"><input type="checkbox" id="item-is-promo" onchange="togglePromoFields()"/><span><i class="fa fa-tags"></i> Mark as Offer / Promotion</span></label>

@@ -265,24 +265,55 @@ async function loadHeatmap() {
 }
 
 /* ── Promo Blast ─────────────────────────────────────── */
+async function loadSubscriberCount() {
+  try {
+    const secret = localStorage.getItem('cm_admin_secret') || '';
+    const r = await fetch(`${API}/auth/subscribers/count`, { headers: { 'x-admin-secret': secret } });
+    if (r.ok) {
+      const d = await r.json();
+      const el = $('subscriber-count');
+      if (el) el.textContent = `${d.count} active subscriber${d.count !== 1 ? 's' : ''}`;
+    }
+  } catch {}
+}
+
 async function sendPromoBlastAdmin() {
-  const subject = $('promo-subject').value.trim();
+  const subject  = $('promo-subject').value.trim();
   const headline = $('promo-headline').value.trim();
-  const body = $('promo-body').value.trim();
-  const ctaText = $('promo-cta-text').value.trim() || 'Browse Now';
-  const ctaLink = $('promo-cta-link').value.trim() || SERVER;
-  if (!subject || !headline || !body) return showToast('Fill in subject, headline and body.');
-  if (!confirm('Send this email to ALL active subscribers?')) return;
+  const body     = $('promo-body').value.trim();
+  const ctaText  = $('promo-cta-text').value.trim() || 'Browse Now';
+  const ctaLink  = $('promo-cta-link').value.trim() || SERVER;
+  if (!subject || !headline || !body) return showToast('Fill in subject, headline and body first.');
+  
+  const secret = localStorage.getItem('cm_admin_secret') || prompt('Enter ADMIN_SECRET:') || '';
+  if (!secret) return showToast('Admin secret required.', 'error');
+  localStorage.setItem('cm_admin_secret', secret);
+
+  // Load count first so admin knows who they're emailing
+  let count = '?';
+  try {
+    const cr = await fetch(`${API}/auth/subscribers/count`, { headers: { 'x-admin-secret': secret } });
+    if (cr.ok) { const cd = await cr.json(); count = cd.count; }
+  } catch {}
+
+  if (!confirm(`Send this email to ALL ${count} active subscriber${count !== 1 ? 's' : ''}?\n\nSubject: ${subject}`)) return;
+  
+  const btn = document.querySelector('[onclick="sendPromoBlastAdmin()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  
   try {
     const r = await fetch(`${API}/auth/promo-blast`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-admin-secret': prompt('Enter ADMIN_SECRET to confirm:') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
       body: JSON.stringify({ subject, headline, body, ctaText, ctaLink }),
     });
     const d = await r.json();
-    if (!r.ok) return showToast(d.error || 'Send failed.');
-    showToast(`Sent to ${d.sent} subscribers!`);
-  } catch { showToast('Send failed.'); }
+    if (!r.ok) return showToast(d.error || 'Send failed.', 'error');
+    showToast(`✅ Sent to ${d.sent} subscribers! (${d.failed} failed)`);
+    // Clear form
+    ['promo-subject','promo-headline','promo-body','promo-cta-text','promo-cta-link'].forEach(id=>$(id)&&($(id).value=''));
+  } catch { showToast('Send failed — check your connection.', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Send to All Subscribers'; } }
 }
 
 /* ── Init ────────────────────────────────────────────── */

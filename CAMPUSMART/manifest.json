@@ -1,10 +1,10 @@
 {
-  "name": "CampusMart - Campus Marketplace",
+  "name": "CampusMart \u2014 Campus Marketplace",
   "short_name": "CampusMart",
-  "description": "The trusted campus marketplace. Buy and sell with fellow students safely.",
-  "start_url": "/index.html",
+  "description": "Buy & sell textbooks, electronics, clothes and more with fellow students safely.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f6f8",
+  "background_color": "#06090f",
   "theme_color": "#00c896",
   "orientation": "portrait-primary",
   "icons": [

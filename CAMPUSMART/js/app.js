@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -50,14 +50,38 @@ const timeAgo = d => {
   return new Date(d).toLocaleDateString('en-KE', {day:'numeric',month:'short'});
 };
 
-const catEmoji = c => ({books:'📚',electronics:'💻',clothes:'👕',food:'🍔',services:'🛠',other:'📦'}[c]||'📦');
+const catEmoji = c => ({
+  books:'📚', instruments:'🔬',
+  electronics:'💻', phones:'📱', accessories:'🔌', gaming:'🎮',
+  clothes:'👕', beauty:'💄',
+  hostel:'🛏', kitchen:'🍽',
+  food:'🍔', sports:'🏋', creative:'🎨', pets:'🐶', transport:'🚲',
+  services:'💼', digital:'🖥️',
+  rentals:'🔄', events:'🎟', free:'❤️',
+  other:'📦'
+}[c]||'📦');
 const catImage = c => ({
-  books:       'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&h=300&fit=crop',
-  electronics: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
-  clothes:     'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=400&h=300&fit=crop',
-  food:        'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&h=300&fit=crop',
-  services:    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
-  other:       'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=300&fit=crop',
+  books:        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&h=300&fit=crop',
+  instruments:  'https://images.unsplash.com/photo-1532094349884-543559c63c2a?w=400&h=300&fit=crop',
+  electronics:  'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
+  phones:       'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop',
+  accessories:  'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=300&fit=crop',
+  gaming:       'https://images.unsplash.com/photo-1593118247619-e2d6f056869e?w=400&h=300&fit=crop',
+  clothes:      'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=400&h=300&fit=crop',
+  beauty:       'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop',
+  hostel:       'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop',
+  kitchen:      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop',
+  food:         'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&h=300&fit=crop',
+  sports:       'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&h=300&fit=crop',
+  creative:     'https://images.unsplash.com/photo-1452780212456-a4a7f6f24cbc?w=400&h=300&fit=crop',
+  pets:         'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=300&fit=crop',
+  transport:    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+  services:     'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
+  digital:      'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=400&h=300&fit=crop',
+  rentals:      'https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?w=400&h=300&fit=crop',
+  events:       'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400&h=300&fit=crop',
+  free:         'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&h=300&fit=crop',
+  other:        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=300&fit=crop',
 }[c] || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=300&fit=crop');
 
 /* ── Toast ───────────────────────────────────────────── */
@@ -101,8 +125,7 @@ function dismissOnboarding() {
 
 /* ── Theme ───────────────────────────────────────────── */
 function loadTheme() {
-  const t = localStorage.getItem('cm_theme') ||
-    (window.matchMedia?.('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  const t = localStorage.getItem('cm_theme') || 'dark'; // default: dark
   applyTheme(t);
 }
 function applyTheme(t) {
@@ -264,16 +287,16 @@ async function doGoogleAuth() {
 
 async function doFacebookAuth() {
   try {
-    const p=await fetch(`${API}/auth/facebook`,{method:'HEAD'}).catch(()=>null);
-    if(p&&p.status===503){showToast('Facebook Sign-In not configured.','warning');return;}
+    const p=await fetch(`${API}/auth/facebook/status`).catch(()=>null);
+    if(p?.ok){const d=await p.json().catch(()=>({}));if(!d.configured){showToast('Facebook Sign-In is not configured yet.','warning');return;}}
   } catch {}
   window.location.href=`${API}/auth/facebook`;
 }
 
 async function doAppleAuth() {
   try {
-    const p=await fetch(`${API}/auth/apple`,{method:'HEAD'}).catch(()=>null);
-    if(p&&p.status===503){showToast('Sign in with Apple is not configured.','warning');return;}
+    const p=await fetch(`${API}/auth/apple/status`).catch(()=>null);
+    if(p?.ok){const d=await p.json().catch(()=>({}));if(!d.configured){showToast('Apple Sign-In is not configured yet.','warning');return;}}
   } catch {}
   window.location.href=`${API}/auth/apple`;
 }
@@ -532,7 +555,8 @@ function filterCategory(cat) {
   document.querySelectorAll('.cat-pill').forEach(c=>c.classList.toggle('active',c.dataset.cat===cat));
   document.querySelectorAll('.snav-item[id^="snav-"]').forEach(n=>n.classList.remove('active'));
   $(`snav-${cat}`)?.classList.add('active');
-  $('section-label')&&($('section-label').textContent=cat==='all'?'All Listings':cat.charAt(0).toUpperCase()+cat.slice(1));
+  const catLabels={all:'All Listings',books:'📚 Academics',instruments:'🔬 Lab & Instruments',electronics:'💻 Electronics',phones:'📱 Phones & Tablets',accessories:'🔌 Accessories',gaming:'🎮 Gaming',clothes:'👕 Fashion',beauty:'💄 Beauty & Care',hostel:'🛏 Hostel & Room',kitchen:'🍽 Kitchen',food:'🍔 Food & Snacks',sports:'🏋 Sports & Fitness',creative:'🎨 Creative & Media',pets:'🐶 Pets',transport:'🚲 Transport',services:'💼 Services',digital:'🖥️ Digital Products',rentals:'🔄 Rentals',events:'🎟 Events',free:'❤️ Free Stuff',other:'📦 Miscellaneous'};
+  $('section-label')&&($('section-label').textContent=catLabels[cat]||cat.charAt(0).toUpperCase()+cat.slice(1));
 }
 
 function sortListings(val){currentSort=val;currentPage=1;applySortToFiltered();renderListings();}
@@ -601,25 +625,79 @@ function loadOffers(){
 /* ── Stores ──────────────────────────────────────────── */
 function loadStores(){
   const grid=$('store-grid'),empty=$('stores-empty'),detail=$('store-detail'); if(!grid) return;
-  detail.style.display='none'; grid.style.display='';
+  detail.style.display='none';
+  const listSection=$('store-list-section');
+  if(listSection) listSection.style.display='';
   const sellerMap={};
-  allListings.forEach(l=>{if(!l.seller)return;const sid=l.seller._id||l.seller;if(!sellerMap[sid])sellerMap[sid]={seller:l.seller,count:0};sellerMap[sid].count++;});
-  const sellers=Object.values(sellerMap);
+  allListings.forEach(l=>{if(!l.seller)return;const sid=l.seller._id||l.seller;if(!sellerMap[sid])sellerMap[sid]={seller:l.seller,count:0,cats:new Set()};sellerMap[sid].count++;sellerMap[sid].cats.add(l.category);});
+  const sellers=Object.values(sellerMap).sort((a,b)=>b.count-a.count);
   if(!sellers.length){empty.style.display='';grid.innerHTML='';return;}
   empty.style.display='none';
-  grid.innerHTML=sellers.map(({seller,count})=>{
-    const name=seller.name||'Seller',init=name[0].toUpperCase(),campus=seller.campus?`📍 ${esc(seller.campus)}`:'';
-    return `<div class="store-card" onclick="openStore('${esc(seller._id||seller)}')"><div class="store-card-banner" style="background-image:url('${catImage('other')}')"><div class="store-card-av">${init}</div></div><div class="store-card-body"><div class="store-card-name">${esc(name)}</div><div class="store-card-campus">${campus}</div><div class="store-card-count">${count} listing${count!==1?'s':''}</div></div></div>`;
+  grid.innerHTML=sellers.map(({seller,count,cats})=>{
+    const displayName=seller.storeName||seller.name||'Seller';
+    const init=displayName[0].toUpperCase();
+    const campus=seller.campus?`📍 ${esc(seller.campus)}`:'';
+    const verified=seller.isStudentVerified?'<span style="color:var(--brand);font-size:11px">✅ Verified</span>':'';
+    const rating=seller.ratingAvg>0?`⭐ ${seller.ratingAvg.toFixed(1)}`:'New';
+    const topCat=[...cats][0]||'other';
+    const avImg=seller.avatar?(seller.avatar.startsWith('/')?SERVER:'')+seller.avatar:'';
+    const avHtml=avImg?`<img src="${esc(avImg)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;font-weight:900">${init}</span>`:`<span style="font-size:20px;font-weight:900">${init}</span>`;
+    return `<div class="store-card" onclick="openStore('${esc(seller._id||seller)}')">
+      <div class="store-card-banner" style="background-image:url('${catImage(topCat)}')">
+        <div class="store-card-av">${avHtml}</div>
+        ${seller.storeName?'<div class="store-card-custom-badge">Custom Store</div>':''}
+      </div>
+      <div class="store-card-body">
+        <div class="store-card-name">${esc(displayName)}</div>
+        ${seller.storeBio?`<div class="store-card-tagline">${esc(seller.storeBio)}</div>`:''}
+        <div class="store-card-campus">${campus}</div>
+        <div class="store-card-meta">${rating} &nbsp;·&nbsp; ${count} listing${count!==1?'s':''} ${verified}</div>
+      </div>
+    </div>`;
   }).join('');
 }
 function openStore(sellerId){
-  $('store-grid').style.display='none'; $('store-detail').style.display='';
+  const listSection=$('store-list-section');
+  if(listSection) listSection.style.display='none';
+  $('store-detail').style.display='';
   const listings=allListings.filter(l=>(l.seller?._id||l.seller)===sellerId);
   const seller=listings[0]?.seller||{};
-  const name=seller.name||'Seller';
-  $('store-detail-avatar').textContent=name[0].toUpperCase();
-  $('store-detail-name').textContent=name;
-  $('store-detail-meta').textContent=`${seller.campus||''} · ${listings.length} listing${listings.length!==1?'s':''}`;
+  const displayName=seller.storeName||seller.name||'Seller';
+  const init=displayName[0].toUpperCase();
+
+  // Avatar
+  const avEl=$('store-detail-avatar');
+  if(avEl){
+    if(seller.avatar){
+      const src=(seller.avatar.startsWith('/')?SERVER:'')+seller.avatar;
+      avEl.innerHTML=`<img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='${init}'"/>`;
+    } else { avEl.textContent=init; }
+  }
+
+  // Banner
+  const bannerEl=$('store-banner-img');
+  if(bannerEl){
+    const topCat=listings[0]?.category||'other';
+    bannerEl.style.backgroundImage=`url('${catImage(topCat)}')`;
+  }
+
+  // Name + meta
+  $('store-detail-name')&&($('store-detail-name').innerHTML=`${esc(displayName)} ${seller.isStudentVerified?'<span style="font-size:13px">✅</span>':''}`);
+  $('store-detail-meta')&&($('store-detail-meta').textContent=`${seller.campus||''} · ${listings.length} listing${listings.length!==1?'s':''} ${seller.ratingAvg>0?'· ⭐'+seller.ratingAvg.toFixed(1):''}`);
+  $('store-detail-bio')&&($('store-detail-bio').textContent=seller.storeBio||seller.bio||'');
+
+  // Stats bar
+  const statsBar=$('store-stats-bar');
+  if(statsBar){
+    const totalViews=listings.reduce((a,l)=>a+(l.views||0),0);
+    const cats=[...new Set(listings.map(l=>l.category))].slice(0,3).map(c=>catEmoji(c)).join(' ');
+    statsBar.innerHTML=`
+      <div class="store-stat"><strong>${listings.length}</strong><span>Listings</span></div>
+      <div class="store-stat"><strong>${totalViews}</strong><span>Views</span></div>
+      <div class="store-stat"><strong>${seller.ratingAvg>0?seller.ratingAvg.toFixed(1):'—'}</strong><span>Rating</span></div>
+      <div class="store-stat"><strong style="font-size:16px">${cats||'—'}</strong><span>Categories</span></div>`;
+  }
+
   $('store-listings-grid').innerHTML=listings.map(l=>cardHTML(l)).join('');
   $('store-listings-empty').style.display=listings.length?'none':'';
   initLazyImages();
@@ -1815,7 +1893,7 @@ async function searchListings() {
       if (d.interpretedAs) {
         const parts = [];
         if (d.interpretedAs.maxPrice) parts.push(`under ${fmtPrice(d.interpretedAs.maxPrice)}`);
-        if (d.interpretedAs.categoryHint) parts.push(catEmoji(d.interpretedAs.categoryHint) + ' ' + d.interpretedAs.categoryHint);
+        if (d.interpretedAs.categoryHint) { const catLabels2={books:'Academics',instruments:'Instruments',electronics:'Electronics',phones:'Phones',accessories:'Accessories',gaming:'Gaming',clothes:'Fashion',beauty:'Beauty',hostel:'Hostel',kitchen:'Kitchen',food:'Food',sports:'Sports',creative:'Creative',pets:'Pets',transport:'Transport',services:'Services',digital:'Digital',rentals:'Rentals',events:'Events',free:'Free Stuff',other:'Other'}; parts.push(catEmoji(d.interpretedAs.categoryHint) + ' ' + (catLabels2[d.interpretedAs.categoryHint]||d.interpretedAs.categoryHint)); }
         if (d.interpretedAs.listingTypeHint) parts.push(d.interpretedAs.listingTypeHint);
         if (parts.length) showToast(`✨ Searching: ${parts.join(', ')}`, 'info', 3000);
       }
