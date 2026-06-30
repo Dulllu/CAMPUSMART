@@ -804,6 +804,9 @@ textarea{resize:vertical;}
 }
 .chat-list-item:hover,.chat-list-item.active{background:var(--brand-light);}
 .chat-list-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;font-family:var(--font-display);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ai-assistant-item{border-bottom:1.5px solid var(--border);margin-bottom:4px;}
+.ai-avatar{background:linear-gradient(135deg,#7c3aed,#00c896);font-size:18px;}
+.ai-badge-mini{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#00c896);color:#fff;margin-left:6px;letter-spacing:.3px;vertical-align:middle;}
 .chat-list-info{flex:1;min-width:0;}
 .chat-list-name{font-size:13px;font-weight:700;color:var(--text);}
 .chat-list-last{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}

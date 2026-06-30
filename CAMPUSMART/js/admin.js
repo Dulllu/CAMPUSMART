@@ -1,6 +1,6 @@
 'use strict';
-const API = (window.CAMPUSMART_CONFIG?.API) || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API = (window.CAMPUSMART_CONFIG?.API) || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -31,10 +31,9 @@ async function adminLogin() {
   btn.disabled = true;
 
   try {
-    const r = await fetch(`${API}/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
+    const r = await fetch(`${API}/admin/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
     const d = await r.json();
     if (!r.ok) return showLoginError(d.error || 'Login failed.');
-    if (d.user.role !== 'admin') return showLoginError('This account does not have admin access.');
     localStorage.setItem('cm_admin_token', d.token);
     enterAdmin();
   } catch (err) {

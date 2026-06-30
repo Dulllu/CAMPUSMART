@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 'use strict';
 
-const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
-const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
+const API    = (window.CAMPUSMART_CONFIG?.API)    || 'http://localhost:5000/api';
+const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'http://localhost:5000';
 
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
@@ -1061,8 +1061,14 @@ function makeConvoId(a,b,lid){return[a,b].sort().join('_')+'_'+(lid||'general');
 function renderConversationList(){
   const inner=$('chat-list-inner');if(!inner)return;
   const convos=Object.values(conversations);
-  if(!convos.length){inner.innerHTML=`<div style="padding:30px 16px;text-align:center;color:var(--muted);font-size:13px"><div style="font-size:36px;margin-bottom:10px">💬</div>No conversations yet.<br/>Chat with a seller to start!</div>`;return;}
-  inner.innerHTML=convos.sort((a,b)=>new Date(b.lastTime||0)-new Date(a.lastTime||0)).map(c=>`
+  const aiCard=`
+    <div class="chat-list-item ai-assistant-item${activeChatId==='ai-assistant'?' active':''}" id="cli_ai-assistant" onclick="openAiChat()">
+      <div class="chat-list-avatar ai-avatar"><i class="fa fa-wand-magic-sparkles"></i></div>
+      <div class="chat-list-info"><div class="chat-list-name">CampusMart AI <span class="ai-badge-mini">AI</span></div><div class="chat-list-last">Ask me anything about buying or selling…</div></div>
+      <div class="chat-list-meta"></div>
+    </div>`;
+  if(!convos.length){inner.innerHTML=aiCard+`<div style="padding:30px 16px;text-align:center;color:var(--muted);font-size:13px"><div style="font-size:36px;margin-bottom:10px">💬</div>No conversations yet.<br/>Chat with a seller to start!</div>`;return;}
+  inner.innerHTML=aiCard+convos.sort((a,b)=>new Date(b.lastTime||0)-new Date(a.lastTime||0)).map(c=>`
     <div class="chat-list-item${c.conversationId===activeChatId?' active':''}" id="cli_${esc(c.conversationId)}"
          onclick="openChat('${esc(c.conversationId)}','${esc(c.otherName||'User')}','${esc(c.otherUserId||'')}','${esc(c.listingId||'')}','${esc(c.listingTitle||'')}')">
       <div class="chat-list-avatar">${(c.otherName||'U')[0].toUpperCase()}</div>
@@ -1108,6 +1114,67 @@ async function openChat(convoId,otherName,otherUserId,listingId,listingTitle){
 }
 
 function closeChatWindow(){activeChatId=null;$('chat-list')?.classList.remove('hidden');$('chat-window').innerHTML='<div class="chat-placeholder"><i class="fa fa-comment-dots"></i><p>Select a conversation</p></div>';}
+
+let aiChatHistory=[];
+function openAiChat(){
+  activeChatId='ai-assistant';
+  renderConversationList();
+  const win=$('chat-window');if(!win)return;
+  if(window.innerWidth<768){$('chat-list')?.classList.add('hidden');}
+  win.innerHTML=`
+    <div class="chat-header">
+      <button class="chat-back-btn" onclick="closeChatWindow()" style="display:flex"><i class="fa fa-arrow-left"></i></button>
+      <div class="chat-header-info"><div class="chat-header-name"><i class="fa fa-wand-magic-sparkles" style="color:var(--brand);margin-right:6px"></i>CampusMart AI</div><div class="chat-header-listing">Always here to help</div></div>
+    </div>
+    <div class="chat-messages" id="ai-chat-messages"></div>
+    <div class="chat-input-bar">
+      <input class="chat-input" id="ai-chat-input" type="text" placeholder="Ask about buying, selling, pricing…" onkeydown="if(event.key==='Enter')sendAiMessage()"/>
+      <button class="chat-send-btn" onclick="sendAiMessage()"><i class="fa fa-paper-plane"></i></button>
+    </div>`;
+  renderAiChat();
+}
+
+function renderAiChat(){
+  const c=$('ai-chat-messages');if(!c)return;
+  if(!aiChatHistory.length){
+    c.innerHTML=`<div style="text-align:center;padding:30px 20px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:10px">🎓✨</div>
+      <p style="font-size:14px;font-weight:700;margin-bottom:4px">Hi, I'm CampusMart AI!</p>
+      <p style="font-size:13px;line-height:1.5">Ask me what's a fair price, how to write a great listing, where to meet safely, or anything about buying & selling on campus.</p>
+    </div>`;
+    return;
+  }
+  c.innerHTML=aiChatHistory.map(m=>`
+    <div class="chat-msg ${m.role==='user'?'mine':'theirs'}">
+      <div class="msg-bubble">${esc(m.content)}</div>
+    </div>`).join('');
+  c.scrollTop=c.scrollHeight;
+}
+
+async function sendAiMessage(){
+  const inp=$('ai-chat-input');if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.disabled=true;
+  aiChatHistory.push({role:'user',content:text});
+  renderAiChat();
+  const c=$('ai-chat-messages');
+  const typingDiv=document.createElement('div');
+  typingDiv.className='chat-msg theirs';typingDiv.id='ai-typing';
+  typingDiv.innerHTML='<div class="msg-bubble"><div class="typing-indicator" style="position:static;display:inline-flex"><span></span><span></span><span></span></div></div>';
+  c?.appendChild(typingDiv);if(c)c.scrollTop=c.scrollHeight;
+  try{
+    const r=await fetch(`${API}/messages/ai-chat`,{method:'POST',headers:{'Content-Type':'application/json',...authHdr()},body:JSON.stringify({message:text})});
+    const d=await r.json();
+    $('ai-typing')?.remove();
+    if(!r.ok){aiChatHistory.push({role:'assistant',content:d.error||"Sorry, something went wrong."});}
+    else{aiChatHistory.push({role:'assistant',content:d.reply});}
+  }catch{
+    $('ai-typing')?.remove();
+    aiChatHistory.push({role:'assistant',content:"Couldn't reach the AI assistant. Check your connection and try again."});
+  }
+  renderAiChat();
+  inp.disabled=false;inp.focus();
+}
 
 async function loadMessages(convoId){
   const container=$(`chat-messages-${convoId}`);if(!container)return;
