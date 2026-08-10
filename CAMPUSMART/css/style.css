@@ -2976,3 +2976,549 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .listing-card:hover { transform:none !important; }
 }
+
+/* ========================================================================
+   CAMPUSMART MOBILE-FIRST REPAIR — 2026-08-10
+   Final mobile layer. The phone experience is the primary interface.
+   ======================================================================== */
+
+html, body { overflow-x: hidden !important; max-width: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
+
+@media (max-width: 768px) {
+  :root {
+    --topnav-h: 56px;
+    --bnav-h: 78px;
+    --mobile-gutter: 12px;
+  }
+
+  body {
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ---------- HEADER ---------- */
+  .topnav {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 900 !important;
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 6px var(--mobile-gutter) !important;
+    background: rgba(255,255,255,.96) !important;
+    border-bottom: 1px solid #e5ecef !important;
+    box-shadow: 0 3px 16px rgba(18,35,52,.08) !important;
+  }
+  [data-theme="dark"] .topnav {
+    background: rgba(7,16,25,.97) !important;
+    border-bottom-color: #1a2a38 !important;
+  }
+
+  .nav-inner {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 3px 4px !important;
+    margin: 0 !important;
+    gap: 5px !important;
+    border-radius: 13px !important;
+    border: 1px solid rgba(18,35,52,.07) !important;
+    box-shadow: none !important;
+  }
+  [data-theme="dark"] .nav-inner { border-color: rgba(255,255,255,.06) !important; }
+
+  .nav-left {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    gap: 5px !important;
+    overflow: hidden !important;
+  }
+  .nav-hamburger {
+    display: flex !important;
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .nav-brand {
+    min-width: 0 !important;
+    max-width: 150px !important;
+    gap: 5px !important;
+    overflow: hidden !important;
+  }
+  .nb-logo { width: 21px !important; height: 21px !important; flex: 0 0 auto !important; }
+  .nb-text {
+    display: block !important;
+    font-size: 16px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .nav-pills, #search-wrap, .nav-search { display: none !important; }
+  .nav-actions {
+    flex: 0 0 auto !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+  }
+  .btn-sell-nav {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+    flex: 0 0 38px !important;
+  }
+  .btn-sell-nav span { display: none !important; }
+  .nav-actions .nav-icon-btn:not(#theme-toggle-btn) { display: none !important; }
+  .nav-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    flex: 0 0 36px !important;
+  }
+  #theme-toggle-btn {
+    display: flex !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    flex: 0 0 36px !important;
+  }
+
+  /* ---------- MOBILE SEARCH ---------- */
+  .mobile-search-row {
+    display: flex !important;
+    position: relative !important;
+    top: auto !important;
+    z-index: 100 !important;
+    width: calc(100% - 24px) !important;
+    height: 46px !important;
+    margin: 8px 12px 4px !important;
+    padding: 0 12px !important;
+    gap: 9px !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    border: 1px solid #dce5e9 !important;
+    box-shadow: 0 4px 15px rgba(18,35,52,.07) !important;
+  }
+  [data-theme="dark"] .mobile-search-row {
+    background: #0d1924 !important;
+    border-color: #1c2d3d !important;
+  }
+  .mobile-search-row > i { flex: 0 0 auto; font-size: 13px !important; }
+  .mobile-search-row input {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 44px !important;
+    font-size: 14px !important;
+  }
+  .mobile-search-row .search-ai-btn {
+    flex: 0 0 30px !important;
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /* ---------- MAIN RAIL ---------- */
+  .market-inner {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+  .main-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 0 calc(var(--bnav-h) + env(safe-area-inset-bottom, 0px) + 12px) !important;
+  }
+  #view-listings { width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
+
+  /* ---------- HERO ---------- */
+  .hero-section {
+    display: block !important;
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 10px 12px 0 !important;
+    padding: 22px 17px 16px !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+  }
+  .hero-content { width: 100% !important; min-width: 0 !important; }
+  .hero-badge {
+    max-width: 100% !important;
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    padding: 6px 9px !important;
+  }
+  .hero-title {
+    max-width: 100% !important;
+    margin-top: 11px !important;
+    font-size: clamp(28px, 8.4vw, 36px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -1.7px !important;
+    overflow-wrap: normal !important;
+  }
+  .hero-sub {
+    max-width: 100% !important;
+    margin-top: 10px !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  .hero-visual { display: none !important; }
+  .hero-cta {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-top: 15px !important;
+  }
+  .hero-cta > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
+  .hero-stats {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    margin-top: 15px !important;
+    padding: 10px 4px !important;
+    gap: 0 !important;
+  }
+  .hs-item { min-width: 0 !important; padding: 0 4px !important; }
+  .hs-num { font-size: 17px !important; white-space: nowrap; }
+  .hs-label { font-size: 8px !important; line-height: 1.25 !important; }
+
+  /* ---------- HORIZONTAL DISCOVERY ROWS ---------- */
+  .stories-section, .cats-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  .stories-row, .cats-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    scroll-snap-type: x proximity;
+  }
+  .story-item, .cat-pill { scroll-snap-align: start; flex: 0 0 auto !important; }
+  .cat-pill { min-height: 36px !important; padding: 8px 11px !important; font-size: 11px !important; }
+
+  /* ---------- TRUST STRIP ---------- */
+  .campus-value-strip {
+    width: calc(100% - 24px) !important;
+    margin: 12px 12px 4px !important;
+    display: block !important;
+  }
+  .cvs-item {
+    width: 100% !important;
+    min-height: 54px !important;
+    padding: 10px 12px !important;
+  }
+  .cvs-item:nth-child(n+2) { display: none !important; }
+
+  /* ---------- LISTINGS HEADER ---------- */
+  .listings-header {
+    width: calc(100% - 24px) !important;
+    margin: 18px 12px 10px !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .lh-left { min-width: 0 !important; flex: 1 1 auto !important; }
+  .lh-left h2 { font-size: 19px !important; white-space: nowrap !important; }
+  .lh-count { font-size: 10px !important; }
+  .lh-right {
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    gap: 5px !important;
+  }
+  .lh-select, .lh-btn {
+    max-width: 112px !important;
+    min-height: 36px !important;
+    padding: 7px 9px !important;
+    font-size: 10px !important;
+  }
+
+  /* ---------- PRODUCT GRID ---------- */
+  .listings-grid,
+  #listings-grid,
+  #recent-grid,
+  #watchlist-grid,
+  #housing-grid,
+  #jobs-grid {
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    margin: 0 12px !important;
+    padding: 0 0 16px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .listing-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+  .card-img-wrap {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0 !important;
+  }
+  .card-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  .card-body { min-width: 0 !important; padding: 9px 9px 10px !important; }
+  .card-title {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+  .card-price { font-size: 15px !important; line-height: 1.2 !important; }
+  .card-meta { min-width: 0 !important; overflow: hidden !important; }
+  .card-meta > * { min-width: 0 !important; }
+  .card-time, .card-location, .card-seller { font-size: 9px !important; }
+  .card-heart {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    top: 7px !important;
+    right: 7px !important;
+  }
+
+  /* ---------- EMPTY / LOADING / PROMO ---------- */
+  .empty-state, .load-more-wrap, .ai-section, .campus-filter-bar {
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+  .promo-strip {
+    width: calc(100% - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+
+  /* ---------- OTHER PAGES ---------- */
+  .view-header {
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    margin: 12px 12px 0 !important;
+    padding: 12px 0 !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--border2) !important;
+  }
+  .view-header-inner {
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 8px !important;
+  }
+  .view-header h2 { min-width: 0 !important; font-size: 20px !important; }
+  .page-body, .profile-body {
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    margin: 0 12px !important;
+    padding: 12px 0 30px !important;
+    gap: 12px !important;
+  }
+  .page-body > *, .profile-body > * { max-width: 100% !important; min-width: 0 !important; }
+
+  /* Forms: one column and full-width controls on phones. */
+  .form-grid, .two-col, .three-col, .settings-grid, .dashboard-grid, .profile-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .form-row, .input-row, .button-row { flex-wrap: wrap !important; }
+  .form-row > *, .input-row > * { min-width: 0 !important; max-width: 100% !important; }
+  .btn, .btn-primary, .btn-secondary, .btn-danger, .btn-outline { min-height: 44px !important; }
+
+  /* Cards/sections should never escape the phone viewport. */
+  .settings-card, .profile-card, .dashboard-card, .referral-card,
+  .about-hero-card, .help-section, .glass-card, .feat-card, .store-card,
+  .ai-card, .schedule-card, .seller-card, .card-box, .newsletter-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    border-radius: 15px !important;
+  }
+
+  /* Tables: scroll inside themselves, never push the page sideways. */
+  .table-wrap, .table-responsive, .admin-table-wrap, .data-table-wrap {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  table { min-width: 620px; }
+
+  /* Chat: stack list and conversation instead of squeezing them. */
+  .chat-layout, .chat-shell, .chat-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .chat-list, .chat-window { min-width: 0 !important; }
+
+  /* ---------- MODALS / SHEETS ---------- */
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-sheet, .bottom-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 8px) !important;
+    margin: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    overflow: hidden !important;
+  }
+  .modal-scroll {
+    max-height: calc(100dvh - 115px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .listing-type-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 7px !important;
+    padding-bottom: 5px !important;
+    scrollbar-width: none !important;
+  }
+  .listing-type-tabs::-webkit-scrollbar { display: none; }
+  .lt-tab { flex: 0 0 auto !important; white-space: nowrap !important; }
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar {
+    top: 64px !important;
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 76px) !important;
+    border-radius: 18px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .sidebar-top { padding: 14px 14px 12px !important; }
+  .sidebar-user { margin: 10px !important; }
+  .snav-item { min-height: 42px !important; padding: 9px 11px !important; }
+  .sidebar-overlay { z-index: 890 !important; }
+  .sidebar { z-index: 900 !important; }
+
+  /* ---------- BOTTOM NAV ---------- */
+  .bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 850 !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 7px 10px max(7px, env(safe-area-inset-bottom, 0px)) !important;
+    pointer-events: none !important;
+    background: transparent !important;
+  }
+  .bnav-pill-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 520px !important;
+    min-height: 60px !important;
+    padding: 6px 7px !important;
+    gap: 2px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 20px !important;
+    pointer-events: auto !important;
+    background: rgba(255,255,255,.97) !important;
+    border: 1px solid #dfe7eb !important;
+    box-shadow: 0 -2px 24px rgba(18,35,52,.13) !important;
+  }
+  [data-theme="dark"] .bnav-pill-wrap {
+    background: rgba(11,21,31,.98) !important;
+    border-color: #1b2b3a !important;
+  }
+  .bnav-item {
+    min-width: 0 !important;
+    min-height: 48px !important;
+    padding: 5px 3px !important;
+    gap: 3px !important;
+    font-size: 9px !important;
+  }
+  .bnav-item i { font-size: 18px !important; }
+  .bnav-sell {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    flex: 0 0 48px !important;
+    margin: 0 2px !important;
+  }
+
+  /* ---------- FOOTER ---------- */
+  .site-footer { display: none !important; }
+
+  /* ---------- IMAGES / MEDIA ---------- */
+  img, video, canvas, svg { max-width: 100%; }
+  iframe { max-width: 100% !important; }
+}
+
+@media (max-width: 390px) {
+  .nav-inner { gap: 3px !important; }
+  .nav-hamburger { flex-basis: 36px !important; width: 36px !important; min-width: 36px !important; }
+  .nav-brand { max-width: 132px !important; }
+  .nb-text { font-size: 15px !important; }
+  .nav-actions { gap: 2px !important; }
+  .btn-sell-nav, #theme-toggle-btn { width: 34px !important; min-width: 34px !important; height: 34px !important; min-height: 34px !important; }
+  .nav-avatar { width: 34px !important; min-width: 34px !important; height: 34px !important; min-height: 34px !important; }
+  .hero-section { width: calc(100% - 20px) !important; margin-left: 10px !important; margin-right: 10px !important; padding: 20px 14px 15px !important; }
+  .mobile-search-row { width: calc(100% - 20px) !important; margin-left: 10px !important; margin-right: 10px !important; }
+  .listings-header, .empty-state, .load-more-wrap, .ai-section, .campus-filter-bar, .promo-strip { width: calc(100% - 20px) !important; margin-left: 10px !important; margin-right: 10px !important; }
+  .listings-grid { width: calc(100% - 20px) !important; margin-left: 10px !important; margin-right: 10px !important; gap: 8px !important; }
+  .page-body, .profile-body, .view-header { width: calc(100% - 20px) !important; margin-left: 10px !important; margin-right: 10px !important; }
+  .card-body { padding: 8px !important; }
+  .card-title { font-size: 11.5px !important; }
+  .card-price { font-size: 14px !important; }
+  .bnav-pill-wrap { border-radius: 18px !important; }
+}
+
+@media (max-width: 340px) {
+  .nav-brand { max-width: 112px !important; }
+  .nb-text { font-size: 14px !important; }
+  .hero-title { font-size: 26px !important; }
+  .hero-cta { grid-template-columns: 1fr !important; }
+  .hero-stats { grid-template-columns: 1fr 1fr 1fr !important; }
+  .card-title { font-size: 11px !important; }
+}
+

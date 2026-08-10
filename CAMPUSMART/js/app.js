@@ -605,7 +605,7 @@ function searchListings(){
   },300);
 }
 
-function clearSearch(){$('search-input')&&($('search-input').value='');searchListings();}
+function clearSearch(){ if($('search-input')) $('search-input').value=''; if($('mobile-search-input')) $('mobile-search-input').value=''; searchListings(); }
 function onSearchKeydown(e){if(e.key==='Escape'){clearSearch();}if(e.key==='Enter'){clearTimeout(searchDebounce);searchListings();}}
 
 function showSearchSuggestions(q){
@@ -617,7 +617,7 @@ function showSearchSuggestions(q){
   box.style.display='';
 }
 function hideSearchSuggestions(){$('search-suggestions')&&($('search-suggestions').style.display='none');}
-function selectSuggestion(id,title){$('search-input')&&($('search-input').value=title);hideSearchSuggestions();openDetail(id);}
+function selectSuggestion(id,title){ if($('search-input')) $('search-input').value=title; if($('mobile-search-input')) $('mobile-search-input').value=title; hideSearchSuggestions(); openDetail(id); }
 
 /* ── Campus Filter ───────────────────────────────────── */
 function buildCampusFilter(){
