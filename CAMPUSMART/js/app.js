@@ -441,10 +441,17 @@ function navPillGo(page, pillId) {
 }
 
 /* ── Mobile bottom-pill "Search" shortcut ─────────────── */
-function focusMobileSearch() {
+function focusBestSearch() {
   goHome();
-  setTimeout(() => $('search-input')?.focus(), 250);
+  setTimeout(() => {
+    const mobile = $('mobile-search-input');
+    const desktop = $('search-input');
+    const target = window.matchMedia('(max-width: 768px)').matches ? mobile : desktop;
+    target?.focus();
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 180);
 }
+function focusMobileSearch() { focusBestSearch(); }
 function showLegal(tab) { showPageAnimated('legal'); switchLegal(tab, document.querySelector(`.legal-tab[onclick*="${tab}"]`)); }
 function switchLegal(tab,btn) {
   document.querySelectorAll('.legal-content').forEach(c=>c.classList.remove('active'));

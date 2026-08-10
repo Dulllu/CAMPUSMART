@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -252,7 +253,7 @@
       </div>
       <div class="nav-search" id="search-wrap">
         <i class="fa fa-search"></i>
-        <input type="text" id="search-input" placeholder='Search or ask: "bedsitter under KES 5000"' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
+        <input type="text" id="search-input" placeholder='Search products, housing, jobs or gigs…' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
         <button class="search-ai-btn" id="search-ai-toggle" onclick="toggleSmartSearch()" title="AI Smart Search"><i class="fa fa-wand-magic-sparkles"></i></button>
         <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none"><i class="fa fa-times"></i></button>
         <div class="search-suggestions" id="search-suggestions" style="display:none"></div>
@@ -371,19 +372,19 @@
       <!-- Hero -->
       <section class="hero-section">
         <div class="hero-content">
-          <div class="hero-badge"><i class="fa fa-shield-alt"></i> Kenya's #1 Campus Marketplace</div>
-          <h1 class="hero-title">Find Amazing Deals<br/><span class="hero-gradient">On Campus</span></h1>
-          <p class="hero-sub">Buy &amp; sell textbooks, electronics, clothes and more — safely and instantly.</p>
+          <div class="hero-badge"><i class="fa fa-location-dot"></i> Built for campus life in Kenya</div>
+          <h1 class="hero-title">Buy smarter.<br/><span class="hero-gradient">Sell on campus.</span></h1>
+          <p class="hero-sub">Find everyday essentials, student deals, housing, gigs and more — all in one campus marketplace.</p>
           <div class="hero-cta">
-            <button class="btn-hero-primary" onclick="document.getElementById('search-input').focus()"><i class="fa fa-search"></i> Search Listings</button>
+            <button class="btn-hero-primary" onclick="focusBestSearch()"><i class="fa fa-search"></i> Search Listings</button>
             <button class="btn-hero-secondary" onclick="openModal()"><i class="fa fa-plus"></i> Start Selling</button>
           </div>
           <div class="hero-stats">
-            <div class="hs-item"><span class="hs-num" id="stat-count">0</span><span class="hs-label">Listings</span></div>
+            <div class="hs-item"><span class="hs-num" id="stat-count">0</span><span class="hs-label">Live listings</span></div>
             <div class="hs-divider"></div>
-            <div class="hs-item"><span class="hs-num" id="stat-sellers">0</span><span class="hs-label">Sellers</span></div>
+            <div class="hs-item"><span class="hs-num" id="stat-sellers">0</span><span class="hs-label">Student sellers</span></div>
             <div class="hs-divider"></div>
-            <div class="hs-item"><span class="hs-num">100%</span><span class="hs-label">Free</span></div>
+            <div class="hs-item"><span class="hs-num">KES</span><span class="hs-label">Local prices</span></div>
           </div>
         </div>
         <div class="hero-visual">
@@ -399,7 +400,7 @@
       <!-- Animated ticker -->
       <div class="ticker-wrap">
         <div class="ticker-inner">
-          <span class="ticker-content">📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 🛏 Hostel Essentials &nbsp;•&nbsp; 🏋 Sports &nbsp;•&nbsp; 🎨 Creative &nbsp;•&nbsp; 💼 Services &nbsp;•&nbsp; 🔬 Instruments &nbsp;•&nbsp; 🐶 Pets &nbsp;•&nbsp; 🚲 Transport &nbsp;•&nbsp; 🎟 Events &nbsp;•&nbsp; ❤️ Free Stuff &nbsp;•&nbsp; 💄 Beauty &nbsp;•&nbsp; 🍽 Kitchen &nbsp;•&nbsp; 🔄 Rentals &nbsp;•&nbsp; 📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food</span>
+          <span class="ticker-content">🇰🇪 Campus deals &nbsp;•&nbsp; 📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 🛏 Hostel Essentials &nbsp;•&nbsp; 🏋 Sports &nbsp;•&nbsp; 🎨 Creative &nbsp;•&nbsp; 💼 Services &nbsp;•&nbsp; 🔬 Instruments &nbsp;•&nbsp; 🐶 Pets &nbsp;•&nbsp; 🚲 Transport &nbsp;•&nbsp; 🎟 Events &nbsp;•&nbsp; ❤️ Free Stuff &nbsp;•&nbsp; 💄 Beauty &nbsp;•&nbsp; 🍽 Kitchen &nbsp;•&nbsp; 🔄 Rentals &nbsp;•&nbsp; 📚 Textbooks &nbsp;•&nbsp; 💻 Laptops &nbsp;•&nbsp; 📱 Phones &nbsp;•&nbsp; 🎮 Gaming &nbsp;•&nbsp; 👕 Fashion &nbsp;•&nbsp; 🍔 Food</span>
         </div>
       </div>
 
@@ -456,6 +457,8 @@
       </section>
 
       <!-- Promo strip -->
+      <section class="campus-value-strip"><div class="cvs-item"><span class="cvs-icon"><i class="fa fa-location-dot"></i></span><div><strong>Campus-first</strong><span>Find deals around student life</span></div></div><div class="cvs-item"><span class="cvs-icon"><i class="fa fa-money-bill-wave"></i></span><div><strong>Prices in KES</strong><span>Shop with familiar local pricing</span></div></div><div class="cvs-item"><span class="cvs-icon"><i class="fa fa-shield-heart"></i></span><div><strong>Meet safely</strong><span>Use sensible public meetup spots</span></div></div></section>
+
       <div class="promo-strip" onclick="showPageAnimated('offers')">
         <div class="ps-left"><i class="fa fa-fire"></i><strong>Hot Offers</strong><span>Tap to see all deals</span></div>
         <i class="fa fa-chevron-right"></i>
@@ -967,7 +970,7 @@
         <span class="footer-logo">🎓</span>
         <span class="footer-brand-name">CampusMart</span>
       </div>
-      <p class="footer-tagline">The trusted campus marketplace for students</p>
+      <p class="footer-tagline">A student-first marketplace for campus life in Kenya</p>
       <div class="footer-links">
         <a onclick="showLegal && showLegal('terms')">Terms</a>
         <span>·</span>
