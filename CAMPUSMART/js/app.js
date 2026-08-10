@@ -143,7 +143,7 @@ function dismissOnboarding() {
 
 /* ── Theme ───────────────────────────────────────────── */
 function loadTheme() {
-  const t = localStorage.getItem('cm_theme') || 'dark'; // default: dark
+  const t = localStorage.getItem('cm_theme') || 'light'; // default: dark
   applyTheme(t);
 }
 function applyTheme(t) {
