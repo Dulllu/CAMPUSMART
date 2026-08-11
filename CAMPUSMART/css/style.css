@@ -544,8 +544,11 @@ body:before{
   border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)
 }
 
-/* floating overlays: cookie banner, story viewer chrome, PWA prompt, scroll-top */
-.cookie-banner,.scroll-top-btn,.pwa-install-banner{
+/* floating overlays: story viewer chrome, PWA prompt, scroll-top.
+   Cookie banner intentionally excluded — it can appear over any page
+   background (dark hero, images, etc.) so it needs a solid, guaranteed-
+   legible background instead of the see-through glass effect. */
+.scroll-top-btn,.pwa-install-banner{
   background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
   border:1px solid var(--glass-border)
 }
