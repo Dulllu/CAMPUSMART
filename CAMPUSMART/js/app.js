@@ -187,6 +187,7 @@ function togglePass(id, btn) {
   const inp=$(id); if(!inp) return;
   inp.type=inp.type==='password'?'text':'password';
   btn.innerHTML=inp.type==='password'?'<i class="fa fa-eye"></i>':'<i class="fa fa-eye-slash"></i>';
+  btn.setAttribute('aria-label', inp.type==='password'?'Show password':'Hide password');
 }
 
 /* ── Email OTP Login ─────────────────────────────────── */

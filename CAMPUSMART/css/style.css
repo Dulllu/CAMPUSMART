@@ -97,7 +97,7 @@ button{border:0;cursor:pointer}a{color:inherit;text-decoration:none}img{max-widt
   .modal-backdrop,.modal-backdrop-top{align-items:flex-end}.modal-sheet{max-height:95svh;border-radius:22px 22px 0 0}.modal-scroll{max-height:calc(95svh - 65px);padding:14px 14px 30px}.listing-type-tabs{grid-template-columns:repeat(2,1fr)}.lt-tab{min-height:42px}.upload-zone{min-height:135px}.cookie-banner{left:8px;right:8px;bottom:calc(var(--bottomnav-h) + 8px)}.cookie-inner{display:block}.cookie-inner span{display:block;margin-bottom:9px}.cookie-btns{justify-content:flex-end}.toast{max-width:calc(100vw - 30px)}
 }
 
-@media(max-width:380px){.nb-text{font-size:16px}.nav-actions .nav-avatar{display:none}.btn-sell-nav{padding:0 9px}.hero-title{font-size:34px}.hero-section{padding:22px 15px 18px}.hero-cta{grid-template-columns:1fr}.hero-visual{min-height:120px}.hfc{width:88px;height:110px}.listings-grid,.store-grid,.recent-grid,.housing-grid,.jobs-grid,.lostfound-grid,.offers-grid{gap:7px}.card-body{padding:8px}.card-title{font-size:10px}.card-price{font-size:13px}.card-heart{width:28px;height:28px;font-size:11px}}
+@media(max-width:380px){.nb-text{font-size:16px}.nav-actions .nav-avatar{display:none}.btn-sell-nav{padding:0 9px}.hero-title{font-size:34px}.hero-section{padding:22px 15px 18px}.hero-cta{grid-template-columns:1fr}.hero-visual{min-height:120px}.hfc{width:88px;height:110px}.listings-grid,.store-grid,.recent-grid,.housing-grid,.jobs-grid,.lostfound-grid,.offers-grid{gap:7px}.card-body{padding:8px}.card-title{font-size:10px}.card-price{font-size:13px}.card-heart{width:32px;height:32px;font-size:12px}}
 
 @media(min-width:801px){.bottom-nav{display:none!important}}
 
@@ -479,3 +479,91 @@ button{border:0;cursor:pointer}a{color:inherit;text-decoration:none}img{max-widt
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 :focus-visible{outline:3px solid rgba(11,143,90,.25);outline-offset:2px}
+
+.skip-link{position:fixed;top:-100px;left:12px;z-index:99998;background:var(--brand);color:#fff;
+  padding:10px 16px;border-radius:10px;font-weight:800;font-size:13px;transition:top .18s ease}
+.skip-link:focus{top:12px}
+
+/* ══════════════════════════════════════════════════════
+   GLASSMORPHISM LAYER
+   Applied to "chrome" surfaces (nav, sidebar, modals, search,
+   toasts, floating overlays) — NOT to product/listing cards,
+   where full-opacity backgrounds keep prices/photos legible
+   and preserve marketplace trust. Falls back to solid surfaces
+   on browsers without backdrop-filter support.
+   ══════════════════════════════════════════════════════ */
+:root{
+  --glass-bg:rgba(255,255,255,.62);
+  --glass-bg-strong:rgba(255,255,255,.78);
+  --glass-border:rgba(255,255,255,.55);
+  --glass-shadow:0 8px 32px rgba(18,35,27,.14),0 1px 0 rgba(255,255,255,.4) inset;
+  --glass-blur:blur(20px) saturate(180%);
+}
+[data-theme=dark]{
+  --glass-bg:rgba(14,25,20,.58);
+  --glass-bg-strong:rgba(19,34,27,.74);
+  --glass-border:rgba(255,255,255,.09);
+  --glass-shadow:0 8px 32px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.04) inset;
+}
+
+/* ambient gradient blobs — pure CSS, fixed behind all content, gives the
+   blur something to pick up. Disabled under reduced-motion/reduced-transparency. */
+body:before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(38vw 38vw at 8% -6%,rgba(11,143,90,.20),transparent 60%),
+    radial-gradient(30vw 30vw at 96% 8%,rgba(231,165,34,.16),transparent 60%),
+    radial-gradient(34vw 34vw at 20% 96%,rgba(37,99,235,.10),transparent 60%);
+}
+[data-theme=dark] body:before{
+  background:
+    radial-gradient(38vw 38vw at 8% -6%,rgba(11,143,90,.28),transparent 60%),
+    radial-gradient(30vw 30vw at 96% 8%,rgba(231,165,34,.14),transparent 60%),
+    radial-gradient(34vw 34vw at 20% 96%,rgba(37,99,235,.16),transparent 60%);
+}
+@media(prefers-reduced-transparency:reduce){body:before{display:none}}
+
+/* nav / sidebar / bottom nav — upgrade existing blur to the shared glass token */
+.topnav{background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-bottom:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+.sidebar{background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-right:1px solid var(--glass-border)}
+.bottom-nav{background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-border)}
+
+/* search bars */
+.nav-search,.mobile-search-row{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border)}
+
+/* modals + bottom sheets */
+.modal-sheet{background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+.modal-head{background:transparent}
+
+/* secondary content surfaces: settings/profile/dashboard/notifications/chat */
+.glass-card,.settings-card,.profile-section,.feat-card,.referral-card,
+.dash-summary-card,.notif-item,.leaderboard-item,.schedule-card,
+.saved-search-item,.chat-list-item,.chat-window,.store-detail,
+.onboarding-card,.empty-state{
+  background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)
+}
+
+/* floating overlays: cookie banner, story viewer chrome, PWA prompt, scroll-top */
+.cookie-banner,.scroll-top-btn,.pwa-install-banner{
+  background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-border)
+}
+.scroll-top-btn{background:color-mix(in srgb,var(--brand) 82%,transparent)}
+
+/* toasts keep their solid brand-color backgrounds for contrast/urgency,
+   but pick up a soft frosted edge for consistency with the rest of the UI */
+.toast{backdrop-filter:saturate(160%);-webkit-backdrop-filter:saturate(160%);border:1px solid rgba(255,255,255,.18)}
+
+/* browsers without backdrop-filter support: fall back to the existing
+   solid surface colors so nothing becomes unreadable */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .topnav,.sidebar,.bottom-nav,.nav-search,.mobile-search-row,.modal-sheet,
+  .glass-card,.settings-card,.profile-section,.feat-card,.referral-card,
+  .dash-summary-card,.notif-item,.leaderboard-item,.schedule-card,
+  .saved-search-item,.chat-list-item,.chat-window,.store-detail,
+  .onboarding-card,.empty-state,.cookie-banner,.pwa-install-banner{
+    background:var(--surface)
+  }
+  body:before{display:none}
+}

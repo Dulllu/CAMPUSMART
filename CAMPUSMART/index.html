@@ -24,6 +24,8 @@
 </head>
 <body>
 
+<a href="#main-wrap" class="skip-link">Skip to content</a>
+
 <!-- Fixed glassmorphism gradient background -->
 <div class="bg-blobs">
   <div class="blob blob1"></div>
@@ -42,7 +44,7 @@
 </div>
 
 <!-- ══ TOASTS ══ -->
-<div id="toast-container"></div>
+<div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <!-- ══ COOKIE BANNER ══ -->
 <div class="cookie-banner" id="cookie-banner">
@@ -144,7 +146,7 @@
             </div>
             <div class="field-group">
               <label>Password</label>
-              <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="login-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/><button type="button" class="eye-btn" onclick="togglePass('login-pass',this)"><i class="fa fa-eye"></i></button></div>
+              <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="login-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/><button type="button" class="eye-btn" onclick="togglePass('login-pass',this)" aria-label="Show password"><i class="fa fa-eye"></i></button></div>
             </div>
             <button class="btn-primary" id="login-btn" onclick="doLogin()"><i class="fa fa-sign-in-alt"></i> Sign In</button>
             <p class="auth-link center"><span onclick="switchAuth('forgot')">Forgot password?</span></p>
@@ -182,11 +184,11 @@
           </div>
           <div class="field-group">
             <label>WhatsApp Number</label>
-            <div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="reg-phone" placeholder="+254 7xx xxx xxx"/></div>
+            <div class="input-wrap"><i class="fa fa-phone"></i><input type="tel" id="reg-phone" placeholder="+254 7xx xxx xxx" inputmode="tel" autocomplete="tel"/></div>
           </div>
           <div class="field-group">
             <label>Password</label>
-            <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="reg-pass" placeholder="Min 8 chars, 1 uppercase, 1 number" oninput="updatePasswordStrength(this.value)"/><button type="button" class="eye-btn" onclick="togglePass('reg-pass',this)"><i class="fa fa-eye"></i></button></div>
+            <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="reg-pass" placeholder="Min 8 chars, 1 uppercase, 1 number" oninput="updatePasswordStrength(this.value)"/><button type="button" class="eye-btn" onclick="togglePass('reg-pass',this)" aria-label="Show password"><i class="fa fa-eye"></i></button></div>
             <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
             <div class="pw-strength-label" id="pw-strength-label"></div>
           </div>
@@ -254,8 +256,8 @@
       <div class="nav-search" id="search-wrap">
         <i class="fa fa-search"></i>
         <input type="text" id="search-input" placeholder='Search products, housing, jobs or gigs…' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off"/>
-        <button class="search-ai-btn" id="search-ai-toggle" onclick="toggleSmartSearch()" title="AI Smart Search"><i class="fa fa-wand-magic-sparkles"></i></button>
-        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none"><i class="fa fa-times"></i></button>
+        <button class="search-ai-btn" id="search-ai-toggle" onclick="toggleSmartSearch()" title="AI Smart Search" aria-label="AI smart search"><i class="fa fa-wand-magic-sparkles"></i></button>
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="Clear search"><i class="fa fa-times"></i></button>
         <div class="search-suggestions" id="search-suggestions" style="display:none"></div>
       </div>
       <div class="nav-actions">
@@ -263,7 +265,7 @@
         <button class="nav-icon-btn" onclick="showPageAnimated('notifications')" title="Notifications"><i class="fa fa-bell"></i><span class="nav-badge" id="topbar-notif-count" style="display:none"></span></button>
         <button class="nav-icon-btn" onclick="showPageAnimated('messages')" title="Messages"><i class="fa fa-comment-dots"></i><span class="nav-badge" id="topbar-msg-count" style="display:none"></span></button>
         <div class="nav-avatar" id="user-avatar" onclick="showPageAnimated('profile')" title="Profile">S</div>
-        <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn"><i class="fa fa-moon"></i></button>
+        <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa fa-moon"></i></button>
       </div>
     </div>
   </nav>
@@ -272,7 +274,7 @@
   <div class="mobile-search-row">
     <i class="fa fa-search"></i>
     <input type="text" placeholder='Search listings, housing, jobs…' oninput="searchListings()" onkeydown="onSearchKeydown(event)" autocomplete="off" id="mobile-search-input"/>
-    <button class="search-ai-btn" onclick="toggleSmartSearch()" title="AI Search" style="background:none;border:none;color:var(--muted);font-size:13px;padding:0"><i class="fa fa-wand-magic-sparkles"></i></button>
+    <button class="search-ai-btn" onclick="toggleSmartSearch()" title="AI Search" style="background:none;border:none;color:var(--muted);font-size:13px;padding:0" aria-label="AI smart search"><i class="fa fa-wand-magic-sparkles"></i></button>
   </div>
 
   <!-- ── SIDEBAR OVERLAY ── -->
@@ -285,7 +287,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="sidebar-brand" onclick="goHome();closeSidebar()"><svg class="brand-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:1.2em;height:1.2em;vertical-align:middle;color:var(--brand)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity="0.7"/></svg> CampusMart</div>
-      <button class="sidebar-close" onclick="closeSidebar()"><i class="fa fa-times"></i></button>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu"><i class="fa fa-times"></i></button>
     </div>
     <div class="sidebar-user" id="sidebar-user">
       <div class="su-avatar" id="sidebar-avatar">S</div>
@@ -471,7 +473,7 @@
           <span class="lh-count" id="listing-count-label"></span>
         </div>
         <div class="lh-right">
-          <button class="lh-btn" id="grid-toggle" onclick="toggleGridView()" title="Toggle view"><i class="fa fa-th-large"></i></button>
+          <button class="lh-btn" id="grid-toggle" onclick="toggleGridView()" title="Toggle view" aria-label="Toggle grid view"><i class="fa fa-th-large"></i></button>
           <select class="lh-select" onchange="sortListings(this.value)">
             <option value="newest">Newest</option>
             <option value="price-low">Price ↑</option>
@@ -503,7 +505,7 @@
     <!-- ═══ VIEW: STORES ═══ -->
     <div id="view-stores" style="display:none">
       <div class="view-header">
-        <button class="btn-back" onclick="showPageAnimated('listings')"><i class="fa fa-arrow-left"></i></button>
+        <button class="btn-back" onclick="showPageAnimated('listings')" aria-label="Back to listings"><i class="fa fa-arrow-left"></i></button>
         <h2>🏪 Campus Stores</h2>
         <button class="btn-primary sm" onclick="openModal()" style="margin-left:auto"><i class="fa fa-plus"></i> Sell</button>
       </div>
@@ -726,7 +728,7 @@
           <div class="profile-section-header"><h3>Edit Profile</h3></div>
           <div class="profile-form">
             <div class="field-group"><label>Full Name</label><div class="input-wrap"><i class="fa fa-user"></i><input type="text" id="edit-name" placeholder="Full name"/></div></div>
-            <div class="field-group"><label>WhatsApp / Phone</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="text" id="edit-phone" placeholder="+254 7xx xxx xxx"/></div></div>
+            <div class="field-group"><label>WhatsApp / Phone</label><div class="input-wrap"><i class="fa fa-phone"></i><input type="tel" id="edit-phone" placeholder="+254 7xx xxx xxx" inputmode="tel" autocomplete="tel"/></div></div>
             <div class="field-group"><label>Campus / Hostel</label><div class="input-wrap"><i class="fa fa-university"></i><input type="text" id="edit-campus" placeholder="Your campus or hostel block"/></div></div>
             <div class="two-col">
               <div class="field-group"><label>School / Faculty</label><div class="input-wrap"><i class="fa fa-graduation-cap"></i><select id="edit-school"><option value="">Select school</option></select></div></div>
@@ -961,7 +963,7 @@
   </nav>
 
   <!-- Scroll to top -->
-  <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" style="display:none"><i class="fa fa-arrow-up"></i></button>
+  <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" style="display:none" aria-label="Scroll to top"><i class="fa fa-arrow-up"></i></button>
 
   <!-- ── FOOTER ── -->
   <footer class="site-footer">
@@ -991,11 +993,11 @@
 
 <!-- SELL MODAL -->
 <div class="modal-backdrop" id="modal-overlay" onclick="closeModalOutside(event)">
-  <div class="modal-sheet" id="sell-modal">
+  <div class="modal-sheet" id="sell-modal" role="dialog" aria-modal="true" aria-label="Post a listing">
     <div class="modal-handle"></div>
     <div class="modal-head">
       <h3 id="modal-title-text">Post a Listing</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close listing form"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-scroll">
 
@@ -1146,11 +1148,11 @@
   <div class="modal-handle"></div>
   <div class="bs-topbar">
     <div class="bs-topbar-actions">
-      <button class="bs-icon-btn" id="bs-watchlist-btn" onclick="toggleWatchlist()" title="Save"><i class="fa fa-heart"></i></button>
-      <button class="bs-icon-btn" onclick="shareCurrentListing()" title="Share"><i class="fa fa-share-alt"></i></button>
-      <button class="bs-icon-btn block" id="bs-block-btn" onclick="confirmBlockUser()" title="Block" style="display:none"><i class="fa fa-ban"></i></button>
-      <button class="bs-icon-btn danger" onclick="openReportModal()" title="Report"><i class="fa fa-flag"></i></button>
-      <button class="bs-icon-btn" onclick="closeBottomSheet()"><i class="fa fa-times"></i></button>
+      <button class="bs-icon-btn" id="bs-watchlist-btn" onclick="toggleWatchlist()" title="Save" aria-label="Save to watchlist"><i class="fa fa-heart"></i></button>
+      <button class="bs-icon-btn" onclick="shareCurrentListing()" title="Share" aria-label="Share listing"><i class="fa fa-share-alt"></i></button>
+      <button class="bs-icon-btn block" id="bs-block-btn" onclick="confirmBlockUser()" title="Block" style="display:none" aria-label="Block user"><i class="fa fa-ban"></i></button>
+      <button class="bs-icon-btn danger" onclick="openReportModal()" title="Report" aria-label="Report listing"><i class="fa fa-flag"></i></button>
+      <button class="bs-icon-btn" onclick="closeBottomSheet()" aria-label="Close"><i class="fa fa-times"></i></button>
     </div>
   </div>
   <div class="bs-scroll">
@@ -1159,8 +1161,8 @@
       <div class="bs-gallery-main" id="bs-gallery-main">
         <img id="bs-main-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;"/>
         <div id="bs-no-img" class="bs-no-img">📦</div>
-        <button class="fullscreen-btn" id="bs-fullscreen-btn" onclick="openFullscreen()" style="display:none"><i class="fa fa-expand"></i></button>
-        <div class="bs-gallery-nav"><button onclick="bsGalleryNav(-1)"><i class="fa fa-chevron-left"></i></button><span id="bs-img-counter"></span><button onclick="bsGalleryNav(1)"><i class="fa fa-chevron-right"></i></button></div>
+        <button class="fullscreen-btn" id="bs-fullscreen-btn" onclick="openFullscreen()" style="display:none" aria-label="View fullscreen"><i class="fa fa-expand"></i></button>
+        <div class="bs-gallery-nav"><button onclick="bsGalleryNav(-1)" aria-label="Previous image"><i class="fa fa-chevron-left"></i></button><span id="bs-img-counter"></span><button onclick="bsGalleryNav(1)" aria-label="Next image"><i class="fa fa-chevron-right"></i></button></div>
       </div>
       <div class="bs-thumbs" id="bs-thumbs"></div>
     </div>
@@ -1257,9 +1259,9 @@
 
 <!-- OFFER MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="offer-overlay" onclick="if(event.target===this)closeOfferModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="offer-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-handshake" style="color:var(--amber)"></i> Make an Offer</h3><button class="modal-close" onclick="closeOfferModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="offer-modal-title"><i class="fa fa-handshake" style="color:var(--amber)"></i> Make an Offer</h3><button class="modal-close" onclick="closeOfferModal()" aria-label="Close offer dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Suggest a price — the seller can accept or counter.</p>
       <div class="offer-presets" id="offer-presets"></div>
@@ -1272,9 +1274,9 @@
 
 <!-- REPORT MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="report-overlay" onclick="closeReportOutside(event)">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-flag" style="color:#ef4444"></i> Report Seller</h3><button class="modal-close" onclick="closeReportModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="report-modal-title"><i class="fa fa-flag" style="color:#ef4444"></i> Report Seller</h3><button class="modal-close" onclick="closeReportModal()" aria-label="Close report dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <div class="info-tip"><i class="fa fa-info-circle"></i> Reports are anonymous. 3+ reports = auto-suspension.</div>
       <div class="field-group" style="margin-top:12px"><label>Reason</label><div class="input-wrap"><i class="fa fa-list"></i><select id="report-reason"><option value="">Select reason</option><option value="scam">M-Pesa / deposit scam</option><option value="fake">Fake or misrepresented listing</option><option value="harassment">Harassment or threats</option><option value="stolen">Suspected stolen goods</option><option value="overcharge">Extreme overpricing</option><option value="other">Other</option></select></div></div>
@@ -1286,9 +1288,9 @@
 
 <!-- VERIFY STUDENT MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="verify-overlay" onclick="if(event.target===this)closeVerifyModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="verify-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-user-check" style="color:#3b82f6"></i> Verify Student</h3><button class="modal-close" onclick="closeVerifyModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="verify-modal-title"><i class="fa fa-user-check" style="color:#3b82f6"></i> Verify Student</h3><button class="modal-close" onclick="closeVerifyModal()" aria-label="Close verification dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter your <strong>.ac.ke</strong> or university email to get a verified badge.</p>
       <div class="field-group"><label>University Email</label><div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="verify-email" placeholder="yourname@university.ac.ke"/></div></div>
@@ -1310,9 +1312,9 @@
 
 <!-- RATING MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="rating-overlay" onclick="if(event.target===this)closeRatingModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="rating-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-star" style="color:#fbbf24"></i> Rate This Seller</h3><button class="modal-close" onclick="closeRatingModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="rating-modal-title"><i class="fa fa-star" style="color:#fbbf24"></i> Rate This Seller</h3><button class="modal-close" onclick="closeRatingModal()" aria-label="Close rating dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <p style="font-size:13px;color:var(--muted);text-align:center">How was your experience with <strong id="rating-seller-name">this seller</strong>?</p>
       <div class="star-input" id="star-input">
@@ -1330,9 +1332,9 @@
 
 <!-- BLOCK CONFIRM MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="block-overlay" onclick="if(event.target===this)closeBlockModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="block-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-ban" style="color:var(--red)"></i> Block User</h3><button class="modal-close" onclick="closeBlockModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="block-modal-title"><i class="fa fa-ban" style="color:var(--red)"></i> Block User</h3><button class="modal-close" onclick="closeBlockModal()" aria-label="Close block dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <p class="block-confirm-text">Blocking <strong id="block-user-name">this user</strong> will hide their messages and prevent them from contacting you. You can unblock them later in Settings.</p>
       <button class="btn-danger full" onclick="doBlockUser()"><i class="fa fa-ban"></i> Block User</button>
@@ -1342,9 +1344,9 @@
 
 <!-- SCHEDULE MEETUP MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="schedule-overlay" onclick="if(event.target===this)closeScheduleModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-calendar-check" style="color:var(--brand)"></i> Schedule Meetup</h3><button class="modal-close" onclick="closeScheduleModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="schedule-modal-title"><i class="fa fa-calendar-check" style="color:var(--brand)"></i> Schedule Meetup</h3><button class="modal-close" onclick="closeScheduleModal()" aria-label="Close schedule dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll schedule-form">
       <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="schedule-location"><option value="">Select Campus Safe Zone</option></select></div></div>
       <div class="field-group"><label>Date &amp; Time</label><div class="input-wrap"><i class="fa fa-clock"></i><input type="datetime-local" id="schedule-time"/></div></div>
@@ -1356,9 +1358,9 @@
 
 <!-- DISPUTE MODAL -->
 <div class="modal-backdrop modal-backdrop-top" id="dispute-overlay" onclick="if(event.target===this)closeDisputeModal()">
-  <div class="modal-sheet sm">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="dispute-modal-title">
     <div class="modal-handle"></div>
-    <div class="modal-head"><h3><i class="fa fa-gavel" style="color:var(--red)"></i> Raise a Dispute</h3><button class="modal-close" onclick="closeDisputeModal()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-head"><h3 id="dispute-modal-title"><i class="fa fa-gavel" style="color:var(--red)"></i> Raise a Dispute</h3><button class="modal-close" onclick="closeDisputeModal()" aria-label="Close dispute dialog"><i class="fa fa-times"></i></button></div>
     <div class="modal-scroll">
       <div class="info-tip"><i class="fa fa-info-circle"></i> Use this only for serious issues after a meetup (e.g. item not as described, payment issue). Our team reviews disputes within 48 hours.</div>
       <div class="field-group" style="margin-top:12px"><label>What happened? (min 10 characters)</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="dispute-reason" rows="4" placeholder="Describe the issue in detail…"></textarea></div></div>
@@ -1372,7 +1374,7 @@
   <div class="pwa-install-icon">🎓</div>
   <div class="pwa-install-text"><strong>Install CampusMart</strong><span>Get the app for faster access &amp; notifications</span></div>
   <button class="pwa-install-btn" onclick="installPWA()">Install</button>
-  <button class="pwa-install-close" onclick="dismissPwaBanner()"><i class="fa fa-times"></i></button>
+  <button class="pwa-install-close" onclick="dismissPwaBanner()" aria-label="Dismiss install prompt"><i class="fa fa-times"></i></button>
 </div>
 
 <!-- STORY VIEWER -->
@@ -1381,7 +1383,7 @@
   <div class="sv-header">
     <div class="sv-avatar" id="sv-avatar">S</div>
     <div class="sv-info"><div class="sv-name" id="sv-name"></div><div class="sv-time" id="sv-time"></div></div>
-    <button class="sv-close" onclick="closeStoryViewer()"><i class="fa fa-times"></i></button>
+    <button class="sv-close" onclick="closeStoryViewer()" aria-label="Close story"><i class="fa fa-times"></i></button>
   </div>
   <div class="sv-media" id="sv-img">
     <div class="sv-no-img" id="sv-no-img">📦</div>
@@ -1394,17 +1396,17 @@
     <div class="sv-price" id="sv-price"></div>
     <div class="sv-actions">
       <button class="sv-wa-btn" id="sv-wa-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-      <button class="sv-chat-btn" onclick="closeStoryViewer()"><i class="fa fa-comment"></i></button>
+      <button class="sv-chat-btn" onclick="closeStoryViewer()" aria-label="Message seller"><i class="fa fa-comment"></i></button>
     </div>
   </div>
 </div>
 
 <!-- FULLSCREEN IMAGE -->
 <div id="fullscreen-overlay" onclick="closeFullscreen()">
-  <button class="fs-close" onclick="closeFullscreen()"><i class="fa fa-times"></i></button>
-  <button class="fs-nav prev" onclick="fsNav(-1,event)"><i class="fa fa-chevron-left"></i></button>
+  <button class="fs-close" onclick="closeFullscreen()" aria-label="Close fullscreen"><i class="fa fa-times"></i></button>
+  <button class="fs-nav prev" onclick="fsNav(-1,event)" aria-label="Previous image"><i class="fa fa-chevron-left"></i></button>
   <img id="fullscreen-img" src="" alt="fullscreen"/>
-  <button class="fs-nav next" onclick="fsNav(1,event)"><i class="fa fa-chevron-right"></i></button>
+  <button class="fs-nav next" onclick="fsNav(1,event)" aria-label="Next image"><i class="fa fa-chevron-right"></i></button>
   <div class="fs-counter" id="fs-counter"></div>
 </div>
 
