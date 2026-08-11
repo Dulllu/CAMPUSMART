@@ -100,5 +100,142 @@ button{border:0;cursor:pointer}a{color:inherit;text-decoration:none}img{max-widt
 @media(max-width:380px){.nb-text{font-size:16px}.nav-actions .nav-avatar{display:none}.btn-sell-nav{padding:0 9px}.hero-title{font-size:34px}.hero-section{padding:22px 15px 18px}.hero-cta{grid-template-columns:1fr}.hero-visual{min-height:120px}.hfc{width:88px;height:110px}.listings-grid,.store-grid,.recent-grid,.housing-grid,.jobs-grid,.lostfound-grid,.offers-grid{gap:7px}.card-body{padding:8px}.card-title{font-size:10px}.card-price{font-size:13px}.card-heart{width:28px;height:28px;font-size:11px}}
 
 @media(min-width:801px){.bottom-nav{display:none!important}}
+
+/* ── Listing Detail Bottom Sheet ─────────────────────────────────────────
+   #bottom-sheet / .bottom-sheet was rendered by HTML+JS but had NO rules
+   anywhere in this file, so it sat in normal document flow, fully visible,
+   unstyled, right below the page content instead of as a hidden fixed
+   overlay. This block restores it (and every .bs-* / seller-card /
+   similar-* / pwa-install-* class it depends on) to match the rest of the
+   app's design system. */
+.bottom-sheet{position:fixed;left:0;right:0;bottom:0;z-index:7001;background:var(--surface);
+  border-radius:var(--radius-xl) var(--radius-xl) 0 0;box-shadow:var(--shadow-lg);
+  width:min(760px,100%);margin:0 auto;max-height:92svh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.bottom-sheet.open{transform:translateY(0)}
+.bottom-sheet .modal-handle{width:40px;height:5px;border-radius:99px;background:var(--line);
+  margin:10px auto 4px;flex:0 0 auto}
+.bs-topbar{display:flex;justify-content:flex-end;padding:2px 14px 8px;flex:0 0 auto}
+.bs-topbar-actions{display:flex;gap:8px}
+.bs-icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--text-2);display:grid;place-items:center;font-size:14px}
+.bs-icon-btn.saved{color:var(--danger);border-color:var(--danger)}
+.bs-icon-btn.danger{color:var(--danger)}
+.bs-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.bs-gallery{position:relative}
+.bs-gallery-main{position:relative;width:100%;aspect-ratio:1/1;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bs-no-img{font-size:52px;opacity:.5}
+.fullscreen-btn{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;
+  background:rgba(5,18,12,.55);color:#fff;display:grid;place-items:center;z-index:2}
+.bs-gallery-nav{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 8px;pointer-events:none}
+.bs-gallery-nav button{pointer-events:auto;width:34px;height:34px;border-radius:50%;
+  background:rgba(5,18,12,.45);color:#fff;display:grid;place-items:center}
+.bs-gallery-nav span{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  background:rgba(5,18,12,.55);color:#fff;font-size:11px;padding:3px 9px;border-radius:99px;pointer-events:none}
+.bs-thumbs{display:flex;gap:8px;padding:10px 14px;overflow-x:auto}
+.bs-thumbs .thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:0 0 auto;
+  border:2px solid transparent;opacity:.65}
+.bs-thumbs .thumb.active{border-color:var(--brand);opacity:1}
+.bs-promo-banner:not(:empty){margin:10px 14px 0;padding:8px 12px;border-radius:10px;
+  background:var(--accent-soft);color:#8a5b00;font-size:12px;font-weight:750}
+.urgency-row:not(:empty){margin:10px 14px 0;display:flex;gap:8px;flex-wrap:wrap}
+.bs-info{padding:14px}
+.bs-price-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bs-price{font-family:var(--display);font-size:26px;font-weight:800;color:var(--brand-strong)}
+.bs-orig-price{font-size:14px;color:var(--muted);text-decoration:line-through}
+.bs-condition{margin-left:auto;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;
+  background:var(--surface-2);color:var(--text-2)}
+.bs-title{font-size:19px;font-weight:800;margin:8px 0;line-height:1.3}
+.pop-row:not(:empty){display:flex;gap:10px;font-size:11px;color:var(--muted);margin-bottom:8px}
+.bs-reactions{display:flex;gap:8px;margin:10px 0}
+.react-btn{flex:1;padding:8px 4px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--text-2)}
+.bs-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.bs-cat-badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:99px;
+  background:var(--brand-soft);color:var(--brand)}
+.bs-loc{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.safe-zone-tip{display:flex;align-items:center;gap:8px;background:var(--brand-pale);
+  color:var(--brand-strong);font-size:12px;font-weight:700;padding:8px 12px;border-radius:10px;margin-bottom:10px}
+.bs-stock:not(:empty){font-size:12px;color:var(--text-2);margin-bottom:6px}
+.bs-section{margin:14px 0}
+.bs-section-title{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-2);margin-bottom:6px}
+.bs-desc{font-size:14px;line-height:1.55;color:var(--text);white-space:pre-wrap}
+.seller-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);
+  border-radius:var(--radius-md);margin:14px 0}
+.sc-avatar{width:44px;height:44px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.sc-info{flex:1;min-width:0}
+.sc-name{font-weight:800;font-size:14px}
+.sc-label{font-size:11px;color:var(--muted)}
+.sc-bio{font-size:12px;color:var(--text-2);margin-top:2px}
+.sc-verified{width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:11px;flex:0 0 auto}
+.btn-save-search{width:100%;min-height:44px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);color:var(--text-2);font-weight:750;font-size:13px;margin-bottom:10px}
+.safety-tip{display:flex;gap:10px;background:var(--accent-soft);color:#7a5200;font-size:12px;
+  padding:10px 12px;border-radius:10px;margin-bottom:14px;line-height:1.4}
+.bs-actions{display:flex;gap:10px;margin-bottom:10px}
+.btn-wa{flex:1;min-height:46px;border-radius:12px;background:#22c55e;color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px}
+.btn-offer{flex:1;min-height:46px;border-radius:12px;background:var(--brand);color:#fff;
+  font-weight:800;border:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px}
+.bs-secondary-actions{display:flex;gap:10px;margin-bottom:14px}
+.btn-secondary{flex:1;min-height:42px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);color:var(--text);font-weight:750;display:flex;align-items:center;
+  justify-content:center;gap:7px;font-size:13px}
+#bs-owner-controls{margin-top:6px}
+.owner-actions{display:flex;gap:10px;margin-bottom:10px}
+.btn-edit,.btn-delete{flex:1;min-height:42px;border-radius:12px;font-weight:750;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-edit{background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
+.btn-delete{background:#fdeaea;border:1px solid rgba(214,69,69,.3);color:var(--danger)}
+.stock-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:10px}
+.stock-row input{width:70px;padding:8px;border-radius:8px;border:1px solid var(--line)}
+.stock-row button{padding:8px 10px;border-radius:8px;background:var(--surface-2);
+  border:1px solid var(--line);font-size:11px;font-weight:750}
+.meetup-card{background:var(--brand-pale);border:1px solid var(--brand-soft);border-radius:var(--radius-md);
+  padding:14px;margin:14px 0}
+.meetup-card-title{font-weight:800;font-size:13px;color:var(--brand-strong);margin-bottom:10px;
+  display:flex;align-items:center;gap:7px}
+.meetup-status-row{display:flex;gap:16px;font-size:12px;color:var(--text-2);margin-bottom:10px}
+.meetup-status-item{display:flex;align-items:center;gap:6px}
+.btn-schedule-meetup,.btn-confirm-meetup,.btn-rate-now,.btn-dispute{width:100%;min-height:42px;
+  border-radius:10px;font-weight:750;font-size:13px;margin-bottom:8px;display:flex;
+  align-items:center;justify-content:center;gap:7px}
+.btn-schedule-meetup{background:var(--surface);border:1px solid var(--brand);color:var(--brand-strong)}
+.btn-confirm-meetup{background:var(--brand);color:#fff;border:none}
+.btn-rate-now{background:var(--accent);color:#fff;border:none}
+.btn-dispute{background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.similar-section{margin-top:16px}
+.similar-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.similar-card{flex:0 0 130px;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden}
+.similar-card img{width:100%;height:100px;object-fit:cover;display:block;background:var(--surface-2)}
+.similar-card-body{padding:8px}
+.similar-card-title{font-size:12px;font-weight:700;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.similar-card-price{font-size:12px;font-weight:800;color:var(--brand-strong);margin-top:3px}
+
+/* ── PWA Install Banner ── */
+.pwa-install-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));
+  z-index:6000;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-lg);padding:12px;align-items:center;gap:10px;max-width:420px;margin:0 auto}
+.pwa-install-banner.visible{display:flex}
+.pwa-install-icon{font-size:24px;flex:0 0 auto}
+.pwa-install-text{flex:1;min-width:0;display:flex;flex-direction:column;font-size:12px}
+.pwa-install-text strong{font-size:13px}
+.pwa-install-text span{color:var(--muted)}
+.pwa-install-btn{background:var(--brand);color:#fff;border:none;border-radius:9px;padding:8px 14px;
+  font-weight:800;font-size:12px;flex:0 0 auto}
+.pwa-install-close{background:none;border:none;color:var(--muted);flex:0 0 auto;padding:4px}
+
+@media(max-width:380px){
+  .bs-price{font-size:22px}
+  .bs-title{font-size:16px}
+  .similar-card{flex-basis:110px}
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 :focus-visible{outline:3px solid rgba(11,143,90,.25);outline-offset:2px}
