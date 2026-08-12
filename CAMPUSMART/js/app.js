@@ -62,6 +62,12 @@ let bsGalleryIndex = 0;
 /* ── Utils ───────────────────────────────────────────── */
 const $        = id => document.getElementById(id);
 const esc      = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* Uploaded-file URLs can come back either as a relative /uploads/... path
+   (local disk storage) or an already-absolute https://... URL (Cloudinary).
+   Always prefixing SERVER breaks the Cloudinary case, so route every
+   uploaded-media URL through this one helper instead of repeating the
+   startsWith('/') check ad hoc. */
+const mediaUrl = u => !u ? '' : (/^https?:\/\//.test(u) ? u : SERVER + u);
 const fmtPrice = n  => 'KES ' + Number(n||0).toLocaleString();
 const authHdr  = () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('cm_token')}` });
 const isVerified = u => u && u.phone && u.campus && u.bio;
@@ -401,7 +407,7 @@ function updateUserUIBase() {
   ['user-avatar','sidebar-avatar','profile-avatar-big'].forEach(id=>{
     const el=$(id); if(!el) return;
     if(currentUser.avatar){
-      const src=currentUser.avatar.startsWith('/')?SERVER+currentUser.avatar:currentUser.avatar;
+      const src=mediaUrl(currentUser.avatar);
       if(id==='user-avatar'||id==='sidebar-avatar'){
         el.style.backgroundImage=`url(${src})`;el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.textContent='';
       } else {
@@ -923,17 +929,41 @@ function handleImages(e){
   const files=Array.from(e.target.files).slice(0,5-uploadedImages.length);
   files.forEach(f=>{
     const reader=new FileReader();
-    reader.onload=ev=>{
-      uploadedImages.push(f);
-      const prev=$('upload-previews');
-      const wrap=document.createElement('div');wrap.className='preview-wrap';
-      const img=document.createElement('img');img.src=ev.target.result;img.className='preview-img';
-      const rm=document.createElement('button');rm.innerHTML='<i class="fa fa-times"></i>';rm.className='preview-rm';
-      const idx=uploadedImages.length-1;rm.onclick=ev2=>{ev2.stopPropagation();uploadedImages.splice(idx,1);wrap.remove();};
-      wrap.appendChild(img);wrap.appendChild(rm);prev.appendChild(wrap);
-      $('upload-placeholder')&&($('upload-placeholder').style.display='none');
-    };reader.readAsDataURL(f);
+    reader.onload=ev=>{ uploadedImages.push({isNew:true,file:f,previewUrl:ev.target.result}); renderUploadPreviews(); };
+    reader.readAsDataURL(f);
   });
+  e.target.value=''; // allow re-selecting the same file after a remove
+}
+function renderUploadPreviews(){
+  const prev=$('upload-previews'); if(!prev) return;
+  prev.innerHTML='';
+  uploadedImages.forEach((item,idx)=>{
+    const wrap=document.createElement('div'); wrap.className='preview-wrap';
+    if(idx===0) wrap.innerHTML+='<span class="preview-cover-badge">Cover</span>';
+    const img=document.createElement('img'); img.src=item.previewUrl||''; img.className='preview-img';
+    const rm=document.createElement('button'); rm.type='button'; rm.className='preview-rm'; rm.title='Remove photo';
+    rm.innerHTML='<i class="fa fa-times"></i>';
+    rm.onclick=ev2=>{ev2.stopPropagation();uploadedImages.splice(idx,1);renderUploadPreviews();};
+    const ctrls=document.createElement('div'); ctrls.className='preview-ctrls';
+    if(idx>0){
+      const left=document.createElement('button'); left.type='button'; left.title='Move earlier';
+      left.innerHTML='<i class="fa fa-chevron-left"></i>';
+      left.onclick=ev2=>{ev2.stopPropagation();[uploadedImages[idx-1],uploadedImages[idx]]=[uploadedImages[idx],uploadedImages[idx-1]];renderUploadPreviews();};
+      ctrls.appendChild(left);
+      const cover=document.createElement('button'); cover.type='button'; cover.title='Set as cover photo';
+      cover.innerHTML='<i class="fa fa-star"></i>';
+      cover.onclick=ev2=>{ev2.stopPropagation();const[it]=uploadedImages.splice(idx,1);uploadedImages.unshift(it);renderUploadPreviews();};
+      ctrls.appendChild(cover);
+    }
+    if(idx<uploadedImages.length-1){
+      const right=document.createElement('button'); right.type='button'; right.title='Move later';
+      right.innerHTML='<i class="fa fa-chevron-right"></i>';
+      right.onclick=ev2=>{ev2.stopPropagation();[uploadedImages[idx+1],uploadedImages[idx]]=[uploadedImages[idx],uploadedImages[idx+1]];renderUploadPreviews();};
+      ctrls.appendChild(right);
+    }
+    wrap.appendChild(img); wrap.appendChild(rm); wrap.appendChild(ctrls); prev.appendChild(wrap);
+  });
+  $('upload-placeholder')&&($('upload-placeholder').style.display=uploadedImages.length?'none':'');
 }
 async function postListing(){
   const title=$('item-title')?.value.trim(),price=$('item-price')?.value,contact=$('item-contact')?.value.trim();
@@ -945,7 +975,10 @@ async function postListing(){
   fd.append('location',$('item-location')?.value||'');fd.append('stock',$('item-stock')?.value||'1');
   fd.append('isPromo',$('item-is-promo')?.checked?'true':'false');
   if($('item-is-promo')?.checked){fd.append('promoLabel',$('item-promo-label')?.value||'');fd.append('originalPrice',$('item-original-price')?.value||'');}
-  uploadedImages.forEach(f=>fd.append('images',f));
+  uploadedImages.forEach(item=>{
+    if(item.isNew){fd.append('images',item.file);fd.append('imageOrder','__NEW__');}
+    else{fd.append('imageOrder',item.url);}
+  });
   try{
     const url=editingListing?`${API}/listings/${editingListing._id}`:`${API}/listings`;
     const method=editingListing?'PUT':'POST';
@@ -960,6 +993,8 @@ async function postListing(){
 }
 function editListing(){
   if(!currentDetail)return;editingListing=currentDetail;
+  uploadedImages=(currentDetail.images||[]).map(url=>({isNew:false,url,previewUrl:mediaUrl(url)}));
+  renderUploadPreviews();
   $('modal-title-text').textContent='Edit Listing';$('post-btn').innerHTML='<i class="fa fa-save"></i> Save Changes';
   $('item-title').value=currentDetail.title||'';$('item-desc').value=currentDetail.desc||'';$('item-price').value=currentDetail.price||'';
   $('item-contact').value=currentDetail.contact||'';$('item-stock').value=currentDetail.stock||1;
@@ -1220,7 +1255,7 @@ function renderMessages(convoId,msgs){
     const time=d.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});
     const imgSrc=m.imageUrl||(m.text?.startsWith('[img]')?m.text.replace('[img]',''):null);
     return `${dateDiv}<div class="chat-msg ${mine?'mine':'theirs'}${m.isFlagged?' flagged':''}">
-      ${imgSrc?`<img src="${esc(imgSrc.startsWith('/')?SERVER+imgSrc:imgSrc)}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(m.text||'')}</div>`}
+      ${imgSrc?`<img src="${esc(mediaUrl(imgSrc))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(m.text||'')}</div>`}
       <div class="msg-time">${time}${mine?' ✓':''}</div>
     </div>`;
   }).join('');
@@ -1239,7 +1274,7 @@ function triggerChatPhoto(convoId,otherUserId,listingId,listingTitle){const inp=
 async function sendChatPhoto(e,convoId,otherUserId,listingId,listingTitle){
   const file=e.target.files?.[0];if(!file)return;
   const fd=new FormData();fd.append('photo',file);fd.append('receiverId',otherUserId);fd.append('listingId',listingId||'');
-  try{const r=await fetch(`${API}/messages/photo`,{method:'POST',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});const d=await r.json();if(!r.ok)return showToast(d.error||'Photo failed.','error');const c=$(`chat-messages-${convoId}`);if(c&&d.message?.imageUrl){const div=document.createElement('div');div.className='chat-msg mine';div.innerHTML=`<img src="${esc(SERVER+d.message.imageUrl)}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">now ✓</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}}catch{showToast('Could not send photo.','error');}
+  try{const r=await fetch(`${API}/messages/photo`,{method:'POST',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});const d=await r.json();if(!r.ok)return showToast(d.error||'Photo failed.','error');const c=$(`chat-messages-${convoId}`);if(c&&d.message?.imageUrl){const div=document.createElement('div');div.className='chat-msg mine';div.innerHTML=`<img src="${esc(mediaUrl(d.message.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">now ✓</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}}catch{showToast('Could not send photo.','error');}
   e.target.value='';
 }
 
@@ -2346,7 +2381,10 @@ async function postListing() {
     }));
   }
 
-  uploadedImages.forEach(f => fd.append('images', f));
+  uploadedImages.forEach(item => {
+    if (item.isNew) { fd.append('images', item.file); fd.append('imageOrder', '__NEW__'); }
+    else { fd.append('imageOrder', item.url); }
+  });
 
   try {
     const url = editingListing ? `${API}/listings/${editingListing._id}` : `${API}/listings`;

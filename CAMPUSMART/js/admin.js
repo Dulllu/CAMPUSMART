@@ -5,6 +5,10 @@ const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.o
 const $ = id => document.getElementById(id);
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const fmtPrice = n => 'KES ' + Number(n||0).toLocaleString();
+/* Same fix as the main app: uploaded files may come back as a relative
+   /uploads/... path (local disk) or an already-absolute https://... URL
+   (Cloudinary) — blindly prefixing SERVER breaks the Cloudinary case. */
+const mediaUrl = u => !u ? '' : (/^https?:\/\//.test(u) ? u : SERVER + u);
 const authHdr = () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('cm_admin_token')}` });
 
 function showToast(msg) {
@@ -119,7 +123,7 @@ async function loadVerifications() {
         <td>${esc(u.name)}</td>
         <td>${esc(u.email)}</td>
         <td>${esc(u.regNumber||'—')}</td>
-        <td>${u.studentIdImage ? `<img class="id-thumb" src="${SERVER+u.studentIdImage}" onclick="window.open('${SERVER+u.studentIdImage}','_blank')"/>` : '—'}</td>
+        <td>${u.studentIdImage ? `<img class="id-thumb" src="${esc(mediaUrl(u.studentIdImage))}" onclick="window.open('${esc(mediaUrl(u.studentIdImage))}','_blank')"/>` : '—'}</td>
         <td>${new Date(u.createdAt).toLocaleDateString()}</td>
         <td>
           <button class="btn-sm approve" onclick="reviewId('${u._id}',true)">Approve</button>
