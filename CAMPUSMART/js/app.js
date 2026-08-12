@@ -148,14 +148,6 @@ function hideLoader() {
   }, 400);
 }
 
-/* ── Cookie ──────────────────────────────────────────── */
-function initCookieBanner() {
-  if (localStorage.getItem('cm_cookie_consent')) return;
-  setTimeout(() => $('cookie-banner')?.classList.add('visible'), 1800);
-}
-function acceptCookie()  { localStorage.setItem('cm_cookie_consent','accepted'); $('cookie-banner').classList.remove('visible'); }
-function dismissCookie() { localStorage.setItem('cm_cookie_consent','declined'); $('cookie-banner').classList.remove('visible'); }
-
 /* ── Onboarding ──────────────────────────────────────── */
 function showOnboarding() {
   if (localStorage.getItem('cm_onboarded')) return;
@@ -1380,7 +1372,6 @@ function loadLocalData(){watchlist=JSON.parse(localStorage.getItem('cm_watchlist
 ══════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
   loadTheme();
-  initCookieBanner();
   initScrollTop();
   handleGoogleRedirect();
   handleOAuthErrorParam();
