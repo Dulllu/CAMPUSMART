@@ -7,6 +7,31 @@
 const API    = (window.CAMPUSMART_CONFIG?.API)    || 'https://campus-mart-y7bu.onrender.com/api';
 const SERVER = (window.CAMPUSMART_CONFIG?.SERVER) || 'https://campus-mart-y7bu.onrender.com';
 
+/* ── Real visible-viewport tracking ─────────────────────
+   Fixed-position elements pinned to "bottom:0" are positioned against the
+   LAYOUT viewport, which on many mobile browsers (address bar / gesture
+   bar / in-app browser chrome) is taller than what's actually visible on
+   screen. That mismatch is what pushes fixed bottom bars (cookie banner,
+   bottom nav) down past the real bottom edge, overlapping each other and
+   getting clipped. window.visualViewport reports the real visible area,
+   so we measure the gap and expose it as a CSS var every fixed-bottom
+   element can add into its own offset. */
+function syncViewportInset() {
+  const vv = window.visualViewport;
+  let inset = 0;
+  if (vv) {
+    inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  }
+  document.documentElement.style.setProperty('--vv-bottom-inset', inset + 'px');
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', syncViewportInset);
+  window.visualViewport.addEventListener('scroll', syncViewportInset);
+}
+window.addEventListener('resize', syncViewportInset);
+window.addEventListener('orientationchange', syncViewportInset);
+syncViewportInset();
+
 /* ── State ───────────────────────────────────────────── */
 let currentUser    = null;
 let allListings    = [];
