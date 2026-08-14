@@ -226,7 +226,7 @@
   <nav class="topnav" id="topnav">
     <div class="nav-inner">
       <div class="nav-left">
-        <button class="nav-hamburger" onclick="openSidebar()" aria-label="Menu"><i class="fa fa-bars"></i></button>
+        <button class="nav-hamburger" onclick="toggleSidebar()" aria-label="Menu"><i class="fa fa-bars"></i></button>
         <div class="nav-brand" onclick="goHome()">
           <svg class="nb-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/>
@@ -254,7 +254,18 @@
         <button class="nav-icon-btn" onclick="showPageAnimated('notifications')" title="Notifications"><i class="fa fa-bell"></i><span class="nav-badge" id="topbar-notif-count" style="display:none"></span></button>
         <button class="nav-icon-btn" onclick="showPageAnimated('messages')" title="Messages"><i class="fa fa-comment-dots"></i><span class="nav-badge" id="topbar-msg-count" style="display:none"></span></button>
         <div class="nav-avatar" id="user-avatar" onclick="showPageAnimated('profile')" title="Profile">S</div>
-        <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa fa-moon"></i></button>
+        <button class="nav-icon-btn theme-toggle-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn" aria-label="Toggle dark mode">
+          <svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <g class="ti-sun">
+              <circle cx="12" cy="12" r="4.6"/>
+              <line x1="12" y1="1.5" x2="12" y2="3.5"/><line x1="12" y1="20.5" x2="12" y2="22.5"/>
+              <line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/>
+              <line x1="1.5" y1="12" x2="3.5" y2="12"/><line x1="20.5" y1="12" x2="22.5" y2="12"/>
+              <line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/>
+            </g>
+            <path class="ti-moon" d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"/>
+          </svg>
+        </button>
       </div>
     </div>
   </nav>
@@ -866,8 +877,9 @@
           <div class="settings-row">
             <div><strong>Theme</strong><p>Switch between light and dark mode</p></div>
             <div class="theme-toggle-row">
-              <button class="theme-pill active" id="theme-light" onclick="setTheme('light')"><i class="fa fa-sun"></i> Light</button>
+              <button class="theme-pill" id="theme-light" onclick="setTheme('light')"><i class="fa fa-sun"></i> Light</button>
               <button class="theme-pill" id="theme-dark" onclick="setTheme('dark')"><i class="fa fa-moon"></i> Dark</button>
+              <button class="theme-pill active" id="theme-system" onclick="setTheme('system')"><i class="fa fa-circle-half-stroke"></i> System</button>
             </div>
           </div>
           <div class="settings-row">
@@ -1018,10 +1030,11 @@
 
       <!-- MARKETPLACE fields -->
       <div id="fields-marketplace">
-        <div class="two-col">
+        <div class="two-col-tight">
           <div class="field-group"><label>Price (KES) *</label><div class="input-wrap"><i class="fa fa-coins"></i><input type="number" id="item-price" placeholder="0" min="0"/></div></div>
           <div class="field-group"><label>Qty</label><div class="input-wrap"><i class="fa fa-layer-group"></i><input type="number" id="item-stock" placeholder="1" min="1" value="1"/></div></div>
         </div>
+        <div class="form-section-label"><i class="fa fa-shapes"></i> Category &amp; condition</div>
         <div class="two-col">
           <div class="field-group"><label>Category</label><div class="input-wrap"><i class="fa fa-folder"></i><select id="item-category">
   <optgroup label="🎓 Academics">
@@ -1116,6 +1129,7 @@
         </div>
       </div>
 
+      <div class="form-section-label"><i class="fa fa-map-location-dot"></i> Meetup &amp; logistics</div>
       <div class="field-group"><label>Meeting Point</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><select id="item-location"><option value="">📍 Select Campus Safe Zone</option></select></div></div>
 
       <!-- MMUST taxonomy -->
@@ -1222,7 +1236,7 @@
           <button onclick="toggleSoldOut()">Mark Sold</button>
         </div>
         <div id="bs-bump-row" style="margin-top:10px">
-          <button class="btn-secondary" id="bs-bump-btn" onclick="doBumpListing()" style="width:100%"><i class="fa fa-rocket"></i> Bump to Top (free, once/24h)</button>
+          <button class="btn-secondary" id="bs-bump-btn" onclick="doBumpListing()" style="width:100%"><i class="fa fa-rocket"></i> Bump to Top (free, once/month)</button>
         </div>
       </div>
       <!-- Meetup Confirmation (non-owner side) -->
@@ -1271,6 +1285,26 @@
       <div class="field-group" style="margin-top:12px"><label>Reason</label><div class="input-wrap"><i class="fa fa-list"></i><select id="report-reason"><option value="">Select reason</option><option value="scam">M-Pesa / deposit scam</option><option value="fake">Fake or misrepresented listing</option><option value="harassment">Harassment or threats</option><option value="stolen">Suspected stolen goods</option><option value="overcharge">Extreme overpricing</option><option value="other">Other</option></select></div></div>
       <div class="field-group"><label>Details (optional)</label><div class="input-wrap"><i class="fa fa-align-left" style="top:14px;transform:none"></i><textarea id="report-details" rows="3" placeholder="Add details…"></textarea></div></div>
       <button class="btn-danger full" onclick="submitReport()"><i class="fa fa-flag"></i> Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- AVATAR CROP MODAL -->
+<div class="modal-backdrop modal-backdrop-top" id="avatar-crop-overlay">
+  <div class="modal-sheet sm" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+    <div class="modal-head"><h3 id="avatar-crop-title">Crop your photo</h3><button class="modal-close" onclick="closeAvatarCrop()"><i class="fa fa-times"></i></button></div>
+    <div class="modal-scroll">
+      <div class="crop-stage" id="crop-stage">
+        <img id="crop-img" alt="" draggable="false"/>
+        <div class="crop-mask"></div>
+      </div>
+      <div class="crop-zoom-row">
+        <i class="fa fa-image" style="font-size:11px;color:var(--muted)"></i>
+        <input type="range" id="crop-zoom" min="100" max="300" value="100" oninput="updateCropTransform()"/>
+        <i class="fa fa-image" style="font-size:16px;color:var(--muted)"></i>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Drag to reposition &middot; slide to zoom</p>
+      <button class="btn-primary" style="width:100%;margin-top:14px" onclick="saveAvatarCrop()"><i class="fa fa-check"></i> Save Photo</button>
     </div>
   </div>
 </div>

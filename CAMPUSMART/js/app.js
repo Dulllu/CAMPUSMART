@@ -165,18 +165,28 @@ function dismissOnboarding() {
 }
 
 /* ── Theme ───────────────────────────────────────────── */
+function getSystemTheme(){ return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; }
 function loadTheme() {
-  const t = localStorage.getItem('cm_theme') || 'light'; // default: dark
-  applyTheme(t);
+  const saved = localStorage.getItem('cm_theme');
+  if (saved === 'light' || saved === 'dark') { applyTheme(saved, saved); }
+  else { applyTheme(getSystemTheme(), 'system'); }
+  // Keep following the OS live, but only while the person hasn't explicitly
+  // picked light/dark themselves (an explicit choice always wins).
+  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('cm_theme')) applyTheme(e.matches ? 'dark' : 'light', 'system');
+  });
 }
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  $('theme-light')?.classList.toggle('active', t==='light');
-  $('theme-dark')?.classList.toggle('active',  t==='dark');
-  const btn = $('theme-toggle-btn');
-  if (btn) btn.innerHTML = t==='dark' ? '<i class="fa fa-sun"></i>' : '<i class="fa fa-moon"></i>';
+function applyTheme(resolved, mode) {
+  document.documentElement.setAttribute('data-theme', resolved);
+  $('theme-light')?.classList.toggle('active', mode==='light');
+  $('theme-dark')?.classList.toggle('active',  mode==='dark');
+  $('theme-system')?.classList.toggle('active', mode==='system');
 }
-function setTheme(t) { localStorage.setItem('cm_theme', t); applyTheme(t); if (currentUser) fetch(`${API}/auth/me`,{method:'PUT',headers:authHdr(),body:JSON.stringify({theme:t})}).catch(()=>{}); }
+function setTheme(mode) {
+  if (mode === 'system') { localStorage.removeItem('cm_theme'); applyTheme(getSystemTheme(), 'system'); }
+  else { localStorage.setItem('cm_theme', mode); applyTheme(mode, mode); }
+  if (currentUser) fetch(`${API}/auth/me`,{method:'PUT',headers:authHdr(),body:JSON.stringify({theme:mode})}).catch(()=>{});
+}
 function toggleTheme() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; setTheme(t); }
 
 /* ── Auth Tabs ───────────────────────────────────────── */
@@ -395,9 +405,23 @@ function enterMarketBase() {
   $('login-page').classList.remove('active');
   $('market-page').classList.add('active');
   populateSafeZones(); updateUserUI(); loadListings();
-  loadConversations(); initSocket(); updateBadges();
+  loadConversations(); initSocket(); updateBadges(); loadNotifications();
   showPageAnimated('listings');
+  applySavedSidebarState();
+  openDeepLinkedListing();
   setTimeout(()=>{const sb=$('safety-banner');if(sb)setTimeout(()=>sb.style.display='none',8000);},0);
+}
+/* If the page was opened via a shared listing link (?listing=<id>), fetch
+   and open that listing directly instead of just landing on the homepage
+   — this is what makes Share actually work as a shareable link. */
+async function openDeepLinkedListing(){
+  const id = new URLSearchParams(location.search).get('listing');
+  if (!id) return;
+  try {
+    const r = await fetch(`${API}/listings/${id}`);
+    const d = await r.json();
+    if (r.ok && d.listing) setTimeout(() => openBottomSheet(d.listing), 300);
+  } catch {}
 }
 
 /* ── User UI ─────────────────────────────────────────── */
@@ -486,6 +510,24 @@ function switchLegal(tab,btn) {
 /* ── Sidebar ─────────────────────────────────────────── */
 function openSidebar()  { $('sidebar')?.classList.add('open'); $('sidebar-overlay')?.classList.add('active'); document.body.style.overflow='hidden'; }
 function closeSidebar() { $('sidebar')?.classList.remove('open'); $('sidebar-overlay')?.classList.remove('active'); document.body.style.overflow=''; }
+/* The hamburger button does different things depending on layout:
+   on mobile the sidebar is an overlay (open/close), on desktop it's a
+   permanent column that this collapses/expands instead, remembering the
+   choice so it stays collapsed across page loads. */
+function toggleSidebar(){
+  if(window.innerWidth<=800){
+    $('sidebar')?.classList.contains('open') ? closeSidebar() : openSidebar();
+  } else {
+    const mi=document.querySelector('.market-inner'); if(!mi)return;
+    const collapsed=mi.classList.toggle('sidebar-collapsed');
+    localStorage.setItem('cm_sidebar_collapsed',collapsed?'1':'0');
+  }
+}
+function applySavedSidebarState(){
+  if(window.innerWidth>800 && localStorage.getItem('cm_sidebar_collapsed')==='1'){
+    document.querySelector('.market-inner')?.classList.add('sidebar-collapsed');
+  }
+}
 
 /* ── Safe Zones ──────────────────────────────────────── */
 const SAFE_ZONES=['Main Library Entrance','Student Centre Lobby','Admin Block Ground Floor','Campus Café','ICT Centre Reception','Engineering Common Room','Social Sciences Atrium','School Gate A'];
@@ -832,6 +874,9 @@ function closeBottomSheet(){
   $('bs-overlay')?.classList.remove('open');
   $('bottom-sheet')?.classList.remove('open');
   document.body.style.overflow='';
+  if (new URLSearchParams(location.search).get('listing')) {
+    history.pushState({}, '', location.pathname);
+  }
 }
 
 function setGalleryImg(src,thumb){
@@ -889,9 +934,79 @@ async function saveProfile(){
 }
 async function handleAvatarUpload(e){
   const file=e.target.files?.[0];if(!file)return;
-  const fd=new FormData();fd.append('avatar',file);
-  try{const r=await fetch(`${API}/auth/me`,{method:'PUT',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});const d=await r.json();if(!r.ok)return showToast(d.error||'Upload failed.','error');currentUser=d.user;localStorage.setItem('cm_user',JSON.stringify(d.user));updateUserUI();showToast('Photo updated! 📸','success');}
-  catch{showToast('Upload failed.','error');}
+  const reader=new FileReader();
+  reader.onload=ev=>openAvatarCrop(ev.target.result);
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+/* ── Avatar crop (pan + zoom over a fixed circular frame, canvas export) ── */
+let cropState=null;
+function openAvatarCrop(dataUrl){
+  const img=$('crop-img');
+  img.onload=()=>{
+    const stage=$('crop-stage').getBoundingClientRect();
+    const minScale=Math.max(stage.width/img.naturalWidth,stage.height/img.naturalHeight);
+    cropState={naturalW:img.naturalWidth,naturalH:img.naturalHeight,minScale,scale:minScale,x:0,y:0,dragging:false};
+    updateCropTransform();
+  };
+  img.src=dataUrl;
+  $('crop-zoom').value=100;
+  $('avatar-crop-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setupCropDrag();
+}
+function closeAvatarCrop(){ $('avatar-crop-overlay')?.classList.remove('open'); document.body.style.overflow=''; }
+function updateCropTransform(){
+  if(!cropState)return;
+  const zoomPct=Number($('crop-zoom')?.value||100)/100; // 1x–3x on top of the base "fill the frame" scale
+  cropState.scale=cropState.minScale*zoomPct;
+  clampCropPosition();
+  $('crop-img').style.transform=`translate(${cropState.x}px,${cropState.y}px) scale(${cropState.scale})`;
+}
+function clampCropPosition(){
+  const stage=$('crop-stage').getBoundingClientRect();
+  const w=cropState.naturalW*cropState.scale, h=cropState.naturalH*cropState.scale;
+  const maxX=Math.max(0,(w-stage.width)/2), maxY=Math.max(0,(h-stage.height)/2);
+  cropState.x=Math.min(maxX,Math.max(-maxX,cropState.x));
+  cropState.y=Math.min(maxY,Math.max(-maxY,cropState.y));
+}
+function setupCropDrag(){
+  const stage=$('crop-stage'); if(!stage||stage._dragBound)return; stage._dragBound=true;
+  let startX,startY,origX,origY,active=false;
+  const down=(x,y)=>{ if(!cropState)return; active=true; startX=x;startY=y;origX=cropState.x;origY=cropState.y; };
+  const move=(x,y)=>{ if(!active||!cropState)return; cropState.x=origX+(x-startX); cropState.y=origY+(y-startY); clampCropPosition(); $('crop-img').style.transform=`translate(${cropState.x}px,${cropState.y}px) scale(${cropState.scale})`; };
+  const up=()=>{ active=false; };
+  stage.addEventListener('mousedown',e=>down(e.clientX,e.clientY));
+  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup',up);
+  stage.addEventListener('touchstart',e=>{const t=e.touches[0];down(t.clientX,t.clientY);},{passive:true});
+  stage.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
+  stage.addEventListener('touchend',up);
+}
+async function saveAvatarCrop(){
+  if(!cropState)return;
+  const stage=$('crop-stage').getBoundingClientRect();
+  const OUT=480; // exported square size, px
+  const canvas=document.createElement('canvas'); canvas.width=OUT; canvas.height=OUT;
+  const ctx=canvas.getContext('2d');
+  const img=$('crop-img');
+  // Map the visible frame (stage) back to source-image pixel coordinates,
+  // accounting for the current pan (x,y) and scale.
+  const srcX=(-cropState.x + (-stage.width/2 + cropState.naturalW*cropState.scale/2))/cropState.scale;
+  const srcY=(-cropState.y + (-stage.height/2 + cropState.naturalH*cropState.scale/2))/cropState.scale;
+  const srcW=stage.width/cropState.scale, srcH=stage.height/cropState.scale;
+  ctx.drawImage(img,srcX,srcY,srcW,srcH,0,0,OUT,OUT);
+  canvas.toBlob(async blob=>{
+    const fd=new FormData(); fd.append('avatar',blob,'avatar.jpg');
+    try{
+      const r=await fetch(`${API}/auth/me`,{method:'PUT',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});
+      const d=await r.json();
+      if(!r.ok)return showToast(d.error||'Upload failed.','error');
+      currentUser=d.user;localStorage.setItem('cm_user',JSON.stringify(d.user));updateUserUI();
+      closeAvatarCrop();
+      showToast('Photo updated! 📸','success');
+    }catch{showToast('Upload failed.','error');}
+  },'image/jpeg',0.9);
 }
 function openVerifyModal(){$('verify-overlay')?.classList.add('open');}
 function closeVerifyModal(){$('verify-overlay')?.classList.remove('open');}
@@ -1021,7 +1136,7 @@ async function submitReport(){
 }
 
 /* ── Share ───────────────────────────────────────────── */
-function shareCurrentListing(){if(!currentDetail)return;const text=`Check out "${currentDetail.title}" for ${fmtPrice(currentDetail.price)} on CampusMart!`;if(navigator.share)navigator.share({title:currentDetail.title,text,url:window.location.href});else{navigator.clipboard?.writeText(text);showToast('Listing info copied!','success');}}
+function shareCurrentListing(){if(!currentDetail)return;const text=`Check out "${currentDetail.title}" for ${fmtPrice(currentDetail.price)} on CampusMart!`;const url=`${window.location.origin}${window.location.pathname}?listing=${currentDetail._id}`;if(navigator.share)navigator.share({title:currentDetail.title,text,url});else{navigator.clipboard?.writeText(url);showToast('Listing link copied!','success');}}
 
 /* ── Make Offer ──────────────────────────────────────── */
 function openOfferModal(){
@@ -1077,15 +1192,32 @@ function renderReactions(lid){
 }
 
 /* ── Notifications ───────────────────────────────────── */
+async function loadNotifications(){
+  try{
+    const r=await fetch(`${API}/notifications`,{headers:authHdr()});
+    const d=await r.json();
+    if(r.ok) notifications=(d.notifications||[]).map(n=>({id:n._id,icon:n.icon,text:n.text,time:n.createdAt,read:n.read}));
+    localStorage.setItem('cm_notifs',JSON.stringify(notifications));
+    updateBadges();
+  }catch{}
+}
 function addNotification(n){notifications.unshift({...n,id:Date.now(),read:false,time:new Date().toISOString()});if(notifications.length>50)notifications.pop();localStorage.setItem('cm_notifs',JSON.stringify(notifications));updateBadges();}
 function renderNotifications(){
-  const list=$('notif-list'),empty=$('notif-empty');if(!list)return;
-  if(!notifications.length){list.innerHTML='';empty.style.display='';return;}
-  empty.style.display='none';
-  list.innerHTML=notifications.map(n=>`<div class="notif-item${n.read?'':' unread'}"><span class="notif-icon">${n.icon||'🔔'}</span><div class="notif-body"><div class="notif-text">${esc(n.text||'')}</div><div class="notif-time">${timeAgo(n.time)}</div></div></div>`).join('');
-  notifications.forEach(n=>n.read=true);localStorage.setItem('cm_notifs',JSON.stringify(notifications));updateBadges();
+  const doRender=()=>{
+    const list=$('notif-list'),empty=$('notif-empty');if(!list)return;
+    if(!notifications.length){list.innerHTML='';empty.style.display='';return;}
+    empty.style.display='none';
+    list.innerHTML=notifications.map(n=>`<div class="notif-item${n.read?'':' unread'}"><span class="notif-icon">${n.icon||'🔔'}</span><div class="notif-body"><div class="notif-text">${esc(n.text||'')}</div><div class="notif-time">${timeAgo(n.time)}</div></div></div>`).join('');
+  };
+  doRender(); // instant paint from local cache, then refresh with server truth
+  loadNotifications().then(()=>{
+    doRender();
+    const hadUnread=notifications.some(n=>!n.read);
+    notifications.forEach(n=>n.read=true);localStorage.setItem('cm_notifs',JSON.stringify(notifications));updateBadges();
+    if(hadUnread) fetch(`${API}/notifications/read-all`,{method:'PUT',headers:authHdr()}).catch(()=>{});
+  });
 }
-function clearNotifications(){notifications=[];localStorage.setItem('cm_notifs','[]');renderNotifications();updateBadges();}
+function clearNotifications(){notifications=[];localStorage.setItem('cm_notifs','[]');renderNotifications();updateBadges();fetch(`${API}/notifications`,{method:'DELETE',headers:authHdr()}).catch(()=>{});}
 function updateBadges(){
   const unread=notifications.filter(n=>!n.read).length;
   [$('topbar-notif-count'),$('snav-notif-count')].forEach(el=>{if(!el)return;el.textContent=unread||'';el.style.display=unread?'':'none';});
@@ -1131,7 +1263,7 @@ function renderConversationList(){
   inner.innerHTML=aiCard+convos.sort((a,b)=>new Date(b.lastTime||0)-new Date(a.lastTime||0)).map(c=>`
     <div class="chat-list-item${c.conversationId===activeChatId?' active':''}" id="cli_${esc(c.conversationId)}"
          onclick="openChat('${esc(c.conversationId)}','${esc(c.otherName||'User')}','${esc(c.otherUserId||'')}','${esc(c.listingId||'')}','${esc(c.listingTitle||'')}')">
-      <div class="chat-list-avatar">${(c.otherName||'U')[0].toUpperCase()}</div>
+      <div class="chat-list-avatar"${c.otherAvatar?` style="background-image:url('${esc(mediaUrl(c.otherAvatar))}');background-size:cover;background-position:center;color:transparent"`:''}>${(c.otherName||'U')[0].toUpperCase()}</div>
       <div class="chat-list-info"><div class="chat-list-name">${esc(c.otherName||'User')}</div><div class="chat-list-last">${esc((c.lastText||'').substring(0,40))}</div></div>
       <div class="chat-list-meta"><div class="chat-list-time">${c.lastTime?timeAgo(c.lastTime):''}</div>${c.unread?'<div class="chat-unread-dot"></div>':''}</div>
       <div class="chat-delete-reveal" onclick="event.stopPropagation();deleteChat('${esc(c.conversationId)}')"><i class="fa fa-trash"></i></div>
@@ -1147,7 +1279,18 @@ function addSwipeToDeleteChats(){
   });
 }
 
-function deleteChat(cid){delete conversations[cid];renderConversationList();if(activeChatId===cid){$('chat-window').innerHTML='<div class="chat-placeholder"><i class="fa fa-comment-dots"></i><p>Select a conversation</p></div>';activeChatId=null;}showToast('Conversation deleted.','info');}
+async function deleteChat(cid){
+  delete conversations[cid];renderConversationList();
+  if(activeChatId===cid){$('chat-window').innerHTML='<div class="chat-placeholder"><i class="fa fa-comment-dots"></i><p>Select a conversation</p></div>';activeChatId=null;}
+  try{
+    const r=await fetch(`${API}/messages/conversation/${cid}`,{method:'DELETE',headers:authHdr()});
+    if(!r.ok) throw new Error();
+    showToast('Conversation deleted.','info');
+  }catch{
+    showToast('Could not delete — try again.','error');
+    loadConversations(); // re-sync so it doesn't silently stay "deleted" locally while still on the server
+  }
+}
 
 async function openChat(convoId,otherName,otherUserId,listingId,listingTitle){
   activeChatId=convoId;
@@ -1161,6 +1304,7 @@ async function openChat(convoId,otherName,otherUserId,listingId,listingTitle){
     <div class="chat-header">
       <button class="chat-back-btn" onclick="closeChatWindow()" style="display:flex"><i class="fa fa-arrow-left"></i></button>
       <div class="chat-header-info"><div class="chat-header-name">${esc(otherName)}</div>${listingTitle?`<div class="chat-header-listing">Re: ${esc(listingTitle.substring(0,40))}</div>`:''}</div>
+      ${listingId?`<button class="chat-meetup-btn" title="Schedule a meetup" onclick="openScheduleModal('${esc(listingId)}','${esc(otherUserId)}')"><i class="fa fa-calendar-plus"></i></button>`:''}
       <div style="width:9px;height:9px;border-radius:50%;transition:.3s" id="online-dot-${esc(otherUserId)}"></div>
     </div>
     <div class="chat-messages" id="chat-messages-${esc(convoId)}"></div>
@@ -1281,12 +1425,12 @@ async function sendChatPhoto(e,convoId,otherUserId,listingId,listingTitle){
 function onNewMessage(msg){
   if(msg.conversationId===activeChatId){
     const c=$(`chat-messages-${activeChatId}`);
-    if(c&&(msg.sender?._id||msg.senderId)!==currentUser?._id){const div=document.createElement('div');div.className='chat-msg theirs';const isImg=msg.imageUrl;div.innerHTML=isImg?`<img src="${esc(SERVER+msg.imageUrl)}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`:`<div class="msg-bubble">${esc(msg.text||'')}</div><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
+    if(c&&(msg.sender?._id||msg.senderId)!==currentUser?._id){const div=document.createElement('div');div.className='chat-msg theirs';const isImg=msg.imageUrl;div.innerHTML=isImg?`<img src="${esc(mediaUrl(msg.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`:`<div class="msg-bubble">${esc(msg.text||'')}</div><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
   } else {
     const ex=conversations[msg.conversationId];
-    if(ex){ex.lastText=msg.text||'📷 Photo';ex.lastTime=msg.createdAt;ex.unread=true;}
-    else conversations[msg.conversationId]={conversationId:msg.conversationId,otherName:msg.sender?.name||'User',otherUserId:msg.senderId,lastText:msg.text||'📷 Photo',lastTime:msg.createdAt,unread:true};
-    renderConversationList();addNotification({icon:'💬',text:`New message: ${(msg.text||'📷 Photo').substring(0,40)}`});
+    if(ex){ex.lastText=msg.text||'📷 Photo';ex.lastTime=msg.createdAt;ex.unread=true;renderConversationList();}
+    else loadConversations(); // brand-new conversation — pull the authoritative name/store/avatar from the server instead of guessing from the partial socket payload
+    addNotification({icon:'💬',text:`New message: ${(msg.text||'📷 Photo').substring(0,40)}`});
   }
   updateBadges();
 }
@@ -1319,7 +1463,8 @@ function buildStories(){
     const seen=seenStories.includes(l._id);
     const item=document.createElement('div');item.className='story-item';item.onclick=()=>openStoryViewer(i);
     item.innerHTML=`<div class="story-ring${seen?' seen':''}"><div class="story-avatar">${(seller.name||'S')[0].toUpperCase()}</div><div class="story-price-badge">${fmtPrice(l.price).replace('KES ','')}</div></div><div class="story-name">${esc((seller.name||'Seller').split(' ')[0])}</div>`;
-    addBtn.parentNode.insertBefore(item,addBtn.nextSibling);
+    row.appendChild(item); // append (not insertBefore addBtn.nextSibling) — that pattern
+                            // reversed story order since each insert pushed earlier ones along
   });
 }
 
@@ -1439,6 +1584,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 let deferredPWAInstall = null;
 let currentMeetup      = null;
+let scheduleCtx        = null; // {listingId, otherUserId} — set by whichever entry point opened the schedule modal
 
 /* ── Star Rating Display Helper ─────────────────────── */
 function starRatingHTML(avg, count, size='') {
@@ -1653,7 +1799,7 @@ async function doBumpListing() {
     showToast(d.message, 'success');
     await loadListings();
   } catch { showToast('Could not bump listing.', 'error'); }
-  finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-rocket"></i> Bump to Top (free, once/24h)'; }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-rocket"></i> Bump to Top (free, once/month)'; }
 }
 
 /* ── Saved Searches ───────────────────────────────────── */
@@ -2010,6 +2156,9 @@ function searchListingsBase() {
   searchDebounce = setTimeout(() => {
     currentPage = 1;
     filteredList = allListings.filter(l => !q || l.title.toLowerCase().includes(q) || l.desc?.toLowerCase().includes(q) || l.category.toLowerCase().includes(q));
+    // A selected category pill should keep scoping results while searching,
+    // not get silently dropped the moment you start typing.
+    if (currentCat !== 'all') filteredList = filteredList.filter(l => l.category === currentCat);
     if (activeCampus !== 'all') filteredList = filteredList.filter(l => (l.seller?.campus || '') === activeCampus);
     applySortToFiltered(); renderListings(); hideSearchSuggestions();
   }, 300);
@@ -2036,7 +2185,8 @@ async function searchListings() {
   hideSearchSuggestions();
   searchDebounce = setTimeout(async () => {
     try {
-      const r = await fetch(`${API}/listings?search=${encodeURIComponent(q)}&smart=true&limit=50`, { headers: authHdr() });
+      const catParam = currentCat !== 'all' ? `&category=${encodeURIComponent(currentCat)}` : '';
+      const r = await fetch(`${API}/listings?search=${encodeURIComponent(q)}&smart=true&limit=50${catParam}`, { headers: authHdr() });
       const d = await r.json();
       filteredList = d.listings || [];
       currentPage = 1;
@@ -2173,8 +2323,17 @@ async function markLostFoundClaimedNow() {
 }
 
 /* ── Delivery Scheduling ──────────────────────────────── */
-function openScheduleModal() {
-  if (!currentDetail) return;
+function openScheduleModal(listingId, otherUserId) {
+  // Called either from a listing's bottom sheet (currentDetail) or from an
+  // open chat (explicit listingId/otherUserId) — the seller previously had
+  // no way to propose a meetup at all since this only ever read
+  // currentDetail, which only exists on the buyer-facing listing view.
+  if (listingId && otherUserId) {
+    scheduleCtx = { listingId, otherUserId };
+  } else if (currentDetail) {
+    const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
+    scheduleCtx = { listingId: currentDetail._id, otherUserId: seller._id };
+  } else return;
   populateSafeZonesInto('schedule-location');
   $('schedule-time').value = '';
   $('schedule-notes').value = '';
@@ -2186,14 +2345,13 @@ function populateSafeZonesInto(selectId) {
   SAFE_ZONES.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = `📍 ${z}`; sel.appendChild(o); });
 }
 async function sendScheduleProposal() {
-  if (!currentDetail) return;
+  if (!scheduleCtx) return;
   const meetupLocation = $('schedule-location')?.value;
   const meetupTime = $('schedule-time')?.value;
   const notes = $('schedule-notes')?.value.trim();
   if (!meetupLocation || !meetupTime) return showToast('Select a location and time.', 'error');
-  const seller = typeof currentDetail.seller === 'object' ? currentDetail.seller : { _id: currentDetail.seller };
   try {
-    const r = await fetch(`${API}/delivery/propose`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: currentDetail._id, otherUserId: seller._id, meetupLocation, meetupTime, notes }) });
+    const r = await fetch(`${API}/delivery/propose`, { method:'POST', headers: authHdr(), body: JSON.stringify({ listingId: scheduleCtx.listingId, otherUserId: scheduleCtx.otherUserId, meetupLocation, meetupTime, notes }) });
     const d = await r.json();
     if (!r.ok) return showToast(d.error || 'Could not propose meetup.', 'error');
     showToast('Meetup proposed! 📅', 'success');
@@ -2430,6 +2588,12 @@ window.showPage = showPageAnimated;
 function openBottomSheet(listing) {
   openBottomSheetV6(listing);
   if (!listing) return;
+  // Deep-linkable URL so Share actually points at this listing, not just
+  // the homepage — window.location.href was always the bare site URL
+  // before this, since the app never changed the address bar.
+  if (listing._id) {
+    history.pushState({ listingId: listing._id }, '', `?listing=${listing._id}`);
+  }
   const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
   if (listing.listingType === 'lostfound' && isMine && !listing.lostfound?.isClaimed) {
     const ownerControls = $('bs-owner-controls');

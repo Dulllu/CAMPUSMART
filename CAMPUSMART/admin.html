@@ -85,7 +85,55 @@ textarea#promo-body, textarea#promo-headline{width:100%;padding:10px;border:1.5p
 input#promo-subject, input#promo-cta-text, input#promo-cta-link{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);margin-bottom:10px;}
 .toast{position:fixed;top:20px;right:20px;background:var(--text);color:var(--bg);padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:.3s;}
 .toast.show{opacity:1;}
+
+/* ── Mobile responsiveness ─────────────────────────────────────────────
+   The admin panel was desktop-only (fixed sidebar, wide tables, no
+   breakpoints at all) — this section makes it usable on a phone: the
+   sidebar becomes a slide-in drawer behind a hamburger button, tables
+   scroll horizontally inside their own card instead of blowing out the
+   page width, and toolbars stack instead of squeezing. */
+.admin-hamburger{display:none;width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--text);align-items:center;justify-content:center;font-size:15px;flex:0 0 auto}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499}
+.sidebar-overlay.active{display:block}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:860px){
+  .admin-hamburger{display:flex}
+  #app.active{display:block}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:500;transform:translateX(-104%);transition:transform .22s ease;
+    width:250px;box-shadow:0 0 40px rgba(0,0,0,.25);overflow-y:auto}
+  .sidebar.open{transform:translateX(0)}
+  .main{padding:16px;width:100%}
+  .page-head{gap:10px}
+  .page-head h2{font-size:17px;flex:1}
+  .btn-logout{padding:7px 11px;font-size:11px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card{padding:13px}
+  .stat-card .num{font-size:22px}
+  .card{padding:13px}
+  table{min-width:640px} /* keeps columns legible; card wraps it in table-scroll for horizontal swipe */
+  .search-bar{flex-direction:column}
+  .tab-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .tab-btn{flex:0 0 auto}
+  .heatmap-label{width:100px;font-size:11px}
+}
 </style>
+<script>
+// Wrap every existing table in a horizontally-scrollable container so wide
+// admin tables don't blow out the page width on narrow screens — done at
+// runtime rather than hand-editing every table in every render function.
+document.addEventListener('DOMContentLoaded', () => {
+  const wrap = () => document.querySelectorAll('table:not([data-wrapped])').forEach(t => {
+    t.setAttribute('data-wrapped', '1');
+    const div = document.createElement('div');
+    div.className = 'table-scroll';
+    t.parentNode.insertBefore(div, t);
+    div.appendChild(t);
+  });
+  wrap();
+  new MutationObserver(wrap).observe(document.body, { childList: true, subtree: true });
+});
+</script>
 </head>
 <body>
 
@@ -103,20 +151,22 @@ input#promo-subject, input#promo-cta-text, input#promo-cta-link{width:100%;paddi
 
 <!-- APP -->
 <div id="app">
-  <aside class="sidebar">
+  <div class="sidebar-overlay" id="admin-sidebar-overlay" onclick="closeAdminSidebar()"></div>
+  <aside class="sidebar" id="admin-sidebar">
     <div class="sidebar-brand">🎓 Admin</div>
-    <div class="nav-item active" data-page="overview" onclick="showAdminPage('overview')"><i class="fa fa-chart-line"></i> Overview</div>
-    <div class="nav-item" data-page="verifications" onclick="showAdminPage('verifications')"><i class="fa fa-id-card"></i> ID Verifications</div>
-    <div class="nav-item" data-page="users" onclick="showAdminPage('users')"><i class="fa fa-users"></i> Users</div>
-    <div class="nav-item" data-page="listings" onclick="showAdminPage('listings')"><i class="fa fa-list"></i> Listings</div>
-    <div class="nav-item" data-page="reports" onclick="showAdminPage('reports')"><i class="fa fa-flag"></i> Reports</div>
-    <div class="nav-item" data-page="disputes" onclick="showAdminPage('disputes')"><i class="fa fa-gavel"></i> Disputes</div>
-    <div class="nav-item" data-page="heatmap" onclick="showAdminPage('heatmap')"><i class="fa fa-fire"></i> Activity Heatmap</div>
-    <div class="nav-item" data-page="promo" onclick="showAdminPage('promo')"><i class="fa fa-paper-plane"></i> Send Promo Email</div>
+    <div class="nav-item active" data-page="overview" onclick="showAdminPage('overview');closeAdminSidebar()"><i class="fa fa-chart-line"></i> Overview</div>
+    <div class="nav-item" data-page="verifications" onclick="showAdminPage('verifications');closeAdminSidebar()"><i class="fa fa-id-card"></i> ID Verifications</div>
+    <div class="nav-item" data-page="users" onclick="showAdminPage('users');closeAdminSidebar()"><i class="fa fa-users"></i> Users</div>
+    <div class="nav-item" data-page="listings" onclick="showAdminPage('listings');closeAdminSidebar()"><i class="fa fa-list"></i> Listings</div>
+    <div class="nav-item" data-page="reports" onclick="showAdminPage('reports');closeAdminSidebar()"><i class="fa fa-flag"></i> Reports</div>
+    <div class="nav-item" data-page="disputes" onclick="showAdminPage('disputes');closeAdminSidebar()"><i class="fa fa-gavel"></i> Disputes</div>
+    <div class="nav-item" data-page="heatmap" onclick="showAdminPage('heatmap');closeAdminSidebar()"><i class="fa fa-fire"></i> Activity Heatmap</div>
+    <div class="nav-item" data-page="promo" onclick="showAdminPage('promo');closeAdminSidebar()"><i class="fa fa-paper-plane"></i> Send Promo Email</div>
   </aside>
 
   <main class="main">
     <div class="page-head">
+      <button class="admin-hamburger" onclick="openAdminSidebar()" aria-label="Menu"><i class="fa fa-bars"></i></button>
       <h2 id="page-title">Overview</h2>
       <button class="btn-logout" onclick="adminLogout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
     </div>

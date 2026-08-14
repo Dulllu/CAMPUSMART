@@ -48,6 +48,8 @@ async function adminLogin() {
   }
 }
 
+function openAdminSidebar(){ $('admin-sidebar')?.classList.add('open'); $('admin-sidebar-overlay')?.classList.add('active'); document.body.style.overflow='hidden'; }
+function closeAdminSidebar(){ $('admin-sidebar')?.classList.remove('open'); $('admin-sidebar-overlay')?.classList.remove('active'); document.body.style.overflow=''; }
 function adminLogout() {
   localStorage.removeItem('cm_admin_token');
   $('app').classList.remove('active');
