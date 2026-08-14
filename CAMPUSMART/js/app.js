@@ -1531,7 +1531,17 @@ function launchConfetti(){
 
 /* ── Scroll to Top ───────────────────────────────────── */
 function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
-function initScrollTop(){const btn=$('scroll-top-btn');if(!btn)return;window.addEventListener('scroll',()=>{btn.style.display=window.scrollY>300?'flex':'none';});}
+function initScrollTop(){
+  const btn=$('scroll-top-btn');if(!btn)return;
+  const anyOverlayOpen=()=>document.querySelector('.bottom-sheet.open,.modal-backdrop.open,.modal-backdrop-top.open,.story-viewer.open,.sidebar.open')!==null;
+  const sync=()=>{btn.style.display=(window.scrollY>300 && !anyOverlayOpen())?'flex':'none';};
+  window.addEventListener('scroll',sync);
+  // A modal/overlay can open without any further scrolling (e.g. tapping a
+  // listing card while already scrolled down) — watch for that directly
+  // instead of only re-checking on the next scroll event, so this fixed
+  // button can never render on top of / overlapping a full-screen overlay.
+  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true});
+}
 
 /* ── Help Accordion ──────────────────────────────────── */
 function toggleAccordion(btn){const body=btn.nextElementSibling;btn.classList.toggle('open');body?.classList.toggle('open');}
