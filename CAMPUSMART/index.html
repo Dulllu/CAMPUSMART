@@ -364,7 +364,11 @@
   <main class="main-wrap" id="main-wrap">
 
     <!-- Pull to refresh -->
-    <div class="pull-refresh-indicator" id="pull-refresh-indicator"><div class="pull-spinner"></div> Refreshing…</div>
+    <div class="pull-refresh-indicator" id="pull-refresh-indicator">
+      <div class="pr-icon" id="pr-icon"><i class="fa fa-arrow-down"></i></div>
+      <div class="pull-spinner" id="pr-spinner"></div>
+      <span id="pr-label">Pull to refresh</span>
+    </div>
     <!-- Live feed pill -->
     <div class="live-feed-pill" id="live-feed-pill" onclick="refreshAndDismissLivePill()"><div class="live-dot"></div><span id="live-feed-text">New listings added</span><i class="fa fa-arrow-up"></i></div>
 

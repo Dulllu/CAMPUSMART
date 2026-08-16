@@ -46,6 +46,8 @@ let conversations  = {};
 let activeChatId   = null;
 let notifications  = JSON.parse(localStorage.getItem('cm_notifs')    || '[]');
 let watchlist      = JSON.parse(localStorage.getItem('cm_watchlist') || '[]');
+let followedStores = JSON.parse(localStorage.getItem('cm_followed_stores') || '[]');
+let currentStoreId = null;
 let reactions      = JSON.parse(localStorage.getItem('cm_reactions') || '{}');
 let seenStories    = JSON.parse(localStorage.getItem('cm_seen_stories') || '[]');
 let storyListings  = [];
@@ -743,10 +745,11 @@ function loadStores(){
     const bannerImg=seller.storeBanner?mediaUrl(seller.storeBanner):catImage(topCat);
     const avImg=seller.avatar?mediaUrl(seller.avatar):'';
     const avHtml=avImg?`<img src="${esc(avImg)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;font-weight:900">${init}</span>`:`<span style="font-size:20px;font-weight:900">${init}</span>`;
+    const following=followedStores.includes(seller._id||seller);
     return `<div class="store-card" onclick="openStore('${esc(seller._id||seller)}')">
       <div class="store-card-banner" style="background-image:url('${esc(bannerImg)}')">
         <div class="store-card-av">${avHtml}</div>
-        ${seller.storeName?'<div class="store-card-custom-badge">Custom Store</div>':''}
+        ${following?'<div class="store-card-custom-badge" style="background:var(--brand)">✓ Following</div>':seller.storeName?'<div class="store-card-custom-badge">Custom Store</div>':''}
       </div>
       <div class="store-card-body">
         <div class="store-card-name">${esc(displayName)}</div>
@@ -759,6 +762,7 @@ function loadStores(){
   }).join('');
 }
 function openStore(sellerId){
+  currentStoreId=sellerId;
   const listSection=$('store-list-section');
   if(listSection) listSection.style.display='none';
   $('store-detail').style.display='';
@@ -787,6 +791,16 @@ function openStore(sellerId){
   $('store-detail-name')&&($('store-detail-name').innerHTML=`${esc(displayName)} ${seller.isStudentVerified?'<span style="font-size:13px">✅</span>':''}`);
   $('store-detail-meta')&&($('store-detail-meta').textContent=`${seller.campus||''} · ${listings.length} listing${listings.length!==1?'s':''} ${seller.ratingAvg>0?'· ⭐'+seller.ratingAvg.toFixed(1):''}`);
   $('store-detail-bio')&&($('store-detail-bio').textContent=seller.storeBio||seller.bio||'');
+
+  // Follow button — hidden on your own store, otherwise reflects synced follow state
+  const followBtn=$('store-follow-btn');
+  if(followBtn){
+    const isOwnStore=currentUser&&sellerId===currentUser._id;
+    followBtn.style.display=isOwnStore?'none':'';
+    const isFollowing=followedStores.includes(sellerId);
+    followBtn.classList.toggle('following',isFollowing);
+    followBtn.textContent=isFollowing?'✓ Following':'+ Follow';
+  }
 
   // Physical location — so buyers who want to can visit in person
   const locEl=$('store-detail-location');
@@ -817,7 +831,44 @@ function openStore(sellerId){
   $('store-listings-empty').style.display=listings.length?'none':'';
   initLazyImages();
 }
-function toggleFollowStore(){const btn=$('store-follow-btn');if(!btn)return;btn.classList.toggle('following');btn.textContent=btn.classList.contains('following')?'✓ Following':'+ Follow';showToast(btn.classList.contains('following')?'Store followed!':'Unfollowed.','info');}
+async function toggleFollowStore(){
+  if(!currentStoreId)return;
+  if(!currentUser)return showToast('Log in to follow stores.','warning');
+  const btn=$('store-follow-btn');if(!btn)return;
+  // Optimistic local update first (instant UI feedback)
+  const idx=followedStores.indexOf(currentStoreId);
+  const nowFollowing=idx<0;
+  if(idx>=0)followedStores.splice(idx,1);else followedStores.push(currentStoreId);
+  localStorage.setItem('cm_followed_stores',JSON.stringify(followedStores));
+  btn.classList.toggle('following',nowFollowing);
+  btn.textContent=nowFollowing?'✓ Following':'+ Follow';
+  showToast(nowFollowing?'Store followed!':'Unfollowed.','info');
+  // Then sync with server in background
+  try{
+    const r=await fetch(`${API}/auth/followed-stores/toggle`,{method:'POST',headers:authHdr(),body:JSON.stringify({storeId:currentStoreId})});
+    const d=await r.json();
+    if(r.ok&&Array.isArray(d.followedStores))followedStores=d.followedStores.map(id=>id.toString?id.toString():id);
+    localStorage.setItem('cm_followed_stores',JSON.stringify(followedStores));
+  }catch{
+    // couldn't confirm with server — revert the optimistic change
+    const revertIdx=followedStores.indexOf(currentStoreId);
+    if(nowFollowing&&revertIdx>=0)followedStores.splice(revertIdx,1);
+    else if(!nowFollowing&&revertIdx<0)followedStores.push(currentStoreId);
+    localStorage.setItem('cm_followed_stores',JSON.stringify(followedStores));
+    btn.classList.toggle('following',followedStores.includes(currentStoreId));
+    btn.textContent=followedStores.includes(currentStoreId)?'✓ Following':'+ Follow';
+    showToast('Could not reach server — try again.','error');
+  }
+}
+async function syncFollowedStoresFromServer(){
+  if(!currentUser)return;
+  try{
+    const r=await fetch(`${API}/auth/followed-stores`,{headers:authHdr()});
+    const d=await r.json();
+    followedStores=(d.followedStores||[]).map(id=>id.toString?id.toString():id);
+    localStorage.setItem('cm_followed_stores',JSON.stringify(followedStores));
+  }catch{}
+}
 
 /* ── Detail (Bottom Sheet) ───────────────────────────── */
 function openDetail(id) {
@@ -1575,11 +1626,52 @@ function refreshAndDismissLivePill(){$('live-feed-pill')?.classList.remove('visi
 
 /* ── Pull to Refresh ─────────────────────────────────── */
 function initPullToRefresh(){
-  const main=$('.main-wrap')||document.querySelector('.main-wrap');if(!main)return;
-  let startY=0,pulling=false;
-  main.addEventListener('touchstart',e=>{if(main.scrollTop===0)startY=e.touches[0].clientY;},{passive:true});
-  main.addEventListener('touchmove',e=>{if(!startY)return;if(e.touches[0].clientY-startY>60){pulling=true;$('pull-refresh-indicator')?.classList.add('visible');}},{passive:true});
-  main.addEventListener('touchend',async()=>{if(pulling){pulling=false;startY=0;await loadListings();$('pull-refresh-indicator')?.classList.remove('visible');showToast('Refreshed! ✨','success',1500);}startY=0;});
+  const main=$('.main-wrap')||document.querySelector('.main-wrap');const ind=$('pull-refresh-indicator');
+  if(!main||!ind)return;
+  const label=$('pr-label');
+  const THRESHOLD=64,MAX_HEIGHT=76;
+  let startY=0,dragging=false,ready=false,refreshing=false;
+
+  const setHeight=h=>{ind.style.height=h+'px';};
+
+  main.addEventListener('touchstart',e=>{
+    if(refreshing)return;
+    if(main.scrollTop<=0){startY=e.touches[0].clientY;dragging=true;ind.classList.add('dragging');ind.classList.remove('snapping');}
+  },{passive:true});
+
+  main.addEventListener('touchmove',e=>{
+    if(!dragging||refreshing)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy<=0){setHeight(0);ready=false;ind.classList.remove('ready');return;}
+    // rubber-band resistance — pulling feels springy, not linear/robotic
+    const pull=Math.min(MAX_HEIGHT,Math.pow(dy,0.72));
+    setHeight(pull);
+    const nowReady=pull>=THRESHOLD;
+    if(nowReady!==ready){ready=nowReady;ind.classList.toggle('ready',ready);navigator.vibrate?.(ready?12:0);}
+    if(label)label.textContent=ready?'Release to refresh':'Pull to refresh';
+  },{passive:true});
+
+  main.addEventListener('touchend',async()=>{
+    if(!dragging)return;
+    dragging=false;ind.classList.remove('dragging');ind.classList.add('snapping');
+    if(ready&&!refreshing){
+      refreshing=true;
+      setHeight(56);ind.classList.add('loading');ind.classList.remove('ready');
+      if(label)label.textContent='Refreshing…';
+      const started=Date.now();
+      await loadListings();
+      // keep the spinner up for at least a beat so it doesn't just flash
+      const elapsed=Date.now()-started;
+      if(elapsed<500)await new Promise(r=>setTimeout(r,500-elapsed));
+      ind.classList.remove('loading');
+      setHeight(0);
+      showToast('Feed refreshed ✨','success',1400);
+      refreshing=false;
+    } else {
+      setHeight(0);ind.classList.remove('ready');
+    }
+    ready=false;startY=0;
+  });
 }
 
 /* ── Bottom Sheet Swipe ──────────────────────────────── */
@@ -2776,4 +2868,5 @@ window.addEventListener('DOMContentLoaded', () => {
 function enterMarket() {
   enterMarketBase();
   syncWatchlistFromServer();
+  syncFollowedStoresFromServer();
 }
