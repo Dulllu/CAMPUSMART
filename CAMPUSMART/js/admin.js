@@ -16,6 +16,20 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+/* ── Theme ───────────────────────────────────────────── */
+function syncThemeToggleIcon() {
+  const btn = $('admin-theme-toggle'); if (!btn) return;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.innerHTML = `<i class="fa fa-${dark ? 'sun' : 'moon'}"></i>`;
+}
+function toggleAdminTheme() {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('cm_admin_theme', next);
+  syncThemeToggleIcon();
+}
+syncThemeToggleIcon();
+
 /* ── Auth ────────────────────────────────────────────── */
 function showLoginError(msg) {
   const el = $('login-error');

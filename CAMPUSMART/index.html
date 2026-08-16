@@ -203,13 +203,13 @@
           <div class="auth-header">
             <div class="auth-header-logo">🔑</div>
             <h2>Reset Password</h2>
-            <p>Enter your email — we'll send a 6-digit code</p>
+            <p>Enter your email — we'll send you a reset link</p>
           </div>
           <div class="field-group">
             <label>Email Address</label>
             <div class="input-wrap"><i class="fa fa-envelope"></i><input type="email" id="forgot-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doForgotPassword()"/></div>
           </div>
-          <button class="btn-primary" id="forgot-btn" onclick="doForgotPassword()"><i class="fa fa-paper-plane"></i> Send Reset Code</button>
+          <button class="btn-primary" id="forgot-btn" onclick="doForgotPassword()"><i class="fa fa-paper-plane"></i> Send Reset Link</button>
           <p class="auth-link center"><span onclick="switchAuth('signin')">← Back to Sign In</span></p>
         </div>
       </div>
@@ -538,6 +538,7 @@
               <div class="sdh-name" id="store-detail-name"></div>
               <div class="sdh-meta" id="store-detail-meta"></div>
               <div class="sdh-bio" id="store-detail-bio"></div>
+              <div class="sdh-location" id="store-detail-location" style="display:none"></div>
             </div>
             <button class="btn-follow" id="store-follow-btn" onclick="toggleFollowStore()">+ Follow</button>
           </div>
@@ -742,8 +743,21 @@
               <h3 style="display:flex;align-items:center;gap:8px">🏪 My Store <span style="font-size:11px;font-weight:500;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:20px">optional</span></h3>
             </div>
             <p style="font-size:12px;color:var(--muted);margin:-6px 0 12px">Give your shop a custom name. You don't need a store to sell — anyone can post listings.</p>
+            <div class="field-group">
+              <label>Store Photo</label>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div id="store-photo-preview" onclick="document.getElementById('store-photo-input').click()" style="width:64px;height:64px;border-radius:14px;background:var(--bg);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;flex-shrink:0;color:var(--muted)"><i class="fa fa-store" style="font-size:20px"></i></div>
+                <div>
+                  <button type="button" class="lh-btn" onclick="document.getElementById('store-photo-input').click()"><i class="fa fa-camera"></i> Upload photo</button>
+                  <p style="font-size:10px;color:var(--muted);margin-top:5px">Shown on your store card and store page</p>
+                </div>
+                <input type="file" id="store-photo-input" accept="image/*" style="display:none" onchange="handleStorePhotoSelect(event)"/>
+              </div>
+            </div>
             <div class="field-group"><label>Store Name</label><div class="input-wrap"><i class="fa fa-store"></i><input type="text" id="edit-store-name" placeholder="e.g. TechHub MMUST, Rose Boutique..." maxlength="60"/></div></div>
             <div class="field-group"><label>Store Tagline</label><div class="input-wrap"><i class="fa fa-quote-left" style="top:14px;transform:none"></i><textarea id="edit-store-bio" rows="2" maxlength="200" placeholder="e.g. Best electronics prices on campus..."></textarea></div></div>
+            <div class="field-group"><label>Store Location</label><div class="input-wrap"><i class="fa fa-map-marker-alt"></i><input type="text" id="edit-store-location" placeholder="e.g. Hostel F, Room 12, near the Student Center" maxlength="150"/></div></div>
+            <p style="font-size:10px;color:var(--muted);margin:-6px 0 12px">So buyers know exactly where to find you in person</p>
 
             <button class="btn-primary" onclick="saveProfile()"><i class="fa fa-save"></i> Save Changes</button>
             <button class="verify-student-btn" onclick="openVerifyModal()"><i class="fa fa-user-check"></i> Verify Student Status 🎓</button>
@@ -1197,6 +1211,22 @@
       </div>
       <div class="safe-zone-tip" id="bs-safe-zone" style="display:none"><i class="fa fa-shield-alt"></i> Campus Safe Zone — Meet here only</div>
       <div class="bs-stock" id="bs-stock"></div>
+      <!-- Housing-specific details (shown only for listingType === 'housing') -->
+      <div class="bs-section" id="bs-housing-section" style="display:none">
+        <div class="bs-section-title">Property Details</div>
+        <div class="bs-spec-grid" id="bs-housing-specs"></div>
+        <div class="bs-amenities" id="bs-housing-amenities" style="display:none"></div>
+      </div>
+      <!-- Job-specific details (shown only for listingType === 'job') -->
+      <div class="bs-section" id="bs-job-section" style="display:none">
+        <div class="bs-section-title">Job Details</div>
+        <div class="bs-spec-grid" id="bs-job-specs"></div>
+      </div>
+      <!-- Lost & Found-specific details (shown only for listingType === 'lostfound') -->
+      <div class="bs-section" id="bs-lostfound-section" style="display:none">
+        <div class="bs-section-title" id="bs-lostfound-title">Item Details</div>
+        <div class="bs-spec-grid" id="bs-lostfound-specs"></div>
+      </div>
       <!-- Description -->
       <div class="bs-section"><div class="bs-section-title">Description</div><p class="bs-desc" id="bs-desc"></p></div>
       <!-- Seller -->

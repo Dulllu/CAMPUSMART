@@ -323,9 +323,9 @@ async function doForgotPassword() {
     const r=await fetch(`${API}/auth/forgot-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
     const d=await r.json();
     if(!r.ok){showToast(d.error||'Failed.','error');return;}
-    showToast(d.message||'Reset code sent!','success');
+    showToast(d.message||'Reset link sent! Check your email.','success');
   } catch {showToast('Cannot reach server.','error');}
-  finally{btn.disabled=false;btn.innerHTML='<i class="fa fa-paper-plane"></i> Send Reset Code';}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fa fa-paper-plane"></i> Send Reset Link';}
 }
 
 /* ── Google Auth ─────────────────────────────────────── */
@@ -450,6 +450,15 @@ function updateUserUIBase() {
   $('edit-phone') &&($('edit-phone').value  =currentUser.phone ||'');
   $('edit-campus')&&($('edit-campus').value =currentUser.campus||'');
   $('edit-bio')   &&($('edit-bio').value    =currentUser.bio   ||'');
+  $('edit-store-name')    &&($('edit-store-name').value    =currentUser.storeName    ||'');
+  $('edit-store-bio')     &&($('edit-store-bio').value     =currentUser.storeBio     ||'');
+  $('edit-store-location')&&($('edit-store-location').value=currentUser.storeLocation||'');
+  const storePreview=$('store-photo-preview');
+  if(storePreview){
+    storePreview.innerHTML=currentUser.storeBanner
+      ? `<img src="${mediaUrl(currentUser.storeBanner)}" style="width:100%;height:100%;object-fit:cover" alt="Store photo"/>`
+      : `<i class="fa fa-store" style="font-size:20px"></i>`;
+  }
   if(currentUser.createdAt){
     const days=Math.floor((Date.now()-new Date(currentUser.createdAt))/86400000);
     $('profile-joined-days')&&($('profile-joined-days').textContent=days);
@@ -731,10 +740,11 @@ function loadStores(){
     const verified=seller.isStudentVerified?'<span style="color:var(--brand);font-size:11px">✅ Verified</span>':'';
     const rating=seller.ratingAvg>0?`⭐ ${seller.ratingAvg.toFixed(1)}`:'New';
     const topCat=[...cats][0]||'other';
-    const avImg=seller.avatar?(seller.avatar.startsWith('/')?SERVER:'')+seller.avatar:'';
+    const bannerImg=seller.storeBanner?mediaUrl(seller.storeBanner):catImage(topCat);
+    const avImg=seller.avatar?mediaUrl(seller.avatar):'';
     const avHtml=avImg?`<img src="${esc(avImg)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;font-weight:900">${init}</span>`:`<span style="font-size:20px;font-weight:900">${init}</span>`;
     return `<div class="store-card" onclick="openStore('${esc(seller._id||seller)}')">
-      <div class="store-card-banner" style="background-image:url('${catImage(topCat)}')">
+      <div class="store-card-banner" style="background-image:url('${esc(bannerImg)}')">
         <div class="store-card-av">${avHtml}</div>
         ${seller.storeName?'<div class="store-card-custom-badge">Custom Store</div>':''}
       </div>
@@ -742,6 +752,7 @@ function loadStores(){
         <div class="store-card-name">${esc(displayName)}</div>
         ${seller.storeBio?`<div class="store-card-tagline">${esc(seller.storeBio)}</div>`:''}
         <div class="store-card-campus">${campus}</div>
+        ${seller.storeLocation?`<div class="store-card-location"><i class="fa fa-map-marker-alt"></i> ${esc(seller.storeLocation)}</div>`:''}
         <div class="store-card-meta">${rating} &nbsp;·&nbsp; ${count} listing${count!==1?'s':''} ${verified}</div>
       </div>
     </div>`;
@@ -760,22 +771,35 @@ function openStore(sellerId){
   const avEl=$('store-detail-avatar');
   if(avEl){
     if(seller.avatar){
-      const src=(seller.avatar.startsWith('/')?SERVER:'')+seller.avatar;
-      avEl.innerHTML=`<img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='${init}'"/>`;
+      avEl.innerHTML=`<img src="${esc(mediaUrl(seller.avatar))}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='${init}'"/>`;
     } else { avEl.textContent=init; }
   }
 
-  // Banner
+  // Banner — the seller's own store photo if they set one, else a category stock image
   const bannerEl=$('store-banner-img');
   if(bannerEl){
     const topCat=listings[0]?.category||'other';
-    bannerEl.style.backgroundImage=`url('${catImage(topCat)}')`;
+    const bannerImg=seller.storeBanner?mediaUrl(seller.storeBanner):catImage(topCat);
+    bannerEl.style.backgroundImage=`url('${bannerImg}')`;
   }
 
   // Name + meta
   $('store-detail-name')&&($('store-detail-name').innerHTML=`${esc(displayName)} ${seller.isStudentVerified?'<span style="font-size:13px">✅</span>':''}`);
   $('store-detail-meta')&&($('store-detail-meta').textContent=`${seller.campus||''} · ${listings.length} listing${listings.length!==1?'s':''} ${seller.ratingAvg>0?'· ⭐'+seller.ratingAvg.toFixed(1):''}`);
   $('store-detail-bio')&&($('store-detail-bio').textContent=seller.storeBio||seller.bio||'');
+
+  // Physical location — so buyers who want to can visit in person
+  const locEl=$('store-detail-location');
+  if(locEl){
+    if(seller.storeLocation){
+      const mapsQuery=encodeURIComponent(`${seller.storeLocation}${seller.campus?', '+seller.campus:''}`);
+      locEl.style.display='';
+      locEl.innerHTML=`<i class="fa fa-map-marker-alt"></i> <span>${esc(seller.storeLocation)}</span>
+        <a href="https://www.google.com/maps/search/?api=1&query=${mapsQuery}" target="_blank" rel="noopener" class="store-directions-link"><i class="fa fa-diamond-turn-right"></i> Directions</a>`;
+    } else {
+      locEl.style.display='none';
+    }
+  }
 
   // Stats bar
   const statsBar=$('store-stats-bar');
@@ -937,6 +961,24 @@ async function handleAvatarUpload(e){
   const reader=new FileReader();
   reader.onload=ev=>openAvatarCrop(ev.target.result);
   reader.readAsDataURL(file);
+  e.target.value='';
+}
+async function handleStorePhotoSelect(e){
+  const file=e.target.files?.[0]; if(!file) return;
+  const preview=$('store-photo-preview');
+  if(preview){
+    const reader=new FileReader();
+    reader.onload=ev=>{preview.innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover" alt="Store photo"/>`;};
+    reader.readAsDataURL(file);
+  }
+  const fd=new FormData(); fd.append('storeBanner',file);
+  try{
+    const r=await fetch(`${API}/auth/me`,{method:'PUT',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});
+    const d=await r.json();
+    if(!r.ok) return showToast(d.error||'Upload failed.','error');
+    currentUser=d.user; localStorage.setItem('cm_user',JSON.stringify(d.user));
+    showToast('Store photo updated! 🏪','success');
+  }catch{showToast('Upload failed.','error');}
   e.target.value='';
 }
 /* ── Avatar crop (pan + zoom over a fixed circular frame, canvas export) ── */
@@ -1645,9 +1687,73 @@ function loadProfilePage() {
 }
 
 /* ── Patch openBottomSheet to wire meetup/rating/block/bump/similar ─── */
+/* ── Housing / Job / Lost&Found detail sections in the bottom sheet ───
+   The post-listing form captures rich per-type data (deposit, distance to
+   MMUST, amenities, job duration, skills, date lost, etc.) but until now
+   none of it was ever shown to a buyer viewing the listing — only the small
+   badges on the card (property type + vacancy count for housing) existed.
+   This fills in the full detail. */
+function renderTypeSpecificDetails(listing) {
+  const housingSection = $('bs-housing-section');
+  const jobSection     = $('bs-job-section');
+  const lfSection      = $('bs-lostfound-section');
+  [housingSection, jobSection, lfSection].forEach(s => s && (s.style.display = 'none'));
+
+  const specItem = (label, value) => `<div class="bs-spec-item"><div class="bs-spec-label">${esc(label)}</div><div class="bs-spec-value">${esc(value)}</div></div>`;
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-KE', { day:'numeric', month:'short', year:'numeric' }) : '';
+
+  if (listing.listingType === 'housing' && housingSection) {
+    const h = listing.housing || {};
+    const propertyLabels = { 'hostel-room':'Hostel Room', 'bedsitter':'Bedsitter', 'one-bedroom':'One Bedroom', 'two-bedroom':'Two Bedroom', 'shared-room':'Shared Room', 'other':'Other' };
+    const rentPeriodLabels = { 'monthly':'Monthly', 'per-semester':'Per Semester', 'per-year':'Per Year' };
+    let specsHtml = '';
+    specsHtml += specItem('Property Type', propertyLabels[h.propertyType] || h.propertyType || '—');
+    specsHtml += specItem('Rent Period', rentPeriodLabels[h.rentPeriod] || 'Monthly');
+    if (h.deposit) specsHtml += specItem('Deposit', fmtPrice(h.deposit));
+    if (h.distanceToMmust) specsHtml += specItem('Distance to MMUST', h.distanceToMmust);
+    specsHtml += specItem('Vacancies', h.vacanciesCount || 1);
+    if (h.roommatesWanted) specsHtml += specItem('Roommates', 'Wanted');
+    $('bs-housing-specs').innerHTML = specsHtml;
+    const amenitiesEl = $('bs-housing-amenities');
+    if (amenitiesEl) {
+      if (h.amenities?.length) {
+        amenitiesEl.style.display = '';
+        amenitiesEl.innerHTML = h.amenities.map(a => `<span class="bs-amenity-chip">${esc(a)}</span>`).join('');
+      } else {
+        amenitiesEl.style.display = 'none'; amenitiesEl.innerHTML = '';
+      }
+    }
+    housingSection.style.display = '';
+
+  } else if (listing.listingType === 'job' && jobSection) {
+    const j = listing.job || {};
+    const jobTypeLabels = { 'internship':'Internship', 'attachment':'Attachment', 'part-time':'Part-Time', 'tutoring':'Tutoring', 'freelance':'Freelance', 'full-time':'Full-Time' };
+    let specsHtml = '';
+    specsHtml += specItem('Job Type', jobTypeLabels[j.jobType] || j.jobType || '—');
+    specsHtml += specItem('Pay', j.payType === 'negotiable' ? 'Negotiable' : `${fmtPrice(j.payAmount || listing.price)}${j.payType==='hourly'?'/hr':j.payType==='monthly'?'/mo':''}`);
+    if (j.duration) specsHtml += specItem('Duration', j.duration);
+    specsHtml += specItem('Remote', j.isRemote ? 'Yes' : 'No');
+    if (j.applicationDeadline) specsHtml += specItem('Apply By', fmtDate(j.applicationDeadline));
+    if (j.skillsNeeded?.length) specsHtml += specItem('Skills Needed', j.skillsNeeded.join(', '));
+    $('bs-job-specs').innerHTML = specsHtml;
+    jobSection.style.display = '';
+
+  } else if (listing.listingType === 'lostfound' && lfSection) {
+    const lf = listing.lostfound || {};
+    $('bs-lostfound-title') && ($('bs-lostfound-title').textContent = lf.kind === 'lost' ? 'Lost Item Details' : 'Found Item Details');
+    let specsHtml = '';
+    if (lf.itemDateLost) specsHtml += specItem(lf.kind === 'lost' ? 'Date Lost' : 'Date Found', fmtDate(lf.itemDateLost));
+    if (lf.locationLost) specsHtml += specItem('Location', lf.locationLost);
+    specsHtml += specItem('Status', lf.isClaimed ? 'Claimed' : 'Unclaimed');
+    $('bs-lostfound-specs').innerHTML = specsHtml;
+    lfSection.style.display = '';
+  }
+}
+
 function openBottomSheetV6(listing) {
   openBottomSheetBase(listing);
   if (!listing) return;
+  renderTypeSpecificDetails(listing);
   const isMine = currentUser && (listing.seller?._id || listing.seller) === currentUser._id;
   const seller = typeof listing.seller === 'object' ? listing.seller : {};
 
@@ -2621,7 +2727,7 @@ function openBottomSheet(listing) {
 
 /* ── Rename original saveProfile for the patch above ──────── */
 function saveProfileBase() {
-  const updates = { name: $('edit-name')?.value.trim(), phone: $('edit-phone')?.value.trim(), campus: $('edit-campus')?.value.trim(), bio: $('edit-bio')?.value.trim() };
+  const updates = { name: $('edit-name')?.value.trim(), phone: $('edit-phone')?.value.trim(), campus: $('edit-campus')?.value.trim(), bio: $('edit-bio')?.value.trim(), storeName: $('edit-store-name')?.value.trim(), storeBio: $('edit-store-bio')?.value.trim(), storeLocation: $('edit-store-location')?.value.trim() };
   fetch(`${API}/auth/me`, { method:'PUT', headers: authHdr(), body: JSON.stringify(updates) })
     .then(r => r.json().then(d => ({ ok: r.ok, d })))
     .then(({ ok, d }) => {
