@@ -1504,13 +1504,14 @@ function buildStories(){
     const seller=typeof l.seller==='object'?l.seller:{name:'Seller'};
     const seen=seenStories.includes(l._id);
     const item=document.createElement('div');item.className='story-item';item.onclick=()=>openStoryViewer(i);
-    item.innerHTML=`<div class="story-ring${seen?' seen':''}"><div class="story-avatar">${(seller.name||'S')[0].toUpperCase()}</div><div class="story-price-badge">${fmtPrice(l.price).replace('KES ','')}</div></div><div class="story-name">${esc((seller.name||'Seller').split(' ')[0])}</div>`;
+    const thumb=l.images?.[0]?mediaUrl(l.images[0]):catImage(l.category);
+    item.innerHTML=`<div class="story-ring${seen?' seen':''}"><div class="story-avatar" style="background-image:url('${esc(thumb)}')"></div><div class="story-price-badge">${fmtPrice(l.price).replace('KES ','')}</div></div><div class="story-name">${esc((seller.name||'Seller').split(' ')[0])}</div>`;
     row.appendChild(item); // append (not insertBefore addBtn.nextSibling) — that pattern
                             // reversed story order since each insert pushed earlier ones along
   });
 }
 
-function openStoryViewer(idx){storyIndex=idx;renderStory();$('story-viewer').classList.add('open');document.body.style.overflow='hidden';}
+function openStoryViewer(idx){storyIndex=idx;renderStory();$('story-viewer').classList.add('open');document.body.style.overflow='hidden';initStoryHold();}
 function renderStory(){
   const l=storyListings[storyIndex];if(!l)return closeStoryViewer();
   const seller=typeof l.seller==='object'?l.seller:{name:'Seller'};
@@ -1532,6 +1533,34 @@ function renderStory(){
 function storyNav(dir){clearTimeout(storyTimer);storyIndex+=dir;if(storyIndex<0)storyIndex=0;if(storyIndex>=storyListings.length){closeStoryViewer();return;}renderStory();}
 function closeStoryViewer(){clearTimeout(storyTimer);$('story-viewer').classList.remove('open');document.body.style.overflow='';}
 function openAddStory(){showToast('Post a listing to add your story! 🌟','info');openModal();}
+
+// shortcut from a story straight into the seller's chat, mirrors startChat()
+function startChatFromStory(){
+  const l=storyListings[storyIndex];if(!l||!currentUser)return;
+  const seller=typeof l.seller==='object'?l.seller:{_id:l.seller,name:'Seller'};
+  if(seller._id===currentUser._id)return showToast("You can't chat with yourself.",'warning');
+  const convoId=makeConvoId(currentUser._id,seller._id,l._id);
+  if(!conversations[convoId])conversations[convoId]={conversationId:convoId,otherName:seller.name||'Seller',otherUserId:seller._id,listingId:l._id,listingTitle:l.title,lastText:'',unread:false};
+  closeStoryViewer();showPageAnimated('messages');
+  setTimeout(()=>openChat(convoId,seller.name||'Seller',seller._id,l._id,l.title),150);
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));$('bnav-msgs')?.classList.add('active');
+}
+
+// hold-to-pause on a story, like WhatsApp/Instagram status
+function initStoryHold(){
+  const media=$('sv-img');if(!media||media.dataset.holdBound)return;media.dataset.holdBound='1';
+  let held=false;
+  const pause=()=>{if(held)return;held=true;clearTimeout(storyTimer);const fill=$(`svf-${storyIndex}`);if(fill)fill.style.animationPlayState='paused',fill.style.transition='none';};
+  const resume=()=>{if(!held)return;held=false;const fill=$(`svf-${storyIndex}`);
+    if(fill){const pct=fill.getBoundingClientRect().width/fill.parentElement.getBoundingClientRect().width;const remaining=Math.max(300,5000*(1-pct));
+      fill.style.transition=`width ${remaining}ms linear`;fill.style.width='100%';storyTimer=setTimeout(()=>storyNav(1),remaining+100);}};
+  media.addEventListener('touchstart',pause,{passive:true});
+  media.addEventListener('touchend',resume);
+  media.addEventListener('touchcancel',resume);
+  media.addEventListener('mousedown',pause);
+  media.addEventListener('mouseup',resume);
+  media.addEventListener('mouseleave',resume);
+}
 
 /* ── Live Feed ───────────────────────────────────────── */
 let lastListingCount=0;
