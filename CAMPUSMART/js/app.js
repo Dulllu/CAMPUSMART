@@ -1409,6 +1409,7 @@ async function openChat(convoId,otherName,otherUserId,listingId,listingTitle){
     <div class="chat-input-bar">
       <button class="chat-attach-btn" onclick="triggerChatPhoto('${esc(convoId)}','${esc(otherUserId)}','${esc(listingId)}','${esc(listingTitle)}')" title="Photo"><i class="fa fa-image"></i></button>
       <input type="file" id="chat-photo-input" accept="image/*" style="display:none"/>
+      <button class="chat-emoji-btn" onclick="toggleEmojiPicker(this,'chat-input-${esc(convoId)}')" title="Emoji"><i class="fa fa-face-smile"></i></button>
       <input class="chat-input" id="chat-input-${esc(convoId)}" type="text" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMessage('${esc(convoId)}','${esc(otherUserId)}','${esc(listingId)}','${esc(listingTitle)}')" oninput="emitTyping('${esc(convoId)}')"/>
       <button class="chat-send-btn" onclick="sendMessage('${esc(convoId)}','${esc(otherUserId)}','${esc(listingId)}','${esc(listingTitle)}')"><i class="fa fa-paper-plane"></i></button>
     </div>`;
@@ -1430,6 +1431,7 @@ function openAiChat(){
     </div>
     <div class="chat-messages" id="ai-chat-messages"></div>
     <div class="chat-input-bar">
+      <button class="chat-emoji-btn" onclick="toggleEmojiPicker(this,'ai-chat-input')" title="Emoji"><i class="fa fa-face-smile"></i></button>
       <input class="chat-input" id="ai-chat-input" type="text" placeholder="Ask about buying, selling, pricing…" onkeydown="if(event.key==='Enter')sendAiMessage()"/>
       <button class="chat-send-btn" onclick="sendAiMessage()"><i class="fa fa-paper-plane"></i></button>
     </div>`;
@@ -1622,6 +1624,44 @@ function updateMessageStatus(conversationId,messageId,status){
   if(!el)return;
   const statusEl=el.querySelector('.msg-status');
   if(statusEl&&!statusEl.classList.contains('read'))statusEl.outerHTML=msgStatusHtml(status);
+}
+
+/* ── emoji picker ───────────────────────────────────── */
+const EMOJI_LIST=['😀','😂','🥲','😊','😍','😘','😎','🤩','🥳','😅','😇','🙂','😉','😢','😭','😤','😡','🤔','😴','🤗','👍','👎','👏','🙏','🙌','💪','🤝','✌️','👋','🔥','💯','✨','⭐','❤️','🧡','💚','💙','💜','🖤','💔','💰','💵','🤑','📦','🚚','🛒','🏷️','✅','❌','⏰','📍','🎉','🤝','😬','🙄','😐','🤷'];
+let emojiPickerTargetId=null;
+function ensureEmojiPicker(){
+  let p=document.getElementById('emoji-picker');
+  if(p)return p;
+  p=document.createElement('div');
+  p.id='emoji-picker';
+  p.className='emoji-picker';
+  p.innerHTML=EMOJI_LIST.map(em=>`<button type="button" class="emoji-picker-item" onclick="insertEmoji('${em}')">${em}</button>`).join('');
+  document.body.appendChild(p);
+  document.addEventListener('click',e=>{
+    if(!p.classList.contains('show'))return;
+    if(p.contains(e.target)||e.target.closest('.chat-emoji-btn'))return;
+    p.classList.remove('show');
+  });
+  return p;
+}
+function toggleEmojiPicker(btn,inputId){
+  const p=ensureEmojiPicker();
+  if(p.classList.contains('show')&&emojiPickerTargetId===inputId){p.classList.remove('show');return;}
+  emojiPickerTargetId=inputId;
+  const r=btn.getBoundingClientRect();
+  p.style.left=Math.max(8,r.left)+'px';
+  p.style.top=(r.top-Math.min(260,window.innerHeight*0.5)-8)+'px';
+  p.classList.add('show');
+}
+function insertEmoji(emoji){
+  const inp=document.getElementById(emojiPickerTargetId);
+  if(!inp)return;
+  const start=inp.selectionStart??inp.value.length;
+  const end=inp.selectionEnd??inp.value.length;
+  inp.value=inp.value.slice(0,start)+emoji+inp.value.slice(end);
+  const pos=start+emoji.length;
+  inp.focus();
+  inp.setSelectionRange(pos,pos);
 }
 
 let typingTimeout;
