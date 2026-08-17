@@ -1451,10 +1451,22 @@
   <div class="sv-content">
     <div class="sv-title" id="sv-title"></div>
     <div class="sv-price" id="sv-price"></div>
-    <div class="sv-actions">
+    <button class="sv-views-pill" id="sv-views-pill" onclick="openStoryViewers()" style="display:none">
+      <i class="fa fa-eye"></i> <span id="sv-views-count">0</span> viewed
+    </button>
+    <div class="sv-actions" id="sv-actions">
       <button class="sv-wa-btn" id="sv-wa-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
       <button class="sv-chat-btn" onclick="startChatFromStory()" aria-label="Message seller"><i class="fa fa-comment"></i></button>
     </div>
+  </div>
+
+  <!-- Who-viewed-this-story panel (own stories only) -->
+  <div class="sv-viewers-panel" id="sv-viewers-panel">
+    <div class="sv-viewers-header">
+      <strong>Viewed by</strong>
+      <button class="sv-close" onclick="closeStoryViewers()" aria-label="Close viewers list"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sv-viewers-list" id="sv-viewers-list"></div>
   </div>
 </div>
 

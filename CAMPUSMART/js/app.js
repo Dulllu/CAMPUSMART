@@ -1328,6 +1328,8 @@ function initSocket(){
     socket.on('connect',()=>console.log('🔌 Connected'));
     socket.on('disconnect',()=>console.log('🔌 Disconnected'));
     socket.on('new_message',onNewMessage);
+    socket.on('message_delivered',({messageId,conversationId})=>updateMessageStatus(conversationId,messageId,'delivered'));
+    socket.on('messages_read',({conversationId})=>markConversationMessagesRead(conversationId));
     socket.on('notification',n=>{addNotification(n);showToast(n.text,'info');});
     socket.on('safety_alert',a=>showToast(a.text,'warning',6000));
     socket.on('typing',({userId,isTyping})=>showTypingIndicator(userId,isTyping));
@@ -1480,6 +1482,15 @@ async function loadMessages(convoId){
   catch{container.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px">Could not load messages.</p>';}
 }
 
+// WhatsApp-style tick states: sent (single ✓, persisted to server) →
+// delivered (✓✓ gray, reached the other person's device) → read (✓✓ blue,
+// they opened the chat). Only rendered on your own ("mine") messages.
+function msgStatusHtml(status){
+  if(status==='read')     return `<span class="msg-status read"><i class="fa fa-check-double"></i></span>`;
+  if(status==='delivered')return `<span class="msg-status"><i class="fa fa-check-double"></i></span>`;
+  return `<span class="msg-status"><i class="fa fa-check"></i></span>`; // sent
+}
+
 function renderMessages(convoId,msgs){
   const container=$(`chat-messages-${convoId}`);if(!container)return;
   if(!msgs.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No messages yet. Say hello! 👋</p>';return;}
@@ -1491,19 +1502,24 @@ function renderMessages(convoId,msgs){
     if(dateStr!==lastDate){lastDate=dateStr;const label=dateStr===new Date().toDateString()?'Today':dateStr===new Date(Date.now()-86400000).toDateString()?'Yesterday':d.toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short'});dateDiv=`<div class="chat-date-divider">${label}</div>`;}
     const time=d.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});
     const imgSrc=m.imageUrl||(m.text?.startsWith('[img]')?m.text.replace('[img]',''):null);
-    return `${dateDiv}<div class="chat-msg ${mine?'mine':'theirs'}${m.isFlagged?' flagged':''}">
+    const status=mine?(m.read?'read':m.delivered?'delivered':'sent'):null;
+    return `${dateDiv}<div class="chat-msg ${mine?'mine':'theirs'}${m.isFlagged?' flagged':''}" data-id="${m._id||''}">
       ${imgSrc?`<img src="${esc(mediaUrl(imgSrc))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(m.text||'')}</div>`}
-      <div class="msg-time">${time}${mine?' ✓':''}</div>
+      <div class="msg-time">${time}${mine?msgStatusHtml(status):''}</div>
     </div>`;
   }).join('');
   container.scrollTop=container.scrollHeight;
+  // any of their messages we're viewing right now count as "delivered" at minimum —
+  // ack the ones that were still pending so their tick catches up
+  msgs.filter(m=>m._id&&(m.sender?._id||m.sender||m.senderId)!==currentUser?._id&&!m.delivered)
+      .forEach(m=>socket?.emit('message_delivered',{messageId:m._id}));
 }
 
 function sendMessage(convoId,otherUserId,listingId,listingTitle){
   const inp=$(`chat-input-${convoId}`);if(!inp)return;const text=inp.value.trim();if(!text)return;
   socket?.emit('send_message',{receiverId:otherUserId,listingId,listingTitle,text});inp.value='';
   const c=$(`chat-messages-${convoId}`);
-  if(c){const div=document.createElement('div');div.className='chat-msg mine';div.innerHTML=`<div class="msg-bubble">${esc(text)}</div><div class="msg-time">${new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})} ✓</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
+  if(c){const div=document.createElement('div');div.className='chat-msg mine pending';div.innerHTML=`<div class="msg-bubble">${esc(text)}</div><div class="msg-time">${new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}${msgStatusHtml('sent')}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
 }
 
 function triggerChatPhoto(convoId,otherUserId,listingId,listingTitle){const inp=$('chat-photo-input');if(!inp)return;inp.onchange=e=>sendChatPhoto(e,convoId,otherUserId,listingId,listingTitle);inp.click();}
@@ -1511,21 +1527,58 @@ function triggerChatPhoto(convoId,otherUserId,listingId,listingTitle){const inp=
 async function sendChatPhoto(e,convoId,otherUserId,listingId,listingTitle){
   const file=e.target.files?.[0];if(!file)return;
   const fd=new FormData();fd.append('photo',file);fd.append('receiverId',otherUserId);fd.append('listingId',listingId||'');
-  try{const r=await fetch(`${API}/messages/photo`,{method:'POST',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});const d=await r.json();if(!r.ok)return showToast(d.error||'Photo failed.','error');const c=$(`chat-messages-${convoId}`);if(c&&d.message?.imageUrl){const div=document.createElement('div');div.className='chat-msg mine';div.innerHTML=`<img src="${esc(mediaUrl(d.message.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">now ✓</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}}catch{showToast('Could not send photo.','error');}
+  try{const r=await fetch(`${API}/messages/photo`,{method:'POST',headers:{Authorization:`Bearer ${localStorage.getItem('cm_token')}`},body:fd});const d=await r.json();if(!r.ok)return showToast(d.error||'Photo failed.','error');const c=$(`chat-messages-${convoId}`);if(c&&d.message?.imageUrl){const div=document.createElement('div');div.className='chat-msg mine';div.dataset.id=d.message._id||'';div.innerHTML=`<img src="${esc(mediaUrl(d.message.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">now${msgStatusHtml('sent')}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}}catch{showToast('Could not send photo.','error');}
   e.target.value='';
 }
 
 function onNewMessage(msg){
+  const senderId=msg.sender?._id||msg.senderId;
+  const fromMe=senderId===currentUser?._id;
+
+  if(fromMe){
+    // this is the server's echo of our own message (we're in the room because
+    // openChat() joins it) — use it to attach the real _id to whichever of our
+    // bubbles is still "pending" so status updates (delivered/read) can target it
+    if(msg.conversationId===activeChatId){
+      const c=$(`chat-messages-${activeChatId}`);
+      const pending=c?.querySelector('.chat-msg.mine.pending');
+      if(pending){pending.dataset.id=msg._id||'';pending.classList.remove('pending');}
+    }
+    return;
+  }
+
   if(msg.conversationId===activeChatId){
     const c=$(`chat-messages-${activeChatId}`);
-    if(c&&(msg.sender?._id||msg.senderId)!==currentUser?._id){const div=document.createElement('div');div.className='chat-msg theirs';const isImg=msg.imageUrl;div.innerHTML=isImg?`<img src="${esc(mediaUrl(msg.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`:`<div class="msg-bubble">${esc(msg.text||'')}</div><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
+    if(c){const div=document.createElement('div');div.className='chat-msg theirs';div.dataset.id=msg._id||'';const isImg=msg.imageUrl;div.innerHTML=isImg?`<img src="${esc(mediaUrl(msg.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`:`<div class="msg-bubble">${esc(msg.text||'')}</div><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
   } else {
     const ex=conversations[msg.conversationId];
     if(ex){ex.lastText=msg.text||'📷 Photo';ex.lastTime=msg.createdAt;ex.unread=true;renderConversationList();}
     else loadConversations(); // brand-new conversation — pull the authoritative name/store/avatar from the server instead of guessing from the partial socket payload
     addNotification({icon:'💬',text:`New message: ${(msg.text||'📷 Photo').substring(0,40)}`});
   }
+  // the message has now genuinely reached this device — flip the sender's
+  // tick to "delivered", whether or not we happen to have the chat open
+  if(msg._id)socket?.emit('message_delivered',{messageId:msg._id});
   updateBadges();
+}
+
+// Sender-side: their double-tick turns blue once the other person opens the chat
+function markConversationMessagesRead(conversationId){
+  if(conversationId!==activeChatId)return;
+  const c=$(`chat-messages-${conversationId}`);if(!c)return;
+  c.querySelectorAll('.chat-msg.mine').forEach(el=>{
+    const statusEl=el.querySelector('.msg-status');
+    if(statusEl){statusEl.outerHTML=msgStatusHtml('read');}
+  });
+}
+
+// Sender-side: single tick → gray double tick once the recipient's device receives it
+function updateMessageStatus(conversationId,messageId,status){
+  if(!messageId)return;
+  const el=document.querySelector(`.chat-msg.mine[data-id="${messageId}"]`);
+  if(!el)return;
+  const statusEl=el.querySelector('.msg-status');
+  if(statusEl&&!statusEl.classList.contains('read'))statusEl.outerHTML=msgStatusHtml(status);
 }
 
 let typingTimeout;
@@ -1572,9 +1625,24 @@ function renderStory(){
   $('sv-title').textContent=l.title;$('sv-price').textContent=fmtPrice(l.price);
   const img=l.images?.[0],mainImg=$('sv-main-img'),noImg=$('sv-no-img');
   if(img){mainImg.src=(img.startsWith('/')?SERVER:'')+img;mainImg.style.display='block';noImg.style.display='none';}else{mainImg.src=catImage(l.category);mainImg.style.display='block';noImg.style.display='none';}
-  const rawPhoneSv=l.contact||seller.phone||'';const waPhoneSv=normalizePhone(rawPhoneSv);const t=encodeURIComponent(`Hi! I saw "${l.title}" for ${fmtPrice(l.price)} on CampusMart. Is it still available?`);
-  const svWaBtn=$('sv-wa-btn');
-  if(svWaBtn){if(waPhoneSv){svWaBtn.onclick=()=>window.open(`https://wa.me/${waPhoneSv}?text=${t}`,'_blank');svWaBtn.style.display='';}else svWaBtn.style.display='none';}
+  closeStoryViewers(); // reset the viewers panel between stories
+
+  const isOwn=currentUser&&(seller._id===currentUser._id);
+  const actionsEl=$('sv-actions'),viewsPill=$('sv-views-pill');
+  if(isOwn){
+    // it's your own story — no point messaging yourself, show who's seen it instead
+    if(actionsEl)actionsEl.style.display='none';
+    if(viewsPill){viewsPill.style.display='';$('sv-views-count').textContent='…';}
+    fetchStoryViewCount(l._id);
+  } else {
+    if(actionsEl)actionsEl.style.display='';
+    if(viewsPill)viewsPill.style.display='none';
+    const rawPhoneSv=l.contact||seller.phone||'';const waPhoneSv=normalizePhone(rawPhoneSv);const t=encodeURIComponent(`Hi! I saw "${l.title}" for ${fmtPrice(l.price)} on CampusMart. Is it still available?`);
+    const svWaBtn=$('sv-wa-btn');
+    if(svWaBtn){if(waPhoneSv){svWaBtn.onclick=()=>window.open(`https://wa.me/${waPhoneSv}?text=${t}`,'_blank');svWaBtn.style.display='';}else svWaBtn.style.display='none';}
+    trackStoryView(l._id); // record that this viewer saw it (no-op if not logged in)
+  }
+
   const bar=$('story-viewer-bar');
   bar.innerHTML=storyListings.map((_,i)=>`<div class="sv-bar"><div class="sv-bar-fill" id="svf-${i}" style="width:${i<storyIndex?'100%':'0%'}"></div></div>`).join('');
   clearTimeout(storyTimer);const fill=$(`svf-${storyIndex}`);
@@ -1582,7 +1650,51 @@ function renderStory(){
   storyTimer=setTimeout(()=>storyNav(1),5100);
 }
 function storyNav(dir){clearTimeout(storyTimer);storyIndex+=dir;if(storyIndex<0)storyIndex=0;if(storyIndex>=storyListings.length){closeStoryViewer();return;}renderStory();}
-function closeStoryViewer(){clearTimeout(storyTimer);$('story-viewer').classList.remove('open');document.body.style.overflow='';}
+function closeStoryViewer(){clearTimeout(storyTimer);$('story-viewer').classList.remove('open');document.body.style.overflow='';closeStoryViewers();}
+
+/* ── Story views (who saw a listing's story) ────────────────────────── */
+async function trackStoryView(listingId){
+  if(!currentUser)return;
+  try{await fetch(`${API}/listings/${listingId}/story-view`,{method:'POST',headers:authHdr()});}catch{}
+}
+async function fetchStoryViewCount(listingId){
+  if(!currentUser)return;
+  try{
+    const r=await fetch(`${API}/listings/${listingId}/story-viewers`,{headers:authHdr()});
+    const d=await r.json();
+    const countEl=$('sv-views-count');if(countEl&&storyListings[storyIndex]?._id===listingId)countEl.textContent=r.ok?(d.count||0):0;
+  }catch{const countEl=$('sv-views-count');if(countEl)countEl.textContent='0';}
+}
+async function openStoryViewers(){
+  const l=storyListings[storyIndex];if(!l||!currentUser)return;
+  const panel=$('sv-viewers-panel'),list=$('sv-viewers-list');if(!panel||!list)return;
+  clearTimeout(storyTimer); // pause auto-advance while browsing the viewers list
+  panel.classList.add('open');
+  list.innerHTML='<div class="sv-viewers-empty"><i class="fa fa-spinner fa-spin"></i></div>';
+  try{
+    const r=await fetch(`${API}/listings/${l._id}/story-viewers`,{headers:authHdr()});
+    const d=await r.json();
+    if(!r.ok)throw new Error();
+    if(!d.viewers?.length){list.innerHTML='<div class="sv-viewers-empty">No views yet — share your story to get seen! 👀</div>';return;}
+    list.innerHTML=d.viewers.map(v=>{
+      const init=(v.name||'S')[0].toUpperCase();
+      const av=v.avatar?`<img src="${esc(mediaUrl(v.avatar))}" alt=""/>`:init;
+      return `<div class="sv-viewer-row"><div class="sv-viewer-avatar">${av}</div>
+        <div class="sv-viewer-info"><div class="sv-viewer-name">${esc(v.name||'Student')}</div><div class="sv-viewer-time">${timeAgo(v.viewedAt)}</div></div>
+      </div>`;
+    }).join('');
+  }catch{list.innerHTML='<div class="sv-viewers-empty">Could not load viewers.</div>';}
+}
+function closeStoryViewers(){
+  const panel=$('sv-viewers-panel');if(panel)panel.classList.remove('open');
+  const list=$('sv-viewers-list');if(list)list.innerHTML='';
+  // resume auto-advance for the currently open story, if the viewer is still open
+  if($('story-viewer')?.classList.contains('open')){
+    clearTimeout(storyTimer);
+    const fill=$(`svf-${storyIndex}`);
+    if(fill){storyTimer=setTimeout(()=>storyNav(1),5100);}
+  }
+}
 function openAddStory(){showToast('Post a listing to add your story! 🌟','info');openModal();}
 
 // shortcut from a story straight into the seller's chat, mirrors startChat()

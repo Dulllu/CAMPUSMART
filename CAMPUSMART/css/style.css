@@ -325,6 +325,27 @@ button{border:0;cursor:pointer}a{color:inherit;text-decoration:none}img{max-widt
 .sv-chat-btn{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);
   color:#fff;display:grid;place-items:center;flex:0 0 auto}
 
+/* ── story view-count pill (owner only) ─────────────────────────────── */
+.sv-views-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);
+  color:#fff;border:none;border-radius:99px;padding:7px 13px;font-size:12px;font-weight:750;
+  margin-bottom:10px;width:fit-content}
+.sv-views-pill:hover{background:rgba(255,255,255,.2)}
+.sv-viewers-panel{position:absolute;left:0;right:0;bottom:0;max-height:60%;background:#161f1a;
+  border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,.72,0,1);
+  display:flex;flex-direction:column;z-index:2}
+.sv-viewers-panel.open{transform:translateY(0)}
+.sv-viewers-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.1);color:#fff;flex:0 0 auto}
+.sv-viewers-list{overflow-y:auto;padding:6px 10px 16px}
+.sv-viewer-row{display:flex;align-items:center;gap:10px;padding:9px 6px;color:#fff}
+.sv-viewer-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:13px;flex:0 0 auto;overflow:hidden}
+.sv-viewer-avatar img{width:100%;height:100%;object-fit:cover}
+.sv-viewer-info{flex:1;min-width:0}
+.sv-viewer-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-viewer-time{font-size:10.5px;color:rgba(255,255,255,.55)}
+.sv-viewers-empty{padding:24px 16px;text-align:center;color:rgba(255,255,255,.55);font-size:12.5px}
+
 /* ── Fullscreen Image Lightbox ── */
 #fullscreen-overlay{position:fixed;inset:0;z-index:9500;background:rgba(4,10,7,.94);
   display:none;align-items:center;justify-content:center}
@@ -501,7 +522,11 @@ button{border:0;cursor:pointer}a{color:inherit;text-decoration:none}img{max-widt
 .chat-msg.flagged .msg-bubble:after{content:'⚠ flagged for review';display:block;font-size:9px;font-weight:800;
   margin-top:4px;opacity:.75;text-transform:uppercase;letter-spacing:.03em}
 .msg-img{max-width:210px;border-radius:14px;border:1px solid var(--line);cursor:zoom-in;box-shadow:var(--shadow-sm)}
-.msg-time{font-size:9px;color:var(--muted);margin-top:3px;padding:0 3px;font-weight:650}
+.msg-time{font-size:9px;color:var(--muted);margin-top:3px;padding:0 3px;font-weight:650;display:flex;align-items:center;gap:3px}
+.chat-msg.mine .msg-time{justify-content:flex-end}
+.msg-status{display:inline-flex;color:var(--muted);font-size:10px}
+.msg-status.read{color:#34b7f1}
+.chat-msg.pending .msg-status{opacity:.6}
 
 .typing-indicator{align-self:flex-start;display:inline-flex;gap:4px;padding:11px 14px;border-radius:16px;
   border-bottom-left-radius:5px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:9px}
