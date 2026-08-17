@@ -669,19 +669,6 @@ function applySortToFiltered(){
   else filteredList.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
 }
 
-function searchListings(){
-  clearTimeout(searchDebounce);
-  const q=$('search-input')?.value.trim().toLowerCase()||'';
-  const clearBtn=$('search-clear'); if(clearBtn) clearBtn.style.display=q?'':'none';
-  showSearchSuggestions(q);
-  searchDebounce=setTimeout(()=>{
-    currentPage=1;
-    filteredList=allListings.filter(l=>!q||l.title.toLowerCase().includes(q)||l.desc?.toLowerCase().includes(q)||l.category.toLowerCase().includes(q));
-    if(activeCampus!=='all') filteredList=filteredList.filter(l=>(l.seller?.campus||'')===activeCampus);
-    applySortToFiltered(); renderListings(); hideSearchSuggestions();
-  },300);
-}
-
 function clearSearch(){ if($('search-input')) $('search-input').value=''; if($('mobile-search-input')) $('mobile-search-input').value=''; searchListings(); }
 function onSearchKeydown(e){if(e.key==='Escape'){clearSearch();}if(e.key==='Enter'){clearTimeout(searchDebounce);searchListings();}}
 
@@ -1243,14 +1230,29 @@ function closeOfferModal(){$('offer-overlay')?.classList.remove('open');}
 function sendOffer(){
   const amount=$('offer-amount')?.value,message=$('offer-message')?.value.trim();
   if(!amount||isNaN(amount)||Number(amount)<=0)return showToast('Enter a valid offer.','error');
-  if(!currentDetail)return;
+  if(!currentDetail||!currentUser)return;
   const seller=typeof currentDetail.seller==='object'?currentDetail.seller:{_id:currentDetail.seller,name:'Seller'};
+  if(seller._id===currentUser._id)return showToast("You can't offer on your own listing.",'warning');
   const convoId=makeConvoId(currentUser._id,seller._id,currentDetail._id);
-  const offerMsg=`💰 *Offer: KES ${Number(amount).toLocaleString()}* for "${currentDetail.title}"${message?'\n'+message:''}\n_(Original: ${fmtPrice(currentDetail.price)})_`;
   if(!conversations[convoId])conversations[convoId]={conversationId:convoId,otherName:seller.name||'Seller',otherUserId:seller._id,listingId:currentDetail._id,listingTitle:currentDetail.title,lastText:'',unread:false};
-  socket?.emit('send_message',{receiverId:seller._id,listingId:currentDetail._id,listingTitle:currentDetail.title,text:offerMsg});
+  socket?.emit('send_offer',{receiverId:seller._id,listingId:currentDetail._id,listingTitle:currentDetail.title,amount:Number(amount),note:message,originalPrice:currentDetail.price});
   closeOfferModal();closeBottomSheet();showToast(`Offer of KES ${Number(amount).toLocaleString()} sent! 🤝`,'success');
   setTimeout(()=>{showPageAnimated('messages');openChat(convoId,seller.name||'Seller',seller._id,currentDetail._id,currentDetail.title);},500);
+}
+
+// Only the person who RECEIVED an offer sees Accept/Decline — this responds
+// and the server broadcasts the outcome to both sides via 'offer_updated'
+function respondOffer(messageId,action){
+  if(!messageId)return;
+  socket?.emit('respond_offer',{messageId,action});
+  setOfferCardStatus(messageId,action==='accept'?'accepted':'rejected'); // optimistic — server confirms via offer_updated
+}
+
+function setOfferCardStatus(messageId,status){
+  const statusEl=document.querySelector(`.offer-card-status[data-msg-id="${messageId}"]`);
+  if(!statusEl)return;
+  if(status==='accepted')statusEl.innerHTML='<span class="offer-outcome accepted"><i class="fa fa-circle-check"></i> Accepted</span>';
+  else if(status==='rejected')statusEl.innerHTML='<span class="offer-outcome rejected"><i class="fa fa-circle-xmark"></i> Declined</span>';
 }
 
 /* ── Urgency & Popularity ────────────────────────────── */
@@ -1328,6 +1330,7 @@ function initSocket(){
     socket.on('connect',()=>console.log('🔌 Connected'));
     socket.on('disconnect',()=>console.log('🔌 Disconnected'));
     socket.on('new_message',onNewMessage);
+    socket.on('offer_updated',({messageId,status})=>setOfferCardStatus(messageId,status));
     socket.on('message_delivered',({messageId,conversationId})=>updateMessageStatus(conversationId,messageId,'delivered'));
     socket.on('messages_read',({conversationId})=>markConversationMessagesRead(conversationId));
     socket.on('notification',n=>{addNotification(n);showToast(n.text,'info');});
@@ -1491,6 +1494,26 @@ function msgStatusHtml(status){
   return `<span class="msg-status"><i class="fa fa-check"></i></span>`; // sent
 }
 
+// Renders a structured price offer as an interactive card instead of a plain
+// text bubble — the receiver gets real Accept/Decline buttons right in the
+// thread, rather than a formatted-text message they can only reply to manually.
+function offerCardHtml(m,mine){
+  const amount=m.offer.amount,status=m.offer.status||'pending';
+  const listingTitle=m.offer.listingTitle||m.listingId?.title||'';
+  const origPrice=m.offer.originalPrice||m.listingId?.price;
+  let actionsHtml;
+  if(status==='accepted')actionsHtml='<span class="offer-outcome accepted"><i class="fa fa-circle-check"></i> Accepted</span>';
+  else if(status==='rejected')actionsHtml='<span class="offer-outcome rejected"><i class="fa fa-circle-xmark"></i> Declined</span>';
+  else if(mine)actionsHtml='<span class="offer-waiting">Waiting for response…</span>';
+  else actionsHtml=`<button class="offer-btn accept" onclick="respondOffer('${m._id}','accept')">Accept</button><button class="offer-btn reject" onclick="respondOffer('${m._id}','reject')">Decline</button>`;
+  return `<div class="offer-card">
+    <div class="offer-card-label"><i class="fa fa-hand-holding-dollar"></i> Offer${listingTitle?` for "${esc(listingTitle.substring(0,40))}"`:''}</div>
+    <div class="offer-card-amount">KES ${Number(amount).toLocaleString()}</div>
+    ${origPrice?`<div class="offer-card-orig">Listed at ${fmtPrice(origPrice)}</div>`:''}
+    <div class="offer-card-status" data-msg-id="${m._id}">${actionsHtml}</div>
+  </div>`;
+}
+
 function renderMessages(convoId,msgs){
   const container=$(`chat-messages-${convoId}`);if(!container)return;
   if(!msgs.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No messages yet. Say hello! 👋</p>';return;}
@@ -1503,8 +1526,10 @@ function renderMessages(convoId,msgs){
     const time=d.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});
     const imgSrc=m.imageUrl||(m.text?.startsWith('[img]')?m.text.replace('[img]',''):null);
     const status=mine?(m.read?'read':m.delivered?'delivered':'sent'):null;
-    return `${dateDiv}<div class="chat-msg ${mine?'mine':'theirs'}${m.isFlagged?' flagged':''}" data-id="${m._id||''}">
-      ${imgSrc?`<img src="${esc(mediaUrl(imgSrc))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(m.text||'')}</div>`}
+    const isOffer=m.offer?.amount;
+    const bodyHtml=isOffer?offerCardHtml(m,mine):(imgSrc?`<img src="${esc(mediaUrl(imgSrc))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(m.text||'')}</div>`);
+    return `${dateDiv}<div class="chat-msg ${mine?'mine':'theirs'}${m.isFlagged?' flagged':''}${isOffer?' offer-msg':''}" data-id="${m._id||''}">
+      ${bodyHtml}
       <div class="msg-time">${time}${mine?msgStatusHtml(status):''}</div>
     </div>`;
   }).join('');
@@ -1534,27 +1559,45 @@ async function sendChatPhoto(e,convoId,otherUserId,listingId,listingTitle){
 function onNewMessage(msg){
   const senderId=msg.sender?._id||msg.senderId;
   const fromMe=senderId===currentUser?._id;
+  const isOffer=msg.offer?.amount;
 
   if(fromMe){
-    // this is the server's echo of our own message (we're in the room because
-    // openChat() joins it) — use it to attach the real _id to whichever of our
-    // bubbles is still "pending" so status updates (delivered/read) can target it
     if(msg.conversationId===activeChatId){
       const c=$(`chat-messages-${activeChatId}`);
-      const pending=c?.querySelector('.chat-msg.mine.pending');
-      if(pending){pending.dataset.id=msg._id||'';pending.classList.remove('pending');}
+      if(isOffer){
+        // offers aren't optimistically rendered when the modal sends them (it
+        // navigates into the chat separately), so append the card now if it's
+        // not already on screen — avoids a duplicate if it somehow is
+        if(c&&!c.querySelector(`.chat-msg[data-id="${msg._id}"]`)){
+          const div=document.createElement('div');div.className='chat-msg mine offer-msg';div.dataset.id=msg._id||'';
+          div.innerHTML=`${offerCardHtml(msg,true)}<div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}${msgStatusHtml('sent')}</div>`;
+          c.appendChild(div);c.scrollTop=c.scrollHeight;
+        }
+      } else {
+        // this is the server's echo of our own plain message (we're in the room
+        // because openChat() joins it) — use it to attach the real _id to
+        // whichever bubble is still "pending" so status updates can target it
+        const pending=c?.querySelector('.chat-msg.mine.pending');
+        if(pending){pending.dataset.id=msg._id||'';pending.classList.remove('pending');}
+      }
     }
     return;
   }
 
   if(msg.conversationId===activeChatId){
     const c=$(`chat-messages-${activeChatId}`);
-    if(c){const div=document.createElement('div');div.className='chat-msg theirs';div.dataset.id=msg._id||'';const isImg=msg.imageUrl;div.innerHTML=isImg?`<img src="${esc(mediaUrl(msg.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`:`<div class="msg-bubble">${esc(msg.text||'')}</div><div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;c.appendChild(div);c.scrollTop=c.scrollHeight;}
+    if(c){
+      const div=document.createElement('div');div.className=`chat-msg theirs${isOffer?' offer-msg':''}`;div.dataset.id=msg._id||'';
+      const isImg=msg.imageUrl;
+      const bodyHtml=isOffer?offerCardHtml(msg,false):(isImg?`<img src="${esc(mediaUrl(msg.imageUrl))}" class="msg-img" onclick="window.open(this.src,'_blank')" alt="photo"/>`:`<div class="msg-bubble">${esc(msg.text||'')}</div>`);
+      div.innerHTML=`${bodyHtml}<div class="msg-time">${new Date(msg.createdAt).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</div>`;
+      c.appendChild(div);c.scrollTop=c.scrollHeight;
+    }
   } else {
     const ex=conversations[msg.conversationId];
     if(ex){ex.lastText=msg.text||'📷 Photo';ex.lastTime=msg.createdAt;ex.unread=true;renderConversationList();}
     else loadConversations(); // brand-new conversation — pull the authoritative name/store/avatar from the server instead of guessing from the partial socket payload
-    addNotification({icon:'💬',text:`New message: ${(msg.text||'📷 Photo').substring(0,40)}`});
+    addNotification({icon:isOffer?'💰':'💬',text:`New message: ${(msg.text||'📷 Photo').substring(0,40)}`});
   }
   // the message has now genuinely reached this device — flip the sender's
   // tick to "delivered", whether or not we happen to have the chat open
@@ -2013,27 +2056,38 @@ function openBottomSheetV6(listing) {
   }
 
   // Similar listings
-  loadSimilarListings(listing._id);
+  loadSimilarListings(listing._id, listing.isSoldOut);
 }
 
 /* ── Similar Listings ─────────────────────────────────── */
-async function loadSimilarListings(listingId) {
-  const scroll = $('similar-scroll'); if (!scroll) return;
-  scroll.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px"><i class="fa fa-spinner fa-spin"></i></div>';
+async function loadSimilarListings(listingId, isSoldOut) {
+  const scroll = $('similar-scroll');
+  const altsBlock = $('soldout-alts'), altsScroll = $('soldout-alts-scroll');
+  if (!scroll && !altsScroll) return;
+  if (scroll) scroll.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px"><i class="fa fa-spinner fa-spin"></i></div>';
+  if (altsBlock) altsBlock.style.display = isSoldOut ? '' : 'none';
+  if (isSoldOut && altsScroll) altsScroll.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px"><i class="fa fa-spinner fa-spin"></i></div>';
   try {
     const r = await fetch(`${API}/listings/${listingId}/similar`, { headers: authHdr() });
     const d = await r.json();
     const similar = d.listings || [];
-    if (!similar.length) { scroll.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px 0">No similar listings yet.</p>'; return; }
-    scroll.innerHTML = similar.map(l => {
+    const cardsHtml = similar.length ? similar.map(l => {
       const img = l.images?.[0];
       const src = img ? (img.startsWith('/')?SERVER:'')+img : catImage(l.category);
       return `<div class="similar-card" onclick="openDetail('${esc(l._id)}')">
         <img src="${esc(src)}" alt="${esc(l.title)}" loading="lazy"/>
         <div class="similar-card-body"><div class="similar-card-title">${esc(l.title)}</div><div class="similar-card-price">${fmtPrice(l.price)}</div></div>
       </div>`;
-    }).join('');
-  } catch { scroll.innerHTML = ''; }
+    }).join('') : '';
+    // Bottom "Similar Listings" section — shown for every listing
+    if (scroll) scroll.innerHTML = cardsHtml || '<p style="font-size:12px;color:var(--muted);padding:8px 0">No similar listings yet.</p>';
+    // Prominent sold-out recovery block — only shown (and only needs
+    // populating) when this particular listing is sold out
+    if (isSoldOut && altsScroll) altsScroll.innerHTML = cardsHtml || '<p style="font-size:12px;color:var(--muted);padding:4px 0">No alternatives in this category yet — check back soon!</p>';
+  } catch {
+    if (scroll) scroll.innerHTML = '';
+    if (isSoldOut && altsScroll) altsScroll.innerHTML = '';
+  }
 }
 
 /* ── Meetup Confirmation ───────────────────────────────── */
@@ -2496,21 +2550,19 @@ function toggleSmartSearch() {
   searchListings();
 }
 
-/* ── Patch searchListings to support smart mode via API ──── */
+// Client-side fallback only — filters whatever's currently cached in
+// allListings. Used when there's no query (instant reset, no need to hit
+// the network) and as a safety net if the real backend search fails.
+// NOT the primary search path: allListings only holds the first ~100
+// listings loaded on page entry, so filtering it alone would silently miss
+// anything older/further down the catalog. See searchListings() below.
 function searchListingsBase() {
-  clearTimeout(searchDebounce);
-  const q = $('search-input')?.value.trim().toLowerCase() || '';
-  const clearBtn = $('search-clear'); if (clearBtn) clearBtn.style.display = q ? '' : 'none';
-  showSearchSuggestions(q);
-  searchDebounce = setTimeout(() => {
-    currentPage = 1;
-    filteredList = allListings.filter(l => !q || l.title.toLowerCase().includes(q) || l.desc?.toLowerCase().includes(q) || l.category.toLowerCase().includes(q));
-    // A selected category pill should keep scoping results while searching,
-    // not get silently dropped the moment you start typing.
-    if (currentCat !== 'all') filteredList = filteredList.filter(l => l.category === currentCat);
-    if (activeCampus !== 'all') filteredList = filteredList.filter(l => (l.seller?.campus || '') === activeCampus);
-    applySortToFiltered(); renderListings(); hideSearchSuggestions();
-  }, 300);
+  currentPage = 1;
+  const q = ($('search-input')?.value.trim().toLowerCase()) || '';
+  filteredList = allListings.filter(l => !q || l.title.toLowerCase().includes(q) || l.desc?.toLowerCase().includes(q) || l.category.toLowerCase().includes(q));
+  if (currentCat !== 'all') filteredList = filteredList.filter(l => l.category === currentCat);
+  if (activeCampus !== 'all') filteredList = filteredList.filter(l => (l.seller?.campus || '') === activeCampus);
+  applySortToFiltered(); renderListings(); hideSearchSuggestions();
 }
 
 async function searchListings() {
@@ -2527,17 +2579,27 @@ async function searchListings() {
     if (mobileInput) mobileInput.value = mainInput?.value || '';
   }
   const clearBtn = $('search-clear'); if (clearBtn) clearBtn.style.display = q ? '' : 'none';
-
-  if (!smartSearchEnabled || q.length < 4) { searchListingsBase(); return; }
-
+  showSearchSuggestions(q);
   clearTimeout(searchDebounce);
+
+  // Empty box — just reset to the cached feed instantly, no need to hit the network
+  if (!q) { searchDebounce = setTimeout(searchListingsBase, 0); return; }
+
   hideSearchSuggestions();
   searchDebounce = setTimeout(async () => {
     try {
-      const catParam = currentCat !== 'all' ? `&category=${encodeURIComponent(currentCat)}` : '';
-      const r = await fetch(`${API}/listings?search=${encodeURIComponent(q)}&smart=true&limit=50${catParam}`, { headers: authHdr() });
+      // Always search the full backend catalog — filtering the locally cached
+      // allListings alone only covers the first ~100 listings loaded on page
+      // entry, so searches used to silently miss anything beyond that.
+      const catParam    = currentCat !== 'all' ? `&category=${encodeURIComponent(currentCat)}` : '';
+      const sortParam   = `&sort=${encodeURIComponent(currentSort)}`;
+      const smartParam  = (smartSearchEnabled && q.length >= 4) ? '&smart=true' : '';
+      const r = await fetch(`${API}/listings?search=${encodeURIComponent(q)}${smartParam}${sortParam}&limit=50${catParam}`, { headers: authHdr() });
       const d = await r.json();
-      filteredList = d.listings || [];
+      if (!r.ok) throw new Error(d.error || 'Search failed');
+      let results = d.listings || [];
+      if (activeCampus !== 'all') results = results.filter(l => (l.seller?.campus || '') === activeCampus);
+      filteredList = results;
       currentPage = 1;
       renderListings();
       if (d.interpretedAs) {
@@ -2548,7 +2610,7 @@ async function searchListings() {
         if (parts.length) showToast(`✨ Searching: ${parts.join(', ')}`, 'info', 3000);
       }
     } catch { searchListingsBase(); }
-  }, 400);
+  }, 350);
 }
 
 /* ── Housing Page ─────────────────────────────────────── */
