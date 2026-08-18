@@ -593,19 +593,24 @@ function cardHTML(l) {
   const imgSrc=img?(img.startsWith('/')?SERVER:'')+img:'';
   const budget=l.price<500?'<span class="card-budget-badge">Budget</span>':'';
   const verif=isVerified(l.seller)?'<span class="verified-seller-badge">✓</span>':'';
+  const ratingCount=l.seller?.ratingCount||0;
+  const ratingChip=ratingCount>0?`<span class="card-rating-chip">★ ${l.seller.ratingAvg.toFixed(1)} (${ratingCount})</span>`:'';
+  const interested=l.interestedCount||0;
+  const interestBadge=(!l.isSoldOut&&interested>=3)?`<div class="card-interest-badge">🔥 ${interested} interested</div>`:'';
   return `
   <div class="listing-card${l.isSoldOut?' sold-out':''}" onclick="openDetail('${esc(l._id)}')">
     <div class="card-img-wrap">
       ${imgSrc?`<img class="card-img lazy" data-src="${esc(imgSrc)}" src="" alt="${esc(l.title)}" loading="lazy"/>`:`<img class="card-img lazy" data-src="${catImage(l.category)}" src="" alt="${esc(l.category)}" loading="lazy"/>`}
       ${l.isPromo?`<div class="promo-badge">${esc(l.promoLabel||'OFFER')}</div>`:''}
       ${l.isSoldOut?'<div class="sold-out-overlay">SOLD OUT</div>':''}
+      ${interestBadge}
       <button class="card-heart${saved?' saved':''}" onclick="event.stopPropagation();toggleWatchlistById('${esc(l._id)}')" aria-label="Save"><i class="fa fa-heart"></i></button>
     </div>
     <div class="card-body">
       <div class="card-title">${esc(l.title)}</div>
       <div class="card-time">${timeAgo(l.createdAt)}</div>
       <div class="card-price">${fmtPrice(l.price)}${budget}</div>
-      <div class="card-meta"><span class="card-cat">${catEmoji(l.category)} ${esc(l.category)}</span>${verif}${isMine?'<span class="card-mine-badge">Mine</span>':''}</div>
+      <div class="card-meta"><span class="card-cat">${catEmoji(l.category)} ${esc(l.category)}</span>${verif}${ratingChip}${isMine?'<span class="card-mine-badge">Mine</span>':''}</div>
     </div>
   </div>`;
 }
@@ -2000,6 +2005,36 @@ function loadProfilePage() {
       ratingRow.innerHTML = starRatingHTML(currentUser.ratingAvg || 0, currentUser.ratingCount || 0);
     } else ratingRow.style.display = 'none';
   }
+  loadProfileAchievements();
+}
+
+/* ── Profile achievement badges ─────────────────────────
+   Unlocked state is derived from data we already have (dashboard sale
+   count, referral credits, rating, ID verification) — no new backend
+   fields needed. Locked badges render greyed-out with a lock icon so
+   people can see what to aim for next. */
+async function loadProfileAchievements() {
+  const wrap = $('profile-achievements'); if (!wrap) return;
+  let soldCount = 0;
+  try {
+    const r = await fetch(`${API}/listings/my/dashboard`, { headers: authHdr() });
+    const d = await r.json();
+    soldCount = d.summary?.soldListings || 0;
+  } catch { /* leave soldCount at 0 if the dashboard call fails */ }
+
+  const badges = [
+    { emoji:'🎉', label:'First sale',  unlocked: soldCount >= 1 },
+    { emoji:'📦', label:'5 sales',     unlocked: soldCount >= 5 },
+    { emoji:'🏆', label:'10 sales',    unlocked: soldCount >= 10 },
+    { emoji:'✅', label:'ID verified', unlocked: !!currentUser.isStudentVerified },
+    { emoji:'🤝', label:'Referrer',    unlocked: (currentUser.referralCredits||0) >= 1 },
+    { emoji:'⭐', label:'Trusted',     unlocked: (currentUser.ratingAvg||0) >= 4.5 && (currentUser.ratingCount||0) >= 5 },
+  ];
+  wrap.innerHTML = badges.map(b => `
+    <div class="achv-item${b.unlocked?'':' locked'}" title="${b.unlocked?b.label:b.label+' — not yet unlocked'}">
+      <div class="achv-icon">${b.unlocked?b.emoji:'<i class="fa fa-lock"></i>'}</div>
+      <div class="achv-name">${esc(b.label)}</div>
+    </div>`).join('');
 }
 
 /* ── Patch openBottomSheet to wire meetup/rating/block/bump/similar ─── */
