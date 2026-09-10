@@ -61,6 +61,20 @@ let activeCampus   = 'all';
 let liveCheckInterval = null;
 let bsGalleryIndex = 0;
 
+/* ── Guest browsing ──────────────────────────────────────
+   CampusMart is browsable without an account — only actions
+   that actually need a user (messaging, offers, posting, your
+   own profile/dashboard) prompt a sign-in. pendingGuestAction
+   holds a callback to resume once the user logs in. */
+let pendingGuestAction = null;
+function requireAuth(what, cb) {
+  pendingGuestAction = typeof cb === 'function' ? cb : null;
+  showToast(`Sign in to ${what}.`, 'info');
+  $('market-page')?.classList.remove('active');
+  $('login-page')?.classList.add('active');
+  switchAuth('signin'); resetOTPFlow();
+}
+
 /* ── Utils ───────────────────────────────────────────── */
 const $        = id => document.getElementById(id);
 const esc      = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -396,9 +410,9 @@ function doLogout() {
   clearInterval(liveCheckInterval);
   localStorage.removeItem('cm_token'); localStorage.removeItem('cm_user');
   currentUser=null; allListings=[]; filteredList=[]; conversations={};
-  $('market-page').classList.remove('active');
-  $('login-page').classList.add('active');
-  switchAuth('signin'); resetOTPFlow(); hideLoader();
+  closeSidebar?.();
+  enterGuestBrowsing(); // logging out drops you back into browsing, not a login wall
+  hideLoader();
   showToast('Logged out.','info');
 }
 
@@ -408,6 +422,18 @@ function enterMarketBase() {
   $('market-page').classList.add('active');
   populateSafeZones(); updateUserUI(); loadListings();
   loadConversations(); initSocket(); updateBadges(); loadNotifications();
+  showPageAnimated('listings');
+  applySavedSidebarState();
+  openDeepLinkedListing();
+  setTimeout(()=>{const sb=$('safety-banner');if(sb)setTimeout(()=>sb.style.display='none',8000);},0);
+}
+
+/* Guests land here by default: full listings browsing, no auth calls that
+   would just 401. Signing in later upgrades this in place via enterMarket(). */
+function enterGuestBrowsing() {
+  $('login-page').classList.remove('active');
+  $('market-page').classList.add('active');
+  populateSafeZones(); updateUserUI(); loadListings(); updateBadges();
   showPageAnimated('listings');
   applySavedSidebarState();
   openDeepLinkedListing();
@@ -428,7 +454,12 @@ async function openDeepLinkedListing(){
 
 /* ── User UI ─────────────────────────────────────────── */
 function updateUserUIBase() {
-  if(!currentUser) return;
+  if(!currentUser){
+    ['user-avatar','sidebar-avatar'].forEach(id=>{const el=$(id); if(!el) return; el.style.backgroundImage=''; el.innerHTML='<i class="fa fa-user" style="font-size:14px"></i>';});
+    $('sidebar-name') &&($('sidebar-name').textContent ='Guest browsing');
+    $('sidebar-email')&&($('sidebar-email').textContent='Sign in to sell, chat & save');
+    return;
+  }
   const init=(currentUser.name||'S')[0].toUpperCase();
   ['user-avatar','sidebar-avatar','profile-avatar-big'].forEach(id=>{
     const el=$(id); if(!el) return;
@@ -1107,6 +1138,7 @@ async function submitStudentVerify(){
 /* ── Sell Modal ──────────────────────────────────────── */
 const SCAM_WORDS=['deposit','advance','fare','m-pesa ya','tuma','western union','send money'];
 function openModal(){
+  if(!currentUser){ requireAuth('post a listing', openModal); return; }
   uploadedImages=[];editingListing=null;
   $('modal-title-text').textContent='Post a Listing';
   $('post-btn').innerHTML='<i class="fa fa-paper-plane"></i> Post Listing';
@@ -1226,6 +1258,7 @@ function shareCurrentListing(){if(!currentDetail)return;const text=`Check out "$
 /* ── Make Offer ──────────────────────────────────────── */
 function openOfferModal(){
   if(!currentDetail)return;
+  if(!currentUser){ requireAuth('make an offer', openOfferModal); return; }
   const price=currentDetail.price;
   $('offer-presets').innerHTML=[.9,.8,.7].map(d=>{const amt=Math.round(price*d);return `<button class="offer-preset-btn" onclick="$('offer-amount').value=${amt};document.querySelectorAll('.offer-preset-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">KES ${amt.toLocaleString()} (${Math.round((1-d)*100)}% off)</button>`;}).join('');
   $('offer-amount').value=Math.round(price*.8);$('offer-message').value='';
@@ -1676,7 +1709,8 @@ function updateOnlineStatus(userId,online){const dot=$(`online-dot-${userId}`);i
 
 /* ── Start Chat from Listing ─────────────────────────── */
 function startChat(){
-  if(!currentDetail||!currentUser)return;
+  if(!currentDetail)return;
+  if(!currentUser){ requireAuth('message this seller', startChat); return; }
   const seller=typeof currentDetail.seller==='object'?currentDetail.seller:{_id:currentDetail.seller,name:'Seller'};
   if(seller._id===currentUser._id)return showToast("You can't chat with yourself.",'warning');
   const convoId=makeConvoId(currentUser._id,seller._id,currentDetail._id);
@@ -1787,7 +1821,8 @@ function openAddStory(){showToast('Post a listing to add your story! 🌟','info
 
 // shortcut from a story straight into the seller's chat, mirrors startChat()
 function startChatFromStory(){
-  const l=storyListings[storyIndex];if(!l||!currentUser)return;
+  const l=storyListings[storyIndex];if(!l)return;
+  if(!currentUser){ requireAuth('message this seller', startChatFromStory); return; }
   const seller=typeof l.seller==='object'?l.seller:{_id:l.seller,name:'Seller'};
   if(seller._id===currentUser._id)return showToast("You can't chat with yourself.",'warning');
   const convoId=makeConvoId(currentUser._id,seller._id,l._id);
@@ -1930,10 +1965,13 @@ window.addEventListener('DOMContentLoaded', () => {
   handleOAuthErrorParam();
   populateSafeZones();
 
+  loadLocalData(); // watchlist/notifs/reactions work from localStorage even as a guest
   const t=localStorage.getItem('cm_token'), u=localStorage.getItem('cm_user');
   if(t&&u){
-    try{currentUser=JSON.parse(u);loadLocalData();enterMarket();}
-    catch{localStorage.removeItem('cm_token');localStorage.removeItem('cm_user');}
+    try{currentUser=JSON.parse(u);enterMarket();}
+    catch{localStorage.removeItem('cm_token');localStorage.removeItem('cm_user');enterGuestBrowsing();}
+  } else {
+    enterGuestBrowsing();
   }
   hideLoader();
 
@@ -3060,7 +3098,9 @@ async function subscribeToPush() {
 }
 
 /* ── Final showPageAnimated wrapper — calls v6 then adds v7 pages ────── */
+const AUTH_REQUIRED_PAGES = { profile:'view your profile', messages:'chat with sellers', dashboard:'see your seller dashboard', drafts:'view your drafts', settings:'open settings', notifications:'view notifications', referral:'view your referrals' };
 function showPageAnimated(page) {
+  if (AUTH_REQUIRED_PAGES[page] && !currentUser) { requireAuth(AUTH_REQUIRED_PAGES[page], () => showPageAnimated(page)); return; }
   showPageAnimatedV6(page);
   if (page === 'housing')   loadHousingPage();
   if (page === 'jobs')      loadJobsPage();
@@ -3118,4 +3158,5 @@ function enterMarket() {
   enterMarketBase();
   syncWatchlistFromServer();
   syncFollowedStoresFromServer();
+  if (pendingGuestAction) { const fn = pendingGuestAction; pendingGuestAction = null; setTimeout(fn, 300); }
 }
